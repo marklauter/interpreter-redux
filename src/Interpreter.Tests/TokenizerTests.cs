@@ -1,8 +1,8 @@
-using Interpreter.Tokens;
+using Interpreter.LexicalAnalysis;
 
 namespace Interpreter.Tests;
 
-public class TokenizerTests
+public sealed class TokenizerTests
 {
     private readonly Tokenizer tokenizer = new();
 
