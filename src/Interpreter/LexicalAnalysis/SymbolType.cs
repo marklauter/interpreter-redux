@@ -1,9 +1,11 @@
 ﻿namespace Interpreter.LexicalAnalysis;
 
-internal enum SymbolType
+public enum SymbolType
 {
-    Identifier,
-    Constant,
+    Undefined,
     Keyword,
     Operator,
+    Punctuation,
+    Identifier,
+    Constant,
 }

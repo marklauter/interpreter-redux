@@ -1,6 +1,8 @@
 ﻿namespace Interpreter.LexicalAnalysis;
 
-internal readonly record struct Symbol(
-    SymbolType Type,
+public sealed record Symbol(
     int Offset,
-    int Length);
+    int Length,
+    SymbolType Type,
+    string Value);
+

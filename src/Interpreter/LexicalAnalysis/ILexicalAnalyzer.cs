@@ -1,8 +1,6 @@
-﻿using System.Text.RegularExpressions;
-
-namespace Interpreter.LexicalAnalysis;
+﻿namespace Interpreter.LexicalAnalysis;
 
 public interface ILexicalAnalyzer
 {
-    MatchCollection Analyze(string source);
+    IEnumerable<Symbol> ReadSymbols(string source);
 }
