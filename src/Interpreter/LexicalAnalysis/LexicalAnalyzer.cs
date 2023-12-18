@@ -7,9 +7,6 @@ namespace Interpreter.LexicalAnalysis;
 internal sealed class LexicalAnalyzer
     : ILexicalAnalyzer
 {
-    private readonly IEnumerable<string> keywords;
-    private readonly IEnumerable<string> operators;
-    private readonly IEnumerable<string> punctuationMarks;
     private readonly Regex regex;
     private readonly HashSet<string> groupNames;
     private readonly Dictionary<string, SymbolType> symbolTypeMap = new()
@@ -24,21 +21,42 @@ internal sealed class LexicalAnalyzer
     public LexicalAnalyzer(IOptions<LexicalAnalyzerOptions> options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        keywords = options.Value.Keywords;
-        operators = options.Value.Operators;
-        punctuationMarks = options.Value.PunctuationMarks;
+
+        var keywords = options.Value?.Keywords ?? Array.Empty<string>();
+        var operators = options.Value?.Operators ?? Array.Empty<string>();
+        var punctuationMarks = options.Value?.PunctuationMarks ?? Array.Empty<string>();
 
         //regex = new Regex($@"\s*(?<keyword>{String.Join("|", keywords)})\s*|(?<operator>{String.Join("|", operators)})|(?<identifier>[a-zA-Z_][a-zA-Z0-9_]*)|(?<constant>[0-9]+)|(?<string>""[^""]*"")|(?<boolean>true|false)|(?<whitespace>\s+)", RegexOptions.Compiled);
 
-        var keywordExpression = $@"(?<{nameof(SymbolType.Keyword)}>{String.Join("|", keywords)})";
-        var operatorExpression = $@"(?<{nameof(SymbolType.Operator)}>{String.Join("|", operators.Select(Regex.Escape))})";
-        var punctuationExpression = $@"(?<{nameof(SymbolType.Punctuation)}>{String.Join("|", punctuationMarks.Select(Regex.Escape))})";
+        var keywordExpression = keywords.Any()
+            ? $@"(?<{nameof(SymbolType.Keyword)}>{String.Join("|", keywords)})"
+            : String.Empty;
+
+        var operatorExpression = operators.Any()
+            ? $@"(?<{nameof(SymbolType.Operator)}>{String.Join("|", operators.Select(Regex.Escape))})"
+            : String.Empty;
+
+        var punctuationExpression = punctuationMarks.Any()
+            ? $@"(?<{nameof(SymbolType.Punctuation)}>{String.Join("|", punctuationMarks.Select(Regex.Escape))})"
+            : String.Empty;
+
         var identifierExpression = $@"(?<{nameof(SymbolType.Identifier)}>[a-zA-Z_][a-zA-Z0-9_]*)";
+
         // todo: constant expression should allow for decimals and booleans
         var constantExpression = $@"(?<{nameof(SymbolType.Constant)}>[0-9]+)";
+
+        var expression = String.Join(
+            '|',
+            keywordExpression,
+            operatorExpression,
+            punctuationExpression,
+            identifierExpression,
+            constantExpression);
+
         regex = new Regex(
-            $"{keywordExpression}|{operatorExpression}|{punctuationExpression}|{identifierExpression}|{constantExpression}",
+            expression,
             RegexOptions.Compiled);
+
         groupNames = regex
             .GetGroupNames()
             .Where(n => !n.Equals("0", StringComparison.OrdinalIgnoreCase))
