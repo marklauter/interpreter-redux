@@ -34,6 +34,7 @@ internal sealed class LexicalAnalyzer
         var operatorExpression = $@"(?<{nameof(SymbolType.Operator)}>{String.Join("|", operators.Select(Regex.Escape))})";
         var punctuationExpression = $@"(?<{nameof(SymbolType.Punctuation)}>{String.Join("|", punctuationMarks.Select(Regex.Escape))})";
         var identifierExpression = $@"(?<{nameof(SymbolType.Identifier)}>[a-zA-Z_][a-zA-Z0-9_]*)";
+        // todo: constant expression should allow for decimals and booleans
         var constantExpression = $@"(?<{nameof(SymbolType.Constant)}>[0-9]+)";
         regex = new Regex(
             $"{keywordExpression}|{operatorExpression}|{punctuationExpression}|{identifierExpression}|{constantExpression}",
