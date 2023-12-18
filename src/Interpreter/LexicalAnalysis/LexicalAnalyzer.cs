@@ -64,15 +64,6 @@ internal sealed class LexicalAnalyzer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal MatchCollection Analyze(string source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        return regex
-            .Matches(source);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerable<Symbol> ReadSymbols(string source)
     {
         ArgumentNullException.ThrowIfNull(source);
