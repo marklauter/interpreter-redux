@@ -52,7 +52,6 @@ public sealed class Lexer
             ? $@"(?<{nameof(Symbols.Punctuation)}>{String.Join("|", punctuation.Select(Regex.Escape))})"
             : String.Empty;
 
-        // todo: need to test constant expression to make sure the decimal works 
         var constantExpression = $@"(?<{nameof(Symbols.Constant)}>[0-9]+.?[0-9]+|true|false)";
         var identifierExpression = $@"(?<{nameof(Symbols.Identifier)}>[a-zA-Z_][a-zA-Z0-9_]*)";
         var stringExpression = $@"(?<{nameof(Symbols.String)}>""[^""]*"")";
