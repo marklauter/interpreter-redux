@@ -3,6 +3,6 @@
 public sealed record Symbol(
     int Offset,
     int Length,
-    SymbolType Type,
+    Symbols Type,
     string Value);
 

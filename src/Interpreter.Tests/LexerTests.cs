@@ -2,16 +2,16 @@
 
 namespace Interpreter.Tests;
 
-public sealed class LexicalAnalyzerTests(ILexicalAnalyzer lexicalAnalyzer)
+public sealed class LexerTests(Lexer lexer)
 {
-    private readonly ILexicalAnalyzer lexicalAnalyzer = lexicalAnalyzer ?? throw new ArgumentNullException(nameof(lexicalAnalyzer));
+    private readonly Lexer lexer = lexer ?? throw new ArgumentNullException(nameof(lexer));
 
     [Fact]
     public void ReadSymbols_Returns_SymbolTable()
     {
         var source = "if (a + b) { let c = a + b; }";
 
-        var symbols = lexicalAnalyzer
+        var symbols = lexer
             .ReadSymbols(source)
             .ToArray();
         Assert.Equal(15, symbols.Length);
