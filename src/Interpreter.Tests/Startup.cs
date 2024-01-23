@@ -1,4 +1,5 @@
 ﻿using Interpreter.LexicalAnalysis;
+using Interpreter.SyntacticAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -15,6 +16,7 @@ public sealed class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.TryAddTransient<Lexer>(services => new Lexer(language));
+        services.TryAddTransient(services => new Lexer(language));
+        services.TryAddTransient<Parser>();
     }
 }
