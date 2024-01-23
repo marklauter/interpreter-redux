@@ -17,7 +17,7 @@ public sealed class Lexer
         { nameof(TokenType.Identifier), TokenType.Identifier },
         { nameof(TokenType.IntegerConstant), TokenType.IntegerConstant },
         { nameof(TokenType.DecimalConstant), TokenType.DecimalConstant },
-        { nameof(TokenType.String), TokenType.String},
+        { nameof(TokenType.StringConstant), TokenType.StringConstant},
         { nameof(TokenType.Whitespace), TokenType.Whitespace},
     };
 
@@ -45,7 +45,7 @@ public sealed class Lexer
             $@"(?<{nameof(TokenType.Identifier)}>\b[a-zA-Z_][a-zA-Z0-9_]*\b)",
             $@"(?<{nameof(TokenType.DecimalConstant)}>\b\d+\.\d+?\b)",
             $@"(?<{nameof(TokenType.IntegerConstant)}>\b\d+\b)",
-            $@"(?<{nameof(TokenType.String)}>""[^""]*"")",
+            $@"(?<{nameof(TokenType.StringConstant)}>""[^""]*"")",
             $@"(?<{nameof(TokenType.Whitespace)}>\s+)",
         }
         .Where(s => !String.IsNullOrWhiteSpace(s));
@@ -91,7 +91,7 @@ public sealed class Lexer
     private TokenType AsTokenType(string tokenName)
     {
         return !symbolTypeMap.TryGetValue(tokenName, out var type)
-            ? throw new TokenKeyNotFoundException($"can't find matching token type from value: '{tokenName}'")
+            ? throw new UnexpectedTokenTypeException($"can't find matching token type from value: '{tokenName}'")
             : type;
     }
 }
