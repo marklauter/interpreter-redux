@@ -1,7 +1,7 @@
 ﻿namespace Interpreter.LexicalAnalysis;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "so what?")]
-public enum Symbols
+public enum TokenType : int
 {
     Undefined = 0,
     Keyword = 100,
@@ -10,7 +10,8 @@ public enum Symbols
     PostfixOperator = 400,
     Punctuation = 500,
     Identifier = 600,
-    Constant = 700,
-    String = 800,
-    Whitespace = 900,
+    IntegerConstant = 700,
+    DecimalConstant = 800,
+    String = 900,
+    Whitespace = 1000,
 }

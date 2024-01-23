@@ -7,66 +7,46 @@ public sealed class Lexer
 {
     private readonly Regex regex;
     private readonly HashSet<string> groupNames;
-    private readonly Dictionary<string, Symbols> symbolTypeMap = new()
+    private readonly Dictionary<string, TokenType> symbolTypeMap = new()
     {
-        { nameof(Symbols.Keyword), Symbols.Keyword },
-        { nameof(Symbols.InfixOperator), Symbols.InfixOperator },
-        { nameof(Symbols.PrefixOperator), Symbols.PrefixOperator },
-        { nameof(Symbols.PostfixOperator), Symbols.PostfixOperator },
-        { nameof(Symbols.Punctuation), Symbols.Punctuation },
-        { nameof(Symbols.Identifier), Symbols.Identifier },
-        { nameof(Symbols.Constant), Symbols.Constant },
-        { nameof(Symbols.String), Symbols.String},
-        { nameof(Symbols.Whitespace), Symbols.Whitespace},
+        { nameof(TokenType.Keyword), TokenType.Keyword },
+        { nameof(TokenType.InfixOperator), TokenType.InfixOperator },
+        { nameof(TokenType.PrefixOperator), TokenType.PrefixOperator },
+        { nameof(TokenType.PostfixOperator), TokenType.PostfixOperator },
+        { nameof(TokenType.Punctuation), TokenType.Punctuation },
+        { nameof(TokenType.Identifier), TokenType.Identifier },
+        { nameof(TokenType.IntegerConstant), TokenType.IntegerConstant },
+        { nameof(TokenType.DecimalConstant), TokenType.DecimalConstant },
+        { nameof(TokenType.String), TokenType.String},
+        { nameof(TokenType.Whitespace), TokenType.Whitespace},
     };
 
     public Lexer(Language languge)
     {
         ArgumentNullException.ThrowIfNull(languge);
 
-        var keywords = languge.Keywords;
-        var infixOperators = languge.InfixOperators;
-        var prefixOperators = languge.PrefixOperators;
-        var postfixOperators = languge.PostfixOperators;
-        var punctuation = languge.Punctuation;
-
-        var x = new Regex($@"\s*(?<identifier>[a-zA-Z_][a-zA-Z0-9_]*)|(?<constant>[0-9]+)|(?<string>""[^""]*"")|(?<boolean>true|false)|(?<whitespace>\s+)", RegexOptions.Compiled);
-
-        var keywordExpression = keywords.Any()
-            ? $@"(?<{nameof(Symbols.Keyword)}>{String.Join("|", keywords)})"
-            : String.Empty;
-
-        var infixOperatorExpression = infixOperators.Any()
-            ? $@"(?<{nameof(Symbols.InfixOperator)}>{String.Join("|", infixOperators.Select(Regex.Escape))})"
-            : String.Empty;
-
-        var prefixOperatorExpression = prefixOperators.Any()
-            ? $@"(?<{nameof(Symbols.PrefixOperator)}>{String.Join("|", prefixOperators.Select(Regex.Escape))})"
-            : String.Empty;
-
-        var postfixOperatorExpression = postfixOperators.Any()
-            ? $@"(?<{nameof(Symbols.PostfixOperator)}>{String.Join("|", postfixOperators.Select(Regex.Escape))})"
-            : String.Empty;
-
-        var punctuationExpression = punctuation.Any()
-            ? $@"(?<{nameof(Symbols.Punctuation)}>{String.Join("|", punctuation.Select(Regex.Escape))})"
-            : String.Empty;
-
-        var constantExpression = $@"(?<{nameof(Symbols.Constant)}>[0-9]+.?[0-9]+|true|false)";
-        var identifierExpression = $@"(?<{nameof(Symbols.Identifier)}>[a-zA-Z_][a-zA-Z0-9_]*)";
-        var stringExpression = $@"(?<{nameof(Symbols.String)}>""[^""]*"")";
-        var whitespaceExpression = $@"(?<{nameof(Symbols.Whitespace)}>\s+)";
-
         var expressions = new string[]
         {
-            keywordExpression,
-            infixOperatorExpression,
-            prefixOperatorExpression,
-            postfixOperatorExpression,
-            punctuationExpression,
-            identifierExpression,
-            constantExpression,
-            stringExpression,
+            languge.Keywords.Any()
+                ? $@"(?<{nameof(TokenType.Keyword)}>\b{String.Join("|", languge.Keywords.Select(Regex.Escape))}\b)"
+                : String.Empty,
+            languge.InfixOperators.Any()
+                ? $@"(?<{nameof(TokenType.InfixOperator)}>{String.Join("|", languge.InfixOperators.Select(Regex.Escape))})"
+                : String.Empty,
+            languge.PrefixOperators.Any()
+                ? $@"(?<{nameof(TokenType.PrefixOperator)}>{String.Join("|", languge.PrefixOperators.Select(Regex.Escape))})"
+                : String.Empty,
+            languge.PostfixOperators.Any()
+                ? $@"(?<{nameof(TokenType.PostfixOperator)}>{String.Join("|", languge.PostfixOperators.Select(Regex.Escape))})"
+                : String.Empty,
+            languge.Punctuation.Any()
+                ? $@"(?<{nameof(TokenType.Punctuation)}>{String.Join("|", languge.Punctuation.Select(Regex.Escape))})"
+                : String.Empty,
+            $@"(?<{nameof(TokenType.Identifier)}>\b[a-zA-Z_][a-zA-Z0-9_]*\b)",
+            $@"(?<{nameof(TokenType.DecimalConstant)}>\b\d+\.\d+?\b)",
+            $@"(?<{nameof(TokenType.IntegerConstant)}>\b\d+\b)",
+            $@"(?<{nameof(TokenType.String)}>""[^""]*"")",
+            $@"(?<{nameof(TokenType.Whitespace)}>\s+)",
         }
         .Where(s => !String.IsNullOrWhiteSpace(s));
 
@@ -85,7 +65,7 @@ public sealed class Lexer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public IEnumerable<Symbol> ReadSymbols(string source)
+    public IEnumerable<Token> ReadTokens(string source)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -97,20 +77,21 @@ public sealed class Lexer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Symbol CreateSymbol(Group group)
+    private Token CreateSymbol(Group group)
     {
-        return new Symbol(
+        var type = AsTokenType(group.Name);
+        return new Token(
             group.Index,
             group.Length,
-            AsSymbolType(group.Name),
-            group.Value);
+            type,
+            type == TokenType.Whitespace ? String.Empty : group.Value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Symbols AsSymbolType(string value)
+    private TokenType AsTokenType(string tokenName)
     {
-        return !symbolTypeMap.TryGetValue(value, out var symbolType)
-            ? throw new KeyNotFoundException($"can't find matching symbol type from value: '{value}'")
-            : symbolType;
+        return !symbolTypeMap.TryGetValue(tokenName, out var type)
+            ? throw new TokenKeyNotFoundException($"can't find matching token type from value: '{tokenName}'")
+            : type;
     }
 }

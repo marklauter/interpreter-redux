@@ -1,8 +1,8 @@
 ﻿namespace Interpreter.LexicalAnalysis;
 
-public sealed record Symbol(
+public sealed record Token(
     int Offset,
     int Length,
-    Symbols Type,
+    TokenType Type,
     string Value);
 

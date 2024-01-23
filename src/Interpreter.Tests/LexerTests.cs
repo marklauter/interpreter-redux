@@ -6,68 +6,77 @@ public sealed class LexerTests(Lexer lexer)
 {
     private readonly Lexer lexer = lexer ?? throw new ArgumentNullException(nameof(lexer));
 
-    [Fact]
-    public void ReadSymbols_Returns_SymbolTable()
+    [Theory]
+    [InlineData(0, "if", 0, 2, TokenType.Keyword)]
+    [InlineData(1, "", 2, 1, TokenType.Whitespace)]
+    [InlineData(2, "(", 3, 1, TokenType.Punctuation)]
+    [InlineData(3, "a", 4, 1, TokenType.Identifier)]
+    [InlineData(4, "", 5, 1, TokenType.Whitespace)]
+    [InlineData(5, "+", 6, 1, TokenType.InfixOperator)]
+    [InlineData(6, "", 7, 1, TokenType.Whitespace)]
+    [InlineData(7, "b", 8, 1, TokenType.Identifier)]
+    [InlineData(8, ")", 9, 1, TokenType.Punctuation)]
+    [InlineData(9, "", 10, 1, TokenType.Whitespace)]
+    [InlineData(10, "{", 11, 1, TokenType.Punctuation)]
+    [InlineData(11, "", 12, 1, TokenType.Whitespace)]
+    [InlineData(12, "let", 13, 3, TokenType.Keyword)]
+    [InlineData(13, "", 16, 1, TokenType.Whitespace)]
+    [InlineData(14, "c", 17, 1, TokenType.Identifier)]
+    [InlineData(15, "", 18, 1, TokenType.Whitespace)]
+    [InlineData(16, "=", 19, 1, TokenType.InfixOperator)]
+    [InlineData(17, "", 20, 1, TokenType.Whitespace)]
+    [InlineData(18, "a", 21, 1, TokenType.Identifier)]
+    [InlineData(19, "", 22, 1, TokenType.Whitespace)]
+    [InlineData(20, "+", 23, 1, TokenType.InfixOperator)]
+    [InlineData(21, "", 24, 1, TokenType.Whitespace)]
+    [InlineData(22, "b", 25, 1, TokenType.Identifier)]
+    [InlineData(23, "^", 26, 1, TokenType.InfixOperator)]
+    [InlineData(24, "2", 27, 1, TokenType.IntegerConstant)]
+    [InlineData(25, ";", 28, 1, TokenType.Punctuation)]
+    [InlineData(26, "", 29, 1, TokenType.Whitespace)]
+    [InlineData(27, "}", 30, 1, TokenType.Punctuation)]
+    public void ReadTokens_Returns_TokenTable(int index, string value, int offset, int length, TokenType tokenType)
     {
-        var source = "if (a + b) { let c = a + b; }";
+        var source = "if (a + b) { let c = a + b^2; }";
 
-        var symbols = lexer
-            .ReadSymbols(source)
+        var tokens = lexer
+            .ReadTokens(source)
             .ToArray();
 
-        Assert.Equal(15, symbols.Length);
+        Assert.Equal(28, tokens.Length);
 
-        Assert.Equal("if", symbols[0].Value);
-        Assert.Equal(0, symbols[0].Offset);
-        Assert.Equal(2, symbols[0].Length);
-
-        Assert.Equal("(", symbols[1].Value);
-        Assert.Equal(3, symbols[1].Offset);
-        Assert.Equal(1, symbols[1].Length);
-
-        Assert.Equal("a", symbols[2].Value);
-        Assert.Equal("+", symbols[3].Value);
-        Assert.Equal("b", symbols[4].Value);
-        Assert.Equal(")", symbols[5].Value);
-        Assert.Equal("{", symbols[6].Value);
-
-        Assert.Equal("let", symbols[7].Value);
-        Assert.Equal(13, symbols[7].Offset);
-        Assert.Equal(3, symbols[7].Length);
-
-        Assert.Equal("c", symbols[8].Value);
-        Assert.Equal("=", symbols[9].Value);
-        Assert.Equal("a", symbols[10].Value);
-        Assert.Equal("+", symbols[11].Value);
-        Assert.Equal("b", symbols[12].Value);
-        Assert.Equal(";", symbols[13].Value);
-        Assert.Equal("}", symbols[14].Value);
+        Assert.Equal(value, tokens[index].Value);
+        Assert.Equal(offset, tokens[index].Offset);
+        Assert.Equal(length, tokens[index].Length);
+        Assert.Equal(tokenType, tokens[index].Type);
     }
 
-    [Fact]
-    public void ReadSymbols_Returns_Decimal_Values()
+    [Theory]
+    [InlineData(0, "1.0", 0, 3, TokenType.DecimalConstant)]
+    [InlineData(1, "", 3, 1, TokenType.Whitespace)]
+    [InlineData(2, "2.0", 4, 3, TokenType.DecimalConstant)]
+    [InlineData(3, "", 7, 1, TokenType.Whitespace)]
+    [InlineData(4, "3.0", 8, 3, TokenType.DecimalConstant)]
+    [InlineData(5, "", 11, 1, TokenType.Whitespace)]
+    [InlineData(6, "397.173", 12, 7, TokenType.DecimalConstant)]
+    [InlineData(7, "", 19, 1, TokenType.Whitespace)]
+    [InlineData(8, "89", 20, 2, TokenType.IntegerConstant)]
+    [InlineData(9, "", 22, 1, TokenType.Whitespace)]
+    [InlineData(10, "0.1", 23, 3, TokenType.DecimalConstant)]
+    [InlineData(11, "", 26, 2, TokenType.Whitespace)]
+    [InlineData(12, "1237", 28, 4, TokenType.IntegerConstant)]
+    public void ReadTokens_Returns_Decimal_Values(int index, string value, int offset, int length, TokenType tokenType)
     {
-        var source = "1.0 2.0 3.0 397.173";
-        var symbols = lexer
-            .ReadSymbols(source)
+        var source = "1.0 2.0 3.0 397.173 89 0.1  1237";
+        var tokens = lexer
+            .ReadTokens(source)
             .ToArray();
 
-        Assert.Equal(4, symbols.Length);
+        Assert.Equal(13, tokens.Length);
 
-        Assert.Equal("1.0", symbols[0].Value);
-        Assert.Equal(0, symbols[0].Offset);
-        Assert.Equal(3, symbols[0].Length);
-
-        Assert.Equal("2.0", symbols[1].Value);
-        Assert.Equal(4, symbols[1].Offset);
-        Assert.Equal(3, symbols[1].Length);
-
-        Assert.Equal("3.0", symbols[2].Value);
-        Assert.Equal(8, symbols[2].Offset);
-        Assert.Equal(3, symbols[2].Length);
-
-        Assert.Equal("397.173", symbols[3].Value);
-        Assert.Equal(12, symbols[3].Offset);
-        Assert.Equal(7, symbols[3].Length);
+        Assert.Equal(value, tokens[index].Value);
+        Assert.Equal(offset, tokens[index].Offset);
+        Assert.Equal(length, tokens[index].Length);
+        Assert.Equal(tokenType, tokens[index].Type);
     }
 }

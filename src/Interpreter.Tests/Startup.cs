@@ -8,9 +8,9 @@ public sealed class Startup
 {
     private readonly Language language = new()
     {
-        InfixOperators = new string[] { "+", "-", "/", "*", "%", "|", "&", "?", "=", "<", ">", ">=", "<=" },
+        InfixOperators = new string[] { "+", "-", "/", "*", "%", "|", "&", "?", "=", "<", ">", ">=", "<=", "^" },
         Keywords = new string[] { "if", "else", "let" },
-        Punctuation = new string[] { "(", ")", "{", "}", "[", "]", ".", ":", ";" },
+        Punctuation = new string[] { "(", ")", "{", "}", "[", "]", ":", ";", "//" },
     };
 
     public void ConfigureServices(IServiceCollection services)
