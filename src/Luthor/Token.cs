@@ -1,4 +1,4 @@
-﻿namespace Interpreter.LexicalAnalysis;
+﻿namespace Luthor;
 
 public readonly record struct Token(
     int Offset,

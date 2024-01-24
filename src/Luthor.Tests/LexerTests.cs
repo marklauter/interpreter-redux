@@ -1,6 +1,4 @@
-﻿using Interpreter.LexicalAnalysis;
-
-namespace Interpreter.Tests;
+﻿namespace Luthor.Tests;
 
 public sealed class LexerTests(LanguageSpecification language)
 {

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Interpreter.LexicalAnalysis;
+namespace Luthor;
 
 public readonly record struct LanguageExpression(
     TokenType Type,

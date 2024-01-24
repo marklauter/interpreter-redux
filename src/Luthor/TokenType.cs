@@ -1,4 +1,4 @@
-﻿namespace Interpreter.LexicalAnalysis;
+﻿namespace Luthor;
 
 [Flags]
 public enum TokenType : ulong

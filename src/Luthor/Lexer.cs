@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Interpreter.LexicalAnalysis;
+namespace Luthor;
 
 public sealed class Lexer(
     LinguisticContext context,

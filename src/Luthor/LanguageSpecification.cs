@@ -1,4 +1,4 @@
-﻿namespace Interpreter.LexicalAnalysis;
+﻿namespace Luthor;
 
 // todo: update to support more items from TokenType
 public sealed class LanguageSpecification

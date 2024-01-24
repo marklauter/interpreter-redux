@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace Interpreter.LexicalAnalysis;
+namespace Luthor;
 
 public sealed class LinguisticContext
     : IEnumerable<LanguageExpression>

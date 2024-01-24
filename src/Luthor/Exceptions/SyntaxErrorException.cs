@@ -1,4 +1,4 @@
-﻿namespace Interpreter.LexicalAnalysis.Exceptions;
+﻿namespace Luthor.Exceptions;
 
 public class SyntaxErrorException
     : LexicalErrorException
