@@ -4,11 +4,11 @@ using System.Runtime.CompilerServices;
 namespace Interpreter.LexicalAnalysis;
 
 public sealed class Lexer(
-    LanguageCollection languages,
+    LinguisticContext languages,
     string source)
 {
     private int cursor;
-    private readonly LanguageCollection languages = languages ?? throw new ArgumentNullException(nameof(languages));
+    private readonly LinguisticContext languages = languages ?? throw new ArgumentNullException(nameof(languages));
     private readonly string source = source ?? throw new ArgumentNullException(nameof(source));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

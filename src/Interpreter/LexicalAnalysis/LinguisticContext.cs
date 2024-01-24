@@ -4,12 +4,12 @@ using System.Text.RegularExpressions;
 
 namespace Interpreter.LexicalAnalysis;
 
-public sealed class LanguageCollection
+public sealed class LinguisticContext
     : IEnumerable<LanguageExpression>
 {
     private readonly LanguageExpression[] languages = null!;
 
-    public LanguageCollection(LanguageSpecification language)
+    public LinguisticContext(LanguageSpecification language)
     {
         ArgumentNullException.ThrowIfNull(language);
 
