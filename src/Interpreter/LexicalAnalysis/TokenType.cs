@@ -1,22 +1,31 @@
 ﻿namespace Interpreter.LexicalAnalysis;
 
-public enum TokenType : int
+[Flags]
+public enum TokenType : ulong
 {
-    Undefined = 0,
+    Error = 0,
 
-    Keyword = 1000,
-    Identifier = 1100,
+    NaturalDelimiter = 1ul << 0,
+    Whitespace = NaturalDelimiter | 1ul << 1,
+    Eof = NaturalDelimiter | 1ul << 2,
+    NewLine = NaturalDelimiter | 1ul << 3,
 
-    IntegerConstant = 2000,
-    DecimalConstant = 2100,
-    StringConstant = 2200,
+    Name = 1ul << 4,
+    ReservedWord = Name | 1ul << 5,
+    Identifier = Name | 1ul << 6,
 
-    InfixOperator = 3000,
-    PrefixOperator = 3100,
-    PostfixOperator = 3200,
+    Literal = 1ul << 7,
+    NumericLiteral = Literal | 1ul << 8,
+    StringLiteral = Literal | 1ul << 9,
+    BooleanLiteral = Literal | 1ul << 10,
+    CharacterLiteral = Literal | 1ul << 11,
+    Comment = Literal | 1ul << 12,
 
-    Punctuation = 4000,
-
-    Whitespace = 5000,
-    NewLine = 5100,
+    Glyph = 1ul << 13,
+    Punctuation = Glyph | 1ul << 14,
+    Operator = Glyph | 1ul << 15,
+    InfixOperator = Operator | 1ul << 16,
+    PrefixOperator = Operator | 1ul << 17,
+    PostfixOperator = Operator | 1ul << 18,
+    CircufixOperator = Operator | 1ul << 19,
 }
