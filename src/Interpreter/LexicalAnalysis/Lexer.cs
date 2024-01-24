@@ -14,10 +14,13 @@ public sealed class Lexer(
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerable<Token> ReadTokens()
     {
-        while (!Eof())
+        var token = ReadNextToken();
+        yield return token;
+        while (token.Type != TokenType.Eof)
         {
-            yield return ReadNextToken();
-        }
+            token = ReadNextToken();
+            yield return token;
+        };
     }
 
     public bool Eof()

@@ -1,5 +1,4 @@
 ﻿using Interpreter.LexicalAnalysis;
-using Interpreter.SyntacticAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -7,7 +6,7 @@ namespace Interpreter.Tests;
 
 public sealed class Startup
 {
-    private readonly Language language = new()
+    private readonly LanguageSpecification language = new()
     {
         InfixOperators = new string[] { "+", "-", "/", "*", "%", "|", "&", "?", "=", "<", ">", ">=", "<=", "^" },
         Keywords = new string[] { "if", "else", "let" },
@@ -16,7 +15,6 @@ public sealed class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.TryAddTransient(services => new Lexer(language));
-        services.TryAddTransient<Parser>();
+        services.TryAddSingleton(language);
     }
 }
