@@ -1,97 +1,51 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
+﻿using Interpreter.LexicalAnalysis.Exceptions;
+using System.Runtime.CompilerServices;
 
 namespace Interpreter.LexicalAnalysis;
 
-public sealed class Lexer
+public sealed class Lexer(
+    LanguageCollection languages,
+    string source)
 {
-    private readonly Regex regex;
-    private readonly HashSet<string> groupNames;
-    private readonly Dictionary<string, TokenType> symbolTypeMap = new()
-    {
-        { nameof(TokenType.Keyword), TokenType.Keyword },
-        { nameof(TokenType.InfixOperator), TokenType.InfixOperator },
-        { nameof(TokenType.PrefixOperator), TokenType.PrefixOperator },
-        { nameof(TokenType.PostfixOperator), TokenType.PostfixOperator },
-        { nameof(TokenType.Punctuation), TokenType.Punctuation },
-        { nameof(TokenType.Identifier), TokenType.Identifier },
-        { nameof(TokenType.IntegerConstant), TokenType.IntegerConstant },
-        { nameof(TokenType.DecimalConstant), TokenType.DecimalConstant },
-        { nameof(TokenType.StringConstant), TokenType.StringConstant},
-        { nameof(TokenType.Whitespace), TokenType.Whitespace},
-    };
+    private int cursor;
+    private readonly LanguageCollection languages = languages ?? throw new ArgumentNullException(nameof(languages));
+    private readonly string source = source ?? throw new ArgumentNullException(nameof(source));
 
-    public Lexer(Language languge)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IEnumerable<Token> ReadTokens()
     {
-        ArgumentNullException.ThrowIfNull(languge);
-
-        var expressions = new string[]
+        while (!Eof())
         {
-            languge.Keywords.Any()
-                ? $@"(?<{nameof(TokenType.Keyword)}>\b{String.Join("|", languge.Keywords.Select(Regex.Escape))}\b)"
-                : String.Empty,
-            languge.InfixOperators.Any()
-                ? $@"(?<{nameof(TokenType.InfixOperator)}>{String.Join("|", languge.InfixOperators.Select(Regex.Escape))})"
-                : String.Empty,
-            languge.PrefixOperators.Any()
-                ? $@"(?<{nameof(TokenType.PrefixOperator)}>{String.Join("|", languge.PrefixOperators.Select(Regex.Escape))})"
-                : String.Empty,
-            languge.PostfixOperators.Any()
-                ? $@"(?<{nameof(TokenType.PostfixOperator)}>{String.Join("|", languge.PostfixOperators.Select(Regex.Escape))})"
-                : String.Empty,
-            languge.Punctuation.Any()
-                ? $@"(?<{nameof(TokenType.Punctuation)}>{String.Join("|", languge.Punctuation.Select(Regex.Escape))})"
-                : String.Empty,
-            $@"(?<{nameof(TokenType.Identifier)}>\b[a-zA-Z_][a-zA-Z0-9_]*\b)",
-            $@"(?<{nameof(TokenType.DecimalConstant)}>\b\d+\.\d+?\b)",
-            $@"(?<{nameof(TokenType.IntegerConstant)}>\b\d+\b)",
-            $@"(?<{nameof(TokenType.StringConstant)}>""[^""]*"")",
-            $@"(?<{nameof(TokenType.Whitespace)}>\s+)",
+            yield return ReadNextToken();
         }
-        .Where(s => !String.IsNullOrWhiteSpace(s));
-
-        var expression = String.Join(
-            '|',
-            expressions);
-
-        regex = new Regex(
-            expression,
-            RegexOptions.Compiled);
-
-        groupNames = regex
-            .GetGroupNames()
-            .Where(n => !n.Equals("0", StringComparison.OrdinalIgnoreCase))
-            .ToHashSet();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public IEnumerable<Token> ReadTokens(string source)
+    public bool Eof()
     {
-        ArgumentNullException.ThrowIfNull(source);
-
-        return regex
-            .Matches(source)
-            .SelectMany(m => m.Groups.Values)
-            .Where(g => g.Success && groupNames.Contains(g.Name))
-            .Select(CreateSymbol);
+        return cursor >= source.Length;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Token CreateSymbol(Group group)
+    public Token ReadNextToken()
     {
-        var type = AsTokenType(group.Name);
-        return new Token(
-            group.Index,
-            group.Length,
-            type,
-            type == TokenType.Whitespace ? String.Empty : group.Value);
-    }
+        if (Eof())
+        {
+            return new Token(cursor, 0, TokenType.Eof, String.Empty);
+        }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private TokenType AsTokenType(string tokenName)
-    {
-        return !symbolTypeMap.TryGetValue(tokenName, out var type)
-            ? throw new UnexpectedTokenTypeException($"can't find matching token type from value: '{tokenName}'")
-            : type;
+        for (var i = 0; i < languages.Length; ++i)
+        {
+            var language = languages[i];
+            var match = language.Regex.Match(source, cursor);
+            if (match.Success)
+            {
+                cursor += match.Length;
+                return language.Type is TokenType.Whitespace or TokenType.NewLine
+                    ? new Token(match.Index, match.Length, language.Type, String.Empty)
+                    : new Token(match.Index, match.Length, language.Type, match.Value);
+            }
+        }
+
+        // todo: parlay this into a line number and column number
+        throw new SyntaxErrorException($"Unexpected token at {cursor}: '{source[cursor..]}'");
     }
 }

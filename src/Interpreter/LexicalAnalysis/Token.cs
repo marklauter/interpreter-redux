@@ -1,6 +1,6 @@
 ﻿namespace Interpreter.LexicalAnalysis;
 
-public sealed record Token(
+public readonly record struct Token(
     int Offset,
     int Length,
     TokenType Type,
