@@ -17,7 +17,7 @@
 //public record DecimalConstantExpression(double Value)
 //    : ValueExpression<double>(Value);
 
-//public record StringConstantExpression(string Value)
+//public record StringLiteralExpression(string Value)
 //    : ValueExpression<string>(Value);
 
 //public record IdentifierExpression(string Value)
@@ -54,8 +54,8 @@
 //                case TokenType.DecimalConstant:
 //                    yield return ReadDecimalConstant(token);
 //                    break;
-//                case TokenType.StringConstant:
-//                    yield return ReadStringConstant(token);
+//                case TokenType.StringLiteral:
+//                    yield return ReadStringLiteral(token);
 //                    break;
 //                case TokenType.Identifier:
 //                    yield return ReadIdentifier(token);
@@ -101,11 +101,11 @@
 //            : new DecimalConstantExpression(Double.Parse(token.Value, NumberStyles.Float, CultureInfo.InvariantCulture));
 //    }
 
-//    private StringConstantExpression ReadStringConstant(Token token)
+//    private StringLiteralExpression ReadStringLiteral(Token token)
 //    {
-//        return token.Type != TokenType.StringConstant
+//        return token.Type != TokenType.StringLiteral
 //           ? throw new ArgumentException("token type mismatch")
-//            : new StringConstantExpression(token.Value[1..^1]);
+//            : new StringLiteralExpression(token.Value[1..^1]);
 //    }
 
 //    private IdentifierExpression ReadIdentifier(Token token)

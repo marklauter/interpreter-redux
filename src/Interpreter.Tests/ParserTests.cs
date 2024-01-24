@@ -10,7 +10,7 @@
 //    [InlineData("jelloBaby", typeof(IdentifierExpression))]
 //    [InlineData("42.42", typeof(DecimalConstantExpression))]
 //    [InlineData("42", typeof(IntegerConstantExpression))]
-//    [InlineData("\"42\"", typeof(StringConstantExpression))]
+//    [InlineData("\"42\"", typeof(StringLiteralExpression))]
 //    public void Test(string source, Type expectedType)
 //    {
 //        var block = parser.Parse(source);

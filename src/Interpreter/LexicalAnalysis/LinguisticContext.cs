@@ -9,6 +9,8 @@ public sealed class LinguisticContext
 {
     private readonly LanguageExpression[] languages = null!;
 
+    // todo: need to add a regex item for every value in TokenType
+
     public LinguisticContext(LanguageSpecification language)
     {
         ArgumentNullException.ThrowIfNull(language);
@@ -16,7 +18,7 @@ public sealed class LinguisticContext
         languages = new[]
         {
             new {
-                Type = TokenType.Keyword,
+                Type = TokenType.ReservedWord,
                 Expression = language.Keywords.Any()
                     ? $@"\G({String.Join("|", language.Keywords.Select(Regex.Escape))})"
                     : String.Empty
@@ -50,16 +52,20 @@ public sealed class LinguisticContext
                 Expression = $@"\G([a-zA-Z_][a-zA-Z0-9_]*)"
             },
             new {
-                Type = TokenType.NumericConstant,
+                Type = TokenType.NumericLiteral,
                 Expression = $@"\G(\d+(\.\d+)?)"
             },
             new {
-                Type = TokenType.StringConstant,
+                Type = TokenType.StringLiteral,
                 Expression = $@"\G(""[^""]*"")"
             },
             new {
                 Type = TokenType.Whitespace,
                 Expression = $@"\G(\s+)"
+            },
+            new {
+                Type = TokenType.NewLine,
+                Expression = $@"\G(\r\n|\r|\n)"
             },
         }
         .Where(e => !String.IsNullOrEmpty(e.Expression))
@@ -71,9 +77,6 @@ public sealed class LinguisticContext
                 RegexOptions.ExplicitCapture |
                 RegexOptions.Compiled)))
         .ToArray();
-
-        // $@"(?<{nameof(TokenType.DecimalConstant)}>\b\d+\.\d+?\b)",
-        // $@"(?<{nameof(TokenType.IntegerConstant)}>\b\d+\b)",
     }
 
     public int Length => languages.Length;
