@@ -1,5 +1,6 @@
 ﻿namespace Interpreter.LexicalAnalysis;
 
+// todo: update to support more items from TokenType
 public sealed class LanguageSpecification
 {
     public IEnumerable<string> Keywords { get; init; } = Array.Empty<string>();

@@ -1,14 +1,13 @@
-﻿using Interpreter.LexicalAnalysis.Exceptions;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Interpreter.LexicalAnalysis;
 
 public sealed class Lexer(
-    LinguisticContext languages,
+    LinguisticContext context,
     string source)
 {
     private int cursor;
-    private readonly LinguisticContext languages = languages ?? throw new ArgumentNullException(nameof(languages));
+    private readonly LinguisticContext context = context ?? throw new ArgumentNullException(nameof(context));
     private readonly string source = source ?? throw new ArgumentNullException(nameof(source));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -23,21 +22,22 @@ public sealed class Lexer(
         };
     }
 
-    public bool Eof()
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool IsEndOfSource()
     {
         return cursor >= source.Length;
     }
 
     public Token ReadNextToken()
     {
-        if (Eof())
+        if (IsEndOfSource())
         {
             return new Token(cursor, 0, TokenType.Eof, String.Empty);
         }
 
-        for (var i = 0; i < languages.Length; ++i)
+        for (var i = 0; i < context.Length; ++i)
         {
-            var language = languages[i];
+            var language = context[i];
             var match = language.Regex.Match(source, cursor);
             if (match.Success)
             {
@@ -48,7 +48,9 @@ public sealed class Lexer(
             }
         }
 
-        // todo: parlay this into a line number and column number
-        throw new SyntaxErrorException($"Unexpected token at {cursor}: '{source[cursor..]}'");
+        // todo: parlay this into a real line number and column number
+        var line = 0;
+        var column = 0;
+        return new Token(cursor, 0, TokenType.Error, $"{{\"line\": {line}, \"column\": {column}}}");
     }
 }

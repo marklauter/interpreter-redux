@@ -24,18 +24,21 @@ public sealed class LinguisticContext
                     : String.Empty
             },
             new {
+                // todo: this expression needs to match operator between a (literal or identifier) and a (literal or identifier)
                 Type = TokenType.InfixOperator,
                 Expression = language.InfixOperators.Any()
                     ? $@"\G({String.Join("|", language.InfixOperators.Select(Regex.Escape))})"
                     : String.Empty
             },
             new {
+                // todo: this expression needs look-ahead to match operator followed by literal or identifier
                 Type = TokenType.PrefixOperator,
                 Expression = language.PrefixOperators.Any()
                     ? $@"\G({String.Join("|", language.PrefixOperators.Select(Regex.Escape))})"
                     : String.Empty
             },
             new {
+                // todo: this expression needs to match preceded by literal or identifier
                 Type = TokenType.PostfixOperator,
                 Expression = language.PostfixOperators.Any()
                     ? $@"\G({String.Join("|", language.PostfixOperators.Select(Regex.Escape))})"
@@ -48,6 +51,7 @@ public sealed class LinguisticContext
                     : String.Empty
             },
             new {
+                // todo: this expression needs to exclude keywords
                 Type = TokenType.Identifier,
                 Expression = $@"\G([a-zA-Z_][a-zA-Z0-9_]*)"
             },
