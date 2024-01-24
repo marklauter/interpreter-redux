@@ -59,9 +59,10 @@ public sealed class LinguisticContext
                 Type = TokenType.NumericLiteral,
                 Expression = $@"\G(\d+(\.\d+)?)"
             },
+            // todo: try this $@"\G(""(?:[^""\\\n\r]|\\.)*"")" to support escaped quotes
             new {
                 Type = TokenType.StringLiteral,
-                Expression = $@"\G(""[^""]*"")"
+                Expression = $@"\G(""[^""\n\r]*"")"
             },
             new {
                 Type = TokenType.Whitespace,

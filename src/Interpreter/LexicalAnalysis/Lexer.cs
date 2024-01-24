@@ -7,6 +7,8 @@ public sealed class Lexer(
     string source)
 {
     private int cursor;
+    private int lastNewLineOffset;
+    private int line;
     private readonly LinguisticContext context = context ?? throw new ArgumentNullException(nameof(context));
     private readonly string source = source ?? throw new ArgumentNullException(nameof(source));
 
@@ -42,15 +44,19 @@ public sealed class Lexer(
             if (match.Success)
             {
                 cursor += match.Length;
+                if (language.Type is TokenType.NewLine)
+                {
+                    lastNewLineOffset = match.Index;
+                    ++line;
+                }
+
                 return language.Type is TokenType.Whitespace or TokenType.NewLine
                     ? new Token(match.Index, match.Length, language.Type, String.Empty)
                     : new Token(match.Index, match.Length, language.Type, match.Value);
             }
         }
 
-        // todo: parlay this into a real line number and column number
-        var line = 0;
-        var column = 0;
+        var column = cursor - lastNewLineOffset;
         return new Token(cursor, 0, TokenType.Error, $"{{\"line\": {line}, \"column\": {column}}}");
     }
 }
