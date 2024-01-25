@@ -1,4 +1,4 @@
-﻿namespace Luthor;
+﻿namespace Luthor.Tokens;
 
 [Flags]
 public enum TokenType : ulong
@@ -10,9 +10,9 @@ public enum TokenType : ulong
     Eof = NaturalDelimiter | 1ul << 2,
     NewLine = NaturalDelimiter | 1ul << 3,
 
-    Name = 1ul << 4,
-    ReservedWord = Name | 1ul << 5,
-    Identifier = Name | 1ul << 6,
+    SimpleName = 1ul << 4,
+    ReservedWord = SimpleName | 1ul << 5,
+    Identifier = SimpleName | 1ul << 6,
 
     Literal = 1ul << 7,
     NumericLiteral = Literal | 1ul << 8,

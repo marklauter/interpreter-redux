@@ -1,4 +1,8 @@
-﻿namespace Luthor.Tests;
+﻿using Luthor.Context;
+using Luthor.Spec;
+using Luthor.Tokens;
+
+namespace Luthor.Tests;
 
 public sealed class LexerTests(LanguageSpecification language)
 {
