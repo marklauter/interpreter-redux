@@ -151,6 +151,12 @@ public sealed class LinguisticContext
     public LinguisticExpression this[int i] => languages[i];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<LinguisticExpression> AsSpan()
+    {
+        return languages.AsSpan();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerator<LinguisticExpression> GetEnumerator()
     {
         return (IEnumerator<LinguisticExpression>)languages.GetEnumerator();

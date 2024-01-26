@@ -39,9 +39,11 @@ public sealed class Lexer(
             return new Token(cursor, 0, TokenType.Eof, String.Empty);
         }
 
-        for (var i = 0; i < context.Length; ++i)
+        var length = context.Length;
+        var languages = context.AsSpan();
+        for (var i = 0; i < length; ++i)
         {
-            var language = context[i];
+            var language = languages[i];
             var match = language.Regex.Match(source, cursor);
             if (match.Success)
             {
