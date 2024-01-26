@@ -18,12 +18,12 @@ public sealed class Startup
 
         Literals = new LiteralSpecification
         {
-            BooleanLiterals = new string[] { "true", "false" },
+            Boolean = new string[] { "true", "false" },
             CommentPrefixes = new string[] { "//", "##" },
         },
 
         ReservedWords = new string[] { "if", "else", "let" },
-        Punctuation = new string[] { "(", ")", "{", "}", "[", "]", ":", ";", "//" },
+        Punctuation = new string[] { "(", ")", "{", "}", "[", "]", ":", ";", "," },
     };
 
     public void ConfigureServices(IServiceCollection services)
