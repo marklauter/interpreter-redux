@@ -27,5 +27,5 @@ public enum TokenType : ulong
     InfixOperator = Operator | 1ul << 16,
     PrefixOperator = Operator | 1ul << 17,
     PostfixOperator = Operator | 1ul << 18,
-    CircufixOperator = Operator | 1ul << 19,
+    CircumfixOperator = Operator | 1ul << 19,
 }
