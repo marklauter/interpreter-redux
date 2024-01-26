@@ -14,7 +14,8 @@ public sealed class LinguisticContext
 
     public const string IdentifierExpression = @"[a-zA-Z_]\w*";
     public const string StringLiteralExpression = @"""(?:[^""\\\n\r]|\\.)*""";
-    public const string NumericLiteralExpression = @"\d+(?:\.\d+)?";
+    public const string NumericLiteralExpression = @"\b\d+(?:\.\d+)?\b";
+    public const string CharacterLiteralExpression = @"'[^']'";
     public const string WhitespaceExpression = @"\s+";
     public const string NewLineExpression = @"\r\n|[\r\n]";
 
@@ -27,6 +28,10 @@ public sealed class LinguisticContext
 
         var reservedWordExpression = language.ReservedWords.Any()
             ? $@"(?:{String.Join("|", language.ReservedWords.Select(Regex.Escape))})(?!\w)"
+            : String.Empty;
+
+        var booleanLiteralExpression = language.Literals.Boolean.Any()
+            ? $@"(?:{String.Join("|", language.Literals.Boolean.Select(Regex.Escape))})(?!\w)"
             : String.Empty;
 
         // todo: this expression needs to match operator between a (literal or identifier) and a (literal or identifier)
@@ -53,13 +58,45 @@ public sealed class LinguisticContext
             ? String.Join("|", language.Punctuation.Select(Regex.Escape))
             : String.Empty;
 
+        var commentExpressions = language
+            .Literals
+            .CommentPrefixes
+            .Select(s => $@"{Regex.Escape(s)}.*?(?=\r?\n|$)");
+        var commentExpression = language.Literals.CommentPrefixes.Any()
+            ? String.Join("|", commentExpressions)
+            : String.Empty;
+
         languages = new[]
         {
             new {
                 Type = TokenType.ReservedWord,
-                Expression = String.IsNullOrEmpty(infixOperatorExpression)
+                Expression = String.IsNullOrEmpty(reservedWordExpression)
                     ? String.Empty
-                    : $@"\G{reservedWordExpression}"
+                    : $@"\G(?:{reservedWordExpression})"
+            },
+            new {
+                Type = TokenType.BooleanLiteral,
+                Expression = String.IsNullOrEmpty(booleanLiteralExpression)
+                    ? String.Empty
+                    : $@"\G(?:{booleanLiteralExpression})"
+            },
+            new {
+                Type = TokenType.Identifier,
+                Expression = String.IsNullOrEmpty(reservedWordExpression)
+                    ? $@"\G(?:{IdentifierExpression})"
+                    : $@"\G(?!{reservedWordExpression})(?:{IdentifierExpression})"
+            },
+            new {
+                Type = TokenType.NumericLiteral,
+                Expression = $@"\G(?:{NumericLiteralExpression})"
+            },
+            new {
+                Type = TokenType.StringLiteral,
+                Expression = $@"\G(?:{StringLiteralExpression})"
+            },
+            new {
+                Type = TokenType.CharacterLiteral,
+                Expression = $@"\G(?:{CharacterLiteralExpression})"
             },
             new {
                 Type = TokenType.InfixOperator,
@@ -86,28 +123,19 @@ public sealed class LinguisticContext
                     : $@"\G(?:{punctuationExpression})"
             },
             new {
-                Type = TokenType.Identifier,
-                Expression = String.IsNullOrEmpty(reservedWordExpression)
-                    ? $@"\G(?:{IdentifierExpression})"
-                    : $@"\G(?!{reservedWordExpression})(?:{IdentifierExpression})"
-            },
-            new {
-                Type = TokenType.NumericLiteral,
-                Expression = $@"\G(?:{NumericLiteralExpression})"
-            },
-            new {
-                Type = TokenType.StringLiteral,
-                Expression = $@"\G(?:{StringLiteralExpression})"
+                Type = TokenType.NewLine,
+                Expression = $@"\G(?:{NewLineExpression})"
             },
             new {
                 Type = TokenType.Whitespace,
                 Expression = $@"\G(?:{WhitespaceExpression})"
             },
             new {
-                Type = TokenType.NewLine,
-                Expression = $@"\G(?:{NewLineExpression})"
-            },
-        }
+                Type = TokenType.Comment,
+                Expression  = String.IsNullOrEmpty(commentExpression)
+                    ? String.Empty
+                    : $@"\G(?:{commentExpression})"
+            },        }
         .Where(e => !String.IsNullOrEmpty(e.Expression))
         .Select(e => new LinguisticExpression(
             e.Type,
