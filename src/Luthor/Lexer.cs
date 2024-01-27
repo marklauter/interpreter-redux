@@ -8,13 +8,12 @@ public sealed class Lexer(
     LinguisticContext context,
     string source)
 {
-    private int cursor;
+    private int position;
     private int lastNewLineOffset;
     private int line;
     private readonly LinguisticContext context = context ?? throw new ArgumentNullException(nameof(context));
     private readonly string source = source ?? throw new ArgumentNullException(nameof(source));
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerable<Token> ReadTokens()
     {
         var token = ReadNextToken();
@@ -29,14 +28,14 @@ public sealed class Lexer(
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool IsEndOfSource()
     {
-        return cursor >= source.Length;
+        return position >= source.Length;
     }
 
     public Token ReadNextToken()
     {
         if (IsEndOfSource())
         {
-            return new Token(cursor, 0, TokenType.Eof, String.Empty);
+            return new Token(position, 0, TokenType.Eof, String.Empty);
         }
 
         var length = context.Length;
@@ -44,13 +43,13 @@ public sealed class Lexer(
         for (var i = 0; i < length; ++i)
         {
             var language = languages[i];
-            var match = language.Regex.Match(source, cursor);
+            var match = language.Regex.Match(source, position);
             if (match.Success)
             {
-                cursor += match.Length;
-                if (language.Type is TokenType.NewLine)
+                position += match.Length;
+                if (language.Type == TokenType.NewLine)
                 {
-                    lastNewLineOffset = match.Index;
+                    lastNewLineOffset = match.Index; // for error tracking. it helps establish the column where the error occurred
                     ++line;
                 }
 
@@ -60,7 +59,7 @@ public sealed class Lexer(
             }
         }
 
-        var column = cursor - lastNewLineOffset;
-        return new Token(cursor, 0, TokenType.Error, $"{{\"line\": {line}, \"column\": {column}}}");
+        var column = position - lastNewLineOffset;
+        return new Token(position, 0, TokenType.Error, $"{{\"line\": {line}, \"column\": {column}}}");
     }
 }

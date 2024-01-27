@@ -9,63 +9,67 @@ public sealed class LexerTests(LanguageSpecification language)
     private readonly LinguisticContext context = new(language ?? throw new ArgumentNullException(nameof(language)));
 
     [Theory]
-    [InlineData("2a", 0, TokenType.Error)]
+    [InlineData("2a", 0, 0, TokenType.Error)]
 
-    [InlineData(" ", 1, TokenType.Whitespace)]
-    [InlineData("  ", 2, TokenType.Whitespace)]
-    [InlineData(" x", 1, TokenType.Whitespace)]
+    [InlineData(" ", 0, 1, TokenType.Whitespace)]
+    [InlineData("  ", 0, 2, TokenType.Whitespace)]
+    [InlineData(" x", 0, 1, TokenType.Whitespace)]
 
-    [InlineData("", 0, TokenType.Eof)]
+    [InlineData("", 0, 0, TokenType.Eof)]
 
-    [InlineData("\r", 1, TokenType.NewLine)]
-    [InlineData("\n", 1, TokenType.NewLine)]
-    [InlineData("\r\n", 2, TokenType.NewLine)]
+    [InlineData("\r", 0, 1, TokenType.NewLine)]
+    [InlineData("\n", 0, 1, TokenType.NewLine)]
+    [InlineData("\r\n", 0, 2, TokenType.NewLine)]
 
-    [InlineData("if", 2, TokenType.ReservedWord)]
-    [InlineData("else", 4, TokenType.ReservedWord)]
-    [InlineData("let", 3, TokenType.ReservedWord)]
+    [InlineData("if", 0, 2, TokenType.ReservedWord)]
+    [InlineData("else", 0, 4, TokenType.ReservedWord)]
+    [InlineData("let", 0, 3, TokenType.ReservedWord)]
 
-    [InlineData("x", 1, TokenType.Identifier)]
-    [InlineData("xy", 2, TokenType.Identifier)]
-    [InlineData("iffy", 4, TokenType.Identifier)]
-    [InlineData("letMe", 5, TokenType.Identifier)]
+    [InlineData("x", 0, 1, TokenType.Identifier)]
+    [InlineData("xy", 0, 2, TokenType.Identifier)]
+    [InlineData("iffy", 0, 4, TokenType.Identifier)]
+    [InlineData("letMe", 0, 5, TokenType.Identifier)]
 
-    [InlineData("1", 1, TokenType.NumericLiteral)]
-    [InlineData("12", 2, TokenType.NumericLiteral)]
-    [InlineData("12.3", 4, TokenType.NumericLiteral)]
+    [InlineData("1", 0, 1, TokenType.NumericLiteral)]
+    [InlineData("12", 0, 2, TokenType.NumericLiteral)]
+    [InlineData("12.3", 0, 4, TokenType.NumericLiteral)]
 
-    [InlineData(@"""hello""", 7, TokenType.StringLiteral)]
-    [InlineData(@"""hello \""world\""""", 17, TokenType.StringLiteral)]
+    [InlineData(@"""hello""", 0, 7, TokenType.StringLiteral)]
+    [InlineData(@"""hello \""world\""""", 0, 17, TokenType.StringLiteral)]
 
-    [InlineData("true", 4, TokenType.BooleanLiteral)]
-    [InlineData("false", 5, TokenType.BooleanLiteral)]
+    [InlineData("true", 0, 4, TokenType.BooleanLiteral)]
+    [InlineData("false", 0, 5, TokenType.BooleanLiteral)]
 
-    [InlineData("'a'", 3, TokenType.CharacterLiteral)]
-    [InlineData("'a '", 0, TokenType.Error)]
+    [InlineData("'a'", 0, 3, TokenType.CharacterLiteral)]
+    [InlineData("'a '", 0, 0, TokenType.Error)]
 
-    [InlineData("// comment", 10, TokenType.Comment)]
-    [InlineData("## comment", 10, TokenType.Comment)]
+    [InlineData("// comment", 0, 10, TokenType.Comment)]
+    [InlineData("## comment", 0, 10, TokenType.Comment)]
 
-    [InlineData(";", 1, TokenType.Punctuation)]
-    [InlineData(",", 1, TokenType.Punctuation)]
+    [InlineData(";", 0, 1, TokenType.Punctuation)]
+    [InlineData(",", 0, 1, TokenType.Punctuation)]
 
-    [InlineData("x+y", 1, TokenType.InfixOperator)]
-    [InlineData("x + y", 1, TokenType.InfixOperator)]
-    [InlineData("x<=y", 2, TokenType.InfixOperator)]
-    [InlineData("x <= y", 2, TokenType.InfixOperator)]
+    [InlineData("x+y", 1, 1, TokenType.InfixOperator)]
+    [InlineData("x + y", 2, 1, TokenType.InfixOperator)]
+    [InlineData("x<=y", 1, 2, TokenType.InfixOperator)]
+    [InlineData("x <= y", 2, 2, TokenType.InfixOperator)]
 
-    [InlineData("!i", 1, TokenType.PrefixOperator)]
-    [InlineData("! i", 1, TokenType.PrefixOperator)]
-    [InlineData("++i", 2, TokenType.PrefixOperator)]
-    [InlineData("++ i", 2, TokenType.PrefixOperator)]
-    [InlineData("i++", 2, TokenType.PostfixOperator)]
-    [InlineData("i ++", 2, TokenType.PostfixOperator)]
+    [InlineData("!i", 0, 1, TokenType.PrefixOperator)]
+    [InlineData("! i", 0, 1, TokenType.PrefixOperator)]
+    [InlineData("++i", 0, 2, TokenType.PrefixOperator)]
+    [InlineData("++ i", 0, 2, TokenType.PrefixOperator)]
+    [InlineData("i++", 1, 2, TokenType.PostfixOperator)]
+    [InlineData("i ++", 2, 2, TokenType.PostfixOperator)]
     // [InlineData(" ", 2, TokenType.CircumfixOperator)]
-    public void Test(string source, int length, TokenType tokenType)
+    public void Test(string source, int position, int length, TokenType tokenType)
     {
         var lexer = new Lexer(context, source);
-
         var token = lexer.ReadNextToken();
+        for (var i = 0; i < position; ++i)
+        {
+            token = lexer.ReadNextToken();
+        }
+
         Assert.Equal(tokenType, token.Type);
         Assert.Equal(length, token.Length);
     }

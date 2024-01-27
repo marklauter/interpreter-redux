@@ -9,12 +9,14 @@ namespace Luthor.Context;
 public sealed class LinguisticContext
     : IEnumerable<LinguisticExpression>
 {
-    //     [GeneratedRegex]
+    // todo: an idea for later
+    // [GeneratedRegex]
     // https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-source-generators
 
     public const string IdentifierExpression = @"[a-zA-Z_]\w*";
     public const string StringLiteralExpression = @"""(?:[^""\\\n\r]|\\.)*""";
     public const string NumericLiteralExpression = @"\b\d+(?:\.\d+)?\b";
+    // todo: need to add char literal pattern for escape codes like \b, \t, \n, \r, \f, \', \", \\, \u0000, \uFFFF
     public const string CharacterLiteralExpression = @"'[^']'";
     public const string WhitespaceExpression = @"\s+";
     public const string NewLineExpression = @"\r\n|[\r\n]";
@@ -34,36 +36,41 @@ public sealed class LinguisticContext
             ? $@"(?:{String.Join("|", language.Literals.Boolean.Select(Regex.Escape))})(?!\w)"
             : String.Empty;
 
-        // todo: this expression needs to match operator between a (literal or identifier) and a (literal or identifier)
+        var identifierLiteralExpression = String.IsNullOrEmpty(booleanLiteralExpression)
+            ? $@"{IdentifierExpression}|{StringLiteralExpression}|{NumericLiteralExpression}|{CharacterLiteralExpression}"
+            : $@"{IdentifierExpression}|{StringLiteralExpression}|{NumericLiteralExpression}|{CharacterLiteralExpression}|{booleanLiteralExpression}";
+
         var infixOperatorExpression = language.Operators.Infix.Any()
             ? String.Join("|", language.Operators.Infix.Select(Regex.Escape))
             : String.Empty;
 
-        // todo: this expression needs look-ahead to match operator followed by literal or identifier
+        infixOperatorExpression = String.IsNullOrEmpty(infixOperatorExpression)
+            ? String.Empty
+            : $@"(?<=(?:{identifierLiteralExpression})\s*)(?:{infixOperatorExpression})(?=\s*(?:{identifierLiteralExpression}))";
+
         var prefixOperatorExpression = language.Operators.Prefix.Any()
             ? String.Join("|", language.Operators.Prefix.Select(Regex.Escape))
             : String.Empty;
+        prefixOperatorExpression = String.IsNullOrEmpty(prefixOperatorExpression)
+            ? String.Empty
+            : $@"(?<!(?:{identifierLiteralExpression})\s*)(?:{prefixOperatorExpression})(?=\s*(?:{identifierLiteralExpression}))";
 
-        // todo: this expression needs to match preceded by literal or identifier
-        var postfixOperatorExpressoin = language.Operators.Postfix.Any()
-            ? String.Join("|", language.Operators.Postfix.Select(Regex.Escape))
-            : String.Empty;
-
-        // todo: this expression needs to match preceded by literal or identifier
         var postfixOperatorExpression = language.Operators.Postfix.Any()
             ? String.Join("|", language.Operators.Postfix.Select(Regex.Escape))
             : String.Empty;
+        postfixOperatorExpression = String.IsNullOrEmpty(postfixOperatorExpression)
+            ? String.Empty
+            : $@"(?<=(?:{identifierLiteralExpression})\s*)(?:{postfixOperatorExpression})(?!\s*(?:{identifierLiteralExpression}))";
 
         var punctuationExpression = language.Punctuation.Any()
             ? String.Join("|", language.Punctuation.Select(Regex.Escape))
             : String.Empty;
 
-        var commentExpressions = language
-            .Literals
-            .CommentPrefixes
-            .Select(s => $@"{Regex.Escape(s)}.*?(?=\r?\n|$)");
         var commentExpression = language.Literals.CommentPrefixes.Any()
-            ? String.Join("|", commentExpressions)
+            ? String.Join("|", language
+                .Literals
+                .CommentPrefixes
+                .Select(s => $@"{Regex.Escape(s)}.*?(?=\r?\n|$)"))
             : String.Empty;
 
         languages = new[]
@@ -99,6 +106,14 @@ public sealed class LinguisticContext
                 Expression = $@"\G(?:{CharacterLiteralExpression})"
             },
             new {
+                Type = TokenType.NewLine,
+                Expression = $@"\G(?:{NewLineExpression})"
+            },
+            new {
+                Type = TokenType.Whitespace,
+                Expression = $@"\G(?:{WhitespaceExpression})"
+            },
+            new {
                 Type = TokenType.InfixOperator,
                 Expression = String.IsNullOrEmpty(infixOperatorExpression)
                     ? String.Empty
@@ -123,19 +138,12 @@ public sealed class LinguisticContext
                     : $@"\G(?:{punctuationExpression})"
             },
             new {
-                Type = TokenType.NewLine,
-                Expression = $@"\G(?:{NewLineExpression})"
-            },
-            new {
-                Type = TokenType.Whitespace,
-                Expression = $@"\G(?:{WhitespaceExpression})"
-            },
-            new {
                 Type = TokenType.Comment,
                 Expression  = String.IsNullOrEmpty(commentExpression)
                     ? String.Empty
                     : $@"\G(?:{commentExpression})"
-            },        }
+            },
+        }
         .Where(e => !String.IsNullOrEmpty(e.Expression))
         .Select(e => new LinguisticExpression(
             e.Type,
@@ -149,6 +157,11 @@ public sealed class LinguisticContext
 
     public int Length => languages.Length;
     public LinguisticExpression this[int i] => languages[i];
+
+    public LinguisticExpression LinguisticExpression(TokenType type)
+    {
+        return languages.First(l => l.Type == type);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<LinguisticExpression> AsSpan()
