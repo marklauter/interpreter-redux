@@ -1,12 +1,11 @@
 ﻿using Luthor.Context;
-using Luthor.Spec;
 using Luthor.Tokens;
 
 namespace Luthor.Tests;
 
-public sealed class LexerTests(LanguageSpecification language)
+public sealed class LexerTests(LinguisticContext context)
 {
-    private readonly LinguisticContext context = new(language ?? throw new ArgumentNullException(nameof(language)));
+    private readonly LinguisticContext context = context ?? throw new ArgumentNullException(nameof(context));
 
     [Theory]
     [InlineData("2a", 0, 0, TokenType.Error)]

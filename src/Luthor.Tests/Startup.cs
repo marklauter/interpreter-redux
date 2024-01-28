@@ -1,4 +1,5 @@
-﻿using Luthor.Spec;
+﻿using Luthor.Context;
+using Luthor.Spec;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -29,5 +30,6 @@ public sealed class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.TryAddSingleton(language);
+        services.TryAddSingleton(new LinguisticContext(language));
     }
 }
