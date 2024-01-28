@@ -1,6 +1,7 @@
 ﻿using Luthor.Spec;
 using Luthor.Tokens;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
@@ -13,135 +14,139 @@ public sealed class LinguisticContext
     // [GeneratedRegex]
     // https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-source-generators
 
-    public const string IdentifierExpression = @"[a-zA-Z_]\w*";
-    public const string StringLiteralExpression = @"""(?:[^""\\\n\r]|\\.)*""";
-    public const string NumericLiteralExpression = @"\b\d+(?:\.\d+)?\b";
+    private const string Identifiers = @"[a-zA-Z_]\w*";
+    private const string StringLiterals = @"""(?:[^""\\\n\r]|\\.)*""";
+    private const string NumericLiterals = @"\b\d+(?:\.\d+)?\b";
     // todo: need to add char literal pattern for escape codes like \b, \t, \n, \r, \f, \', \", \\, \u0000, \uFFFF
-    public const string CharacterLiteralExpression = @"'[^']'";
-    public const string WhitespaceExpression = @"\s+";
-    public const string NewLineExpression = @"\r\n|[\r\n]";
+    private const string CharacterLiterals = @"'[^']'";
+    private const string Whitespace = @"\s+";
+    private const string NewLine = @"\r\n|[\r\n]";
 
+    private readonly ReadOnlyDictionary<TokenType, LinguisticExpression> map;
     private readonly LinguisticExpression[] languages = null!;
 
-    // todo: need to add a regex item as required for values in TokenType
-    public LinguisticContext(LanguageSpecification language)
+    public LinguisticContext(LanguageSpecification spec)
     {
-        ArgumentNullException.ThrowIfNull(language);
+        ArgumentNullException.ThrowIfNull(spec);
 
-        var reservedWordExpression = language.ReservedWords.Any()
-            ? $@"(?:{String.Join("|", language.ReservedWords.Select(Regex.Escape))})(?!\w)"
+        var reservedWords = spec.ReservedWords.Any()
+            ? $@"(?:{String.Join("|", spec.ReservedWords.Select(Regex.Escape))})(?!\w)"
             : String.Empty;
 
-        var booleanLiteralExpression = language.Literals.Boolean.Any()
-            ? $@"(?:{String.Join("|", language.Literals.Boolean.Select(Regex.Escape))})(?!\w)"
+        var booleanLiterals = spec.Literals.Boolean.Any()
+            ? $@"(?:{String.Join("|", spec.Literals.Boolean.Select(Regex.Escape))})(?!\w)"
             : String.Empty;
 
-        var identifierLiteralExpression = String.IsNullOrEmpty(booleanLiteralExpression)
-            ? $@"{IdentifierExpression}|{StringLiteralExpression}|{NumericLiteralExpression}|{CharacterLiteralExpression}"
-            : $@"{IdentifierExpression}|{StringLiteralExpression}|{NumericLiteralExpression}|{CharacterLiteralExpression}|{booleanLiteralExpression}";
+        var identifiersAndLiterals = String.IsNullOrEmpty(booleanLiterals)
+            ? $@"{Identifiers}|{StringLiterals}|{NumericLiterals}|{CharacterLiterals}"
+            : $@"{Identifiers}|{StringLiterals}|{NumericLiterals}|{CharacterLiterals}|{booleanLiterals}";
 
-        var infixOperatorExpression = language.Operators.Infix.Any()
-            ? String.Join("|", language.Operators.Infix.Select(Regex.Escape))
+        var infixOperators = spec.Operators.Infix.Any()
+            ? String.Join("|", spec.Operators.Infix.Select(Regex.Escape))
             : String.Empty;
 
-        infixOperatorExpression = String.IsNullOrEmpty(infixOperatorExpression)
+        infixOperators = String.IsNullOrEmpty(infixOperators)
             ? String.Empty
-            : $@"(?<=(?:{identifierLiteralExpression})\s*)(?:{infixOperatorExpression})(?=\s*(?:{identifierLiteralExpression}))";
+            : $@"(?<=(?:{identifiersAndLiterals})\s*)(?:{infixOperators})(?=\s*(?:{identifiersAndLiterals}))";
 
-        var prefixOperatorExpression = language.Operators.Prefix.Any()
-            ? String.Join("|", language.Operators.Prefix.Select(Regex.Escape))
+        var prefixOperators = spec.Operators.Prefix.Any()
+            ? String.Join("|", spec.Operators.Prefix.Select(Regex.Escape))
             : String.Empty;
-        prefixOperatorExpression = String.IsNullOrEmpty(prefixOperatorExpression)
+        prefixOperators = String.IsNullOrEmpty(prefixOperators)
             ? String.Empty
-            : $@"(?<!(?:{identifierLiteralExpression})\s*)(?:{prefixOperatorExpression})(?=\s*(?:{identifierLiteralExpression}))";
+            : $@"(?<!(?:{identifiersAndLiterals})\s*)(?:{prefixOperators})(?=\s*(?:{identifiersAndLiterals}))";
 
-        var postfixOperatorExpression = language.Operators.Postfix.Any()
-            ? String.Join("|", language.Operators.Postfix.Select(Regex.Escape))
+        var postfixOperators = spec.Operators.Postfix.Any()
+            ? String.Join("|", spec.Operators.Postfix.Select(Regex.Escape))
             : String.Empty;
-        postfixOperatorExpression = String.IsNullOrEmpty(postfixOperatorExpression)
+        postfixOperators = String.IsNullOrEmpty(postfixOperators)
             ? String.Empty
-            : $@"(?<=(?:{identifierLiteralExpression})\s*)(?:{postfixOperatorExpression})(?!\s*(?:{identifierLiteralExpression}))";
+            : $@"(?<=(?:{identifiersAndLiterals})\s*)(?:{postfixOperators})(?!\s*(?:{identifiersAndLiterals}))";
 
-        var punctuationExpression = language.Punctuation.Any()
-            ? String.Join("|", language.Punctuation.Select(Regex.Escape))
+        var punctuation = spec.Punctuation.Any()
+            ? String.Join("|", spec.Punctuation.Select(Regex.Escape))
             : String.Empty;
 
-        var commentExpression = language.Literals.CommentPrefixes.Any()
-            ? String.Join("|", language
+        var comments = spec.Literals.CommentPrefixes.Any()
+            ? String.Join("|", spec
                 .Literals
                 .CommentPrefixes
                 .Select(s => $@"{Regex.Escape(s)}.*?(?=\r?\n|$)"))
             : String.Empty;
 
-        languages = new[]
+        var regexs = new[]
         {
             new {
+                Type = TokenType.Identifier,
+                Expression = String.IsNullOrEmpty(reservedWords)
+                    ? String.IsNullOrEmpty(booleanLiterals)
+                        ? $@"\G(?:{Identifiers})"
+                        : $@"\G(?!{booleanLiterals})(?:{Identifiers})"
+                    : String.IsNullOrEmpty(booleanLiterals)
+                        ? $@"\G(?!{reservedWords})(?:{Identifiers})"
+                        : $@"\G(?!{reservedWords}|{booleanLiterals})(?:{Identifiers})"
+            },
+            new {
                 Type = TokenType.ReservedWord,
-                Expression = String.IsNullOrEmpty(reservedWordExpression)
+                Expression = String.IsNullOrEmpty(reservedWords)
                     ? String.Empty
-                    : $@"\G(?:{reservedWordExpression})"
+                    : $@"\G(?:{reservedWords})"
             },
             new {
                 Type = TokenType.BooleanLiteral,
-                Expression = String.IsNullOrEmpty(booleanLiteralExpression)
+                Expression = String.IsNullOrEmpty(booleanLiterals)
                     ? String.Empty
-                    : $@"\G(?:{booleanLiteralExpression})"
-            },
-            new {
-                Type = TokenType.Identifier,
-                Expression = String.IsNullOrEmpty(reservedWordExpression)
-                    ? $@"\G(?:{IdentifierExpression})"
-                    : $@"\G(?!{reservedWordExpression})(?:{IdentifierExpression})"
+                    : $@"\G(?:{booleanLiterals})"
             },
             new {
                 Type = TokenType.NumericLiteral,
-                Expression = $@"\G(?:{NumericLiteralExpression})"
+                Expression = $@"\G(?:{NumericLiterals})"
             },
             new {
                 Type = TokenType.StringLiteral,
-                Expression = $@"\G(?:{StringLiteralExpression})"
+                Expression = $@"\G(?:{StringLiterals})"
             },
             new {
                 Type = TokenType.CharacterLiteral,
-                Expression = $@"\G(?:{CharacterLiteralExpression})"
+                Expression = $@"\G(?:{CharacterLiterals})"
             },
             new {
                 Type = TokenType.NewLine,
-                Expression = $@"\G(?:{NewLineExpression})"
+                Expression = $@"\G(?:{NewLine})"
             },
             new {
                 Type = TokenType.Whitespace,
-                Expression = $@"\G(?:{WhitespaceExpression})"
+                Expression = $@"\G(?:{Whitespace})"
             },
             new {
                 Type = TokenType.InfixOperator,
-                Expression = String.IsNullOrEmpty(infixOperatorExpression)
+                Expression = String.IsNullOrEmpty(infixOperators)
                     ? String.Empty
-                    : $@"\G(?:{infixOperatorExpression})"
+                    : $@"\G(?:{infixOperators})"
             },
             new {
                 Type = TokenType.PrefixOperator,
-                Expression = String.IsNullOrEmpty(prefixOperatorExpression)
+                Expression = String.IsNullOrEmpty(prefixOperators)
                     ? String.Empty
-                    : $@"\G(?:{prefixOperatorExpression})"
+                    : $@"\G(?:{prefixOperators})"
             },
             new {
                 Type = TokenType.PostfixOperator,
-                Expression = String.IsNullOrEmpty(postfixOperatorExpression)
+                Expression = String.IsNullOrEmpty(postfixOperators)
                     ? String.Empty
-                    : $@"\G(?:{postfixOperatorExpression})"
+                    : $@"\G(?:{postfixOperators})"
             },
             new {
                 Type = TokenType.Punctuation,
-                Expression = String.IsNullOrEmpty(punctuationExpression)
+                Expression = String.IsNullOrEmpty(punctuation)
                     ? String.Empty
-                    : $@"\G(?:{punctuationExpression})"
+                    : $@"\G(?:{punctuation})"
             },
             new {
                 Type = TokenType.Comment,
-                Expression  = String.IsNullOrEmpty(commentExpression)
+                Expression  = String.IsNullOrEmpty(comments)
                     ? String.Empty
-                    : $@"\G(?:{commentExpression})"
+                    : $@"\G(?:{comments})"
             },
         }
         .Where(e => !String.IsNullOrEmpty(e.Expression))
@@ -151,20 +156,21 @@ public sealed class LinguisticContext
                 e.Expression,
                 RegexOptions.CultureInvariant |
                 RegexOptions.ExplicitCapture |
-                RegexOptions.Compiled)))
-        .ToArray();
+                RegexOptions.Compiled)));
+
+        map = regexs
+            .ToDictionary(e => e.Type, e => e)
+            .AsReadOnly();
+        languages = [.. map.Values];
     }
 
     public int Length => languages.Length;
     public LinguisticExpression this[int i] => languages[i];
+    public LinguisticExpression this[TokenType key] => map[key];
 
-    public LinguisticExpression LinguisticExpression(TokenType type)
-    {
-        return languages.First(l => l.Type == type);
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<LinguisticExpression> AsSpan()
+    public ReadOnlySpan<LinguisticExpression> AsSpan()
     {
         return languages.AsSpan();
     }
