@@ -170,7 +170,7 @@ public sealed class LinguisticContext
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<LinguisticExpression> AsSpan()
+    public ReadOnlySpan<LinguisticExpression> AsReadOnlySpan()
     {
         return languages.AsSpan();
     }
