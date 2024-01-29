@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interpreter", "Interpreter\Interpreter.csproj", "{12982A90-54F4-4681-8348-CA8EF286C92A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{983D2F8B-1AAD-4438-A292-1CBCAEA21464}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -13,13 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interpreter.Tests", "Interpreter.Tests\Interpreter.Tests.csproj", "{C38006D3-0421-4381-B04B-A345F74CFBE8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LexicalAnalysis", "LexicalAnalysis", "{E1377C0B-80A2-4FAE-8591-DE4968AB0F82}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luthor", "Luthor\Luthor.csproj", "{56ABBFF1-449B-4926-9439-A3CAD77AB0EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luthor", "Luthor\Luthor.csproj", "{56ABBFF1-449B-4926-9439-A3CAD77AB0EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luthor.Tests", "Luthor.Tests\Luthor.Tests.csproj", "{05B2FE2A-EFEC-43FA-9473-6CE30EEC7F9C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luthor.Tests", "Luthor.Tests\Luthor.Tests.csproj", "{05B2FE2A-EFEC-43FA-9473-6CE30EEC7F9C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,14 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{12982A90-54F4-4681-8348-CA8EF286C92A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12982A90-54F4-4681-8348-CA8EF286C92A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{12982A90-54F4-4681-8348-CA8EF286C92A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{12982A90-54F4-4681-8348-CA8EF286C92A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C38006D3-0421-4381-B04B-A345F74CFBE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C38006D3-0421-4381-B04B-A345F74CFBE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C38006D3-0421-4381-B04B-A345F74CFBE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C38006D3-0421-4381-B04B-A345F74CFBE8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{56ABBFF1-449B-4926-9439-A3CAD77AB0EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{56ABBFF1-449B-4926-9439-A3CAD77AB0EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56ABBFF1-449B-4926-9439-A3CAD77AB0EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
