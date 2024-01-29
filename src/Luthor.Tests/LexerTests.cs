@@ -60,13 +60,13 @@ public sealed class LexerTests(LinguisticContext context)
     [InlineData("i++", 1, 2, TokenType.PostfixOperator)]
     [InlineData("i ++", 2, 2, TokenType.PostfixOperator)]
     // [InlineData(" ", 2, TokenType.CircumfixOperator)]
-    public void Test(string source, int position, int length, TokenType tokenType)
+    public void Returns_Expected_Token(string source, int position, int length, TokenType tokenType)
     {
         var lexer = new Lexer(context, source);
-        var token = lexer.ReadNextToken();
+        var token = lexer.ReadToken();
         for (var i = 0; i < position; ++i)
         {
-            token = lexer.ReadNextToken();
+            token = lexer.ReadToken();
         }
 
         Assert.Equal(tokenType, token.Type);
