@@ -9,5 +9,11 @@ Duplicateding the original DSL with a rewrite turned out to be an impractical go
 I'm aware of ANTLR and the C# scripting libraries. However, the point is to excercize my brain by building an efficient recursive descent parser.
 [Parsing expressions by precedence climbing](https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing)
 
-## Luthor.Lexer
+## The Lexer
 The lexer accepts a linguistic contex that maps token types to regular expressions. As of 29 JAN 2024, there are two lexers. One is typical OO design with mutable state and heap allocations. The other is a functional design that keeps all the data on the stack. I won't know which one will is more performant until a concrete parser exists from which bench tests can be built.
+
+## The Parser
+Not yet built. I saw an interesting video on parsing where the guy started with the parser, and step by step, moved functionality out to the lexer. I feel like I have a better understanding of the lexer, so I started there instead. Maybe the current lexer code continues to exist in a month. Maybe it doesn't.
+
+## Dev Log
+2024 01 29 - built a functional, immutable lexer. state passed on stack. expected to be faster in real-world use cases.
