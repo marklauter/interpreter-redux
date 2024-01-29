@@ -7,7 +7,7 @@ The original code is based on my 1996 understanding of lexing-parsting-interpret
 Duplicateding the original DSL with a rewrite turned out to be an impractical goal, so I've come up with a few new goal targets. The first target is a functional lexer that can be seeded with a language spec that maps regex fragments to token types. The next target is a simple mathmatical expression parser and a CLI that evaluates the AST and prints the result. The next known target is a simple boolean predicate language, like a SQL where clause, that can be transformed into a boolean expression tree.
 
 I'm aware of ANTLR and the C# scripting libraries. However, the point is to excercize my brain by building an efficient recursive descent parser.
-(Parsing expressions by precedence climbing)[https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing]
+[Parsing expressions by precedence climbing](https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing)
 
 ## Luthor.Lexer
 The lexer accepts a linguistic contex that maps token types to regular expressions. As of 29 JAN 2024, there are two lexers. One is typical OO design with mutable state and heap allocations. The other is a functional design that keeps all the data on the stack. I won't know which one will is more performant until a concrete parser exists from which bench tests can be built.
