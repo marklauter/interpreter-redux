@@ -1,6 +1,9 @@
 ﻿namespace Luthor.Tokens;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "it's a struct")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1051:Do not declare visible instance fields",
+    Justification = "it's a struct")]
 public readonly ref struct RefToken(
     int offset,
     int length,
