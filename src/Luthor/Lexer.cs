@@ -48,7 +48,7 @@ public sealed class Lexer(
         for (var i = 0; i < length; ++i)
         {
             var language = languages[i];
-            var match = language.Regex.Match(source, position);
+            var match = language.Expression.Match(source, position);
             if (match.Success)
             {
                 position += match.Length;

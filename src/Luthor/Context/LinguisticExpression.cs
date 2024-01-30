@@ -5,4 +5,4 @@ namespace Luthor.Context;
 
 public readonly record struct LinguisticExpression(
     TokenType Type,
-    Regex Regex);
+    Regex Expression);

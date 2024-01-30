@@ -77,7 +77,11 @@ public sealed class LanguageSpecification
             ? close
             : close[^1].ToString();
 
-        return $@"{open}(?>{open}(?<c>)|[^{open}{innerClose}]+|{close}(?<-c>))*(?(c)(?!)){close}";
+        return $@"({open})(?>{open}(?<c>)|[^{open}{innerClose}]+|{close}(?<-c>))*(?(c)(?!)){close}";
+
+        //https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions?redirectedfrom=MSDN#balancing_group_definition
+        //var pattern = $@"^[^{open}{innerClose}]*(((?'Open'{open})[^{open}{innerClose}]*)+((?'Close-Open'>)[^{open}{innerClose}]*)+)*(?(Open)(?!))$";
+        //return pattern;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -112,7 +116,9 @@ public sealed class LanguageSpecification
         pattern = items.Any()
             ? String.Join(
                 "|",
-                items.Select(Regex.Escape))
+                items
+                    .OrderByDescending(o => o.Length)
+                    .Select(Regex.Escape))
             : null;
 
         return pattern is not null;
