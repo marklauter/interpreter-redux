@@ -23,7 +23,7 @@ public sealed class Lexer(
     {
         var token = ReadToken();
         yield return token;
-        while (token.Type != TokenType.Eof)
+        while (token.Type != TokenType.EndOfSource)
         {
             token = ReadToken();
             yield return token;
@@ -40,7 +40,7 @@ public sealed class Lexer(
     {
         if (IsEndOfSource())
         {
-            return new Token(position, 0, TokenType.Eof, String.Empty);
+            return new Token(position, 0, TokenType.EndOfSource, String.Empty);
         }
 
         var length = context.Length;

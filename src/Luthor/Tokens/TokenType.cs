@@ -9,27 +9,23 @@ public enum TokenType : ulong
 {
     Error = 0,
 
-    NaturalDelimiter = 1ul << 0, // meta type
-    Whitespace = NaturalDelimiter | 1ul << 1,
-    Eof = NaturalDelimiter | 1ul << 2,
-    NewLine = NaturalDelimiter | 1ul << 3,
+    Delimiter = 1ul << 0, // meta type - never returned by lexer
+    Whitespace = Delimiter | 1ul << 1,
+    NewLine = Delimiter | 1ul << 2,
+    EndOfSource = Delimiter | 1ul << 3,
+    InfixDelimiter = Delimiter | 1ul << 4,
+    CircumfixDelimiter = Delimiter | 1ul << 5,
 
-    SimpleName = 1ul << 4,  // meta type
-    ReservedWord = SimpleName | 1ul << 5,
-    Identifier = SimpleName | 1ul << 6,
+    Operator = 1ul << 6, // this includes all kinds: infix, prefix, postfix, circumfix as the type of op is determined by the parser, not the lexer
 
-    Literal = 1ul << 7,  // meta type
-    NumericLiteral = Literal | 1ul << 8,
-    StringLiteral = Literal | 1ul << 9,
-    BooleanLiteral = Literal | 1ul << 10,
-    CharacterLiteral = Literal | 1ul << 11,
-    Comment = Literal | 1ul << 12,
+    Name = 1ul << 7,  // meta type - never returned by lexer
+    ReservedWord = Name | 1ul << 8,
+    Identifier = Name | 1ul << 9,
 
-    Glyph = 1ul << 13,  // meta type
-    Punctuation = Glyph | 1ul << 14,
-    Operator = Glyph | 1ul << 15,  // meta type
-    InfixOperator = Operator | 1ul << 16,
-    PrefixOperator = Operator | 1ul << 17,
-    PostfixOperator = Operator | 1ul << 18,
-    CircumfixOperator = Operator | 1ul << 19,
+    Literal = 1ul << 10,  // meta type - never returned by lexer
+    NumericLiteral = Literal | 1ul << 11,
+    StringLiteral = Literal | 1ul << 12,
+    BooleanLiteral = Literal | 1ul << 13,
+    CharacterLiteral = Literal | 1ul << 14,
+    Comment = Literal | 1ul << 15,
 }

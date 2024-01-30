@@ -25,7 +25,7 @@ public readonly ref struct FLexer(LinguisticContext Context)
         if (position >= source.Length)
         {
             return new(
-                new RefToken(position, 0, TokenType.Eof, String.Empty),
+                new RefToken(position, 0, TokenType.EndOfSource, String.Empty),
                 position,
                 lastNewLineOffset,
                 lineNumber);

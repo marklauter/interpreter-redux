@@ -1,9 +1,12 @@
 ﻿using Luthor.Context;
 using Luthor.Tokens;
+using System.Text.RegularExpressions;
 
 namespace Luthor.Tests;
 
-public sealed class RegExTests(LinguisticContext expressions)
+public sealed class RegExTests(
+    LinguisticContext expressions,
+    LanguageSpecification languageSpecification)
 {
     [Theory]
     [InlineData(@"""hello, world.""", "hello, world.", true)]
@@ -23,19 +26,89 @@ public sealed class RegExTests(LinguisticContext expressions)
     }
 
     [Theory]
-    [InlineData("x+y", "+", 1, true)]
-    [InlineData("x+1", "+", 1, true)]
-    [InlineData("x + y", "+", 2, true)]
-    [InlineData("x + 1", "+", 2, true)]
-    public void InfixOperators(string value, string expected, int position, bool expectedSuccess)
-    {
-        var expresion = expressions[TokenType.InfixOperator];
+    [InlineData("(}", false, 0, 0)]
+    [InlineData("(]", false, 0, 0)]
+    [InlineData("(/>", false, 0, 0)]
+    [InlineData("{)", false, 0, 0)]
+    [InlineData("{]", false, 0, 0)]
+    [InlineData("{/>", false, 0, 0)]
+    [InlineData("[}", false, 0, 0)]
+    [InlineData("[)", false, 0, 0)]
+    [InlineData("[/>", false, 0, 0)]
+    [InlineData("<}", false, 0, 0)]
+    [InlineData("<)", false, 0, 0)]
+    [InlineData("<]", false, 0, 0)]
 
-        var match = expresion.Regex.Match(value, position);
+    [InlineData("()", true, 0, 1)]
+    [InlineData("( )", true, 0, 1)]
+    [InlineData("( 1 + 1 )", true, 0, 1)]
+    [InlineData("( x / y )", true, 0, 1)]
+    [InlineData("x / (y + z)", true, 4, 1)]
+    [InlineData("x / (y + (z / 3))", true, 4, 1)]
+    [InlineData("x / (y + z", false, 0, 1)]
+    [InlineData("x(1)", true, 1, 1)]
+    [InlineData("(", false, 0, 1)]
+    [InlineData(")", false, 0, 1)]
+
+    [InlineData("{}", true, 0, 1)]
+    [InlineData("{ }", true, 0, 1)]
+    [InlineData("{ x = 1 + 1; }", true, 0, 1)]
+    [InlineData("{ x / y }", true, 0, 1)]
+    [InlineData("x / {y + z}", true, 4, 1)]
+    [InlineData("x / {y + {z / 3}}", true, 4, 1)]
+    [InlineData("x / {y + z", false, 0, 1)]
+    [InlineData("x{1}", true, 1, 1)]
+    [InlineData("{", false, 0, 1)]
+    [InlineData("}", false, 0, 1)]
+
+    [InlineData("</>", true, 0, 1)]
+    [InlineData("< />", true, 0, 1)]
+    [InlineData("<tag/>", true, 0, 1)]
+    [InlineData("<tag />", true, 0, 1)]
+    [InlineData(@"<tag name=""mytag""/>", true, 4, 1)]
+    [InlineData(@"<tag name=""mytag"" />", true, 4, 1)]
+    [InlineData(@"<tag name=""mytag[]""/>", true, 4, 1)]
+    [InlineData(@"<tag name=""mytag[]"" />", true, 4, 1)]
+    [InlineData("<", false, 0, 1)]
+    [InlineData("<>", false, 0, 1)]
+    [InlineData("< / >", false, 0, 1)]
+
+    [InlineData("[]", true, 0, 1)]
+    [InlineData("[ ]", true, 0, 1)]
+    [InlineData("x[1]", true, 1, 1)]
+    [InlineData("x[1] / x[2]", true, 1, 1)]
+    [InlineData("x[(x + y) *x] / x[2]", true, 1, 1)]
+    [InlineData("[", false, 0, 1)]
+    [InlineData("]", false, 0, 1)]
+    public void CircumfixDelimiters(string source, bool expectedSuccess, int expectedOffset, int expectedLength)
+    {
+        Assert.True(languageSpecification
+            .TryGetCircumfixDelimiterOpenPattern(out var pattern));
+        Assert.NotNull(pattern);
+        Assert.NotEmpty(pattern);
+
+        var regex = new Regex(pattern);
+
+        var match = regex.Match(source);
         Assert.Equal(expectedSuccess, match.Success);
         if (match.Success)
         {
-            Assert.Equal(expected, match.Value);
+            Assert.Equal(expectedOffset, match.Index);
+            Assert.Equal(expectedLength, match.ValueSpan.Length);
         }
+    }
+
+    [Fact]
+    public void SquareBracket()
+    {
+        // \((?>\((?<c>)|[^()]+|\)(?<-c>))*(?(c)(?!))\) 
+
+        var char1 = "[";
+        var char2 = "]";
+        var pattern = $@"[{Regex.Escape(char1)}\{char2}]";
+        var source = "123[567]";
+
+        var match = Regex.Match(source, pattern);
+        Assert.True(match.Success);
     }
 }

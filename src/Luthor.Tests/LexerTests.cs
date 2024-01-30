@@ -14,7 +14,7 @@ public sealed class LexerTests(LinguisticContext context)
     [InlineData("  ", 0, 2, TokenType.Whitespace)]
     [InlineData(" x", 0, 1, TokenType.Whitespace)]
 
-    [InlineData("", 0, 0, TokenType.Eof)]
+    [InlineData("", 0, 0, TokenType.EndOfSource)]
 
     [InlineData("\r", 0, 1, TokenType.NewLine)]
     [InlineData("\n", 0, 1, TokenType.NewLine)]
@@ -45,22 +45,21 @@ public sealed class LexerTests(LinguisticContext context)
     [InlineData("// comment", 0, 10, TokenType.Comment)]
     [InlineData("## comment", 0, 10, TokenType.Comment)]
 
-    [InlineData(";", 0, 1, TokenType.Punctuation)]
-    [InlineData(",", 0, 1, TokenType.Punctuation)]
+    [InlineData(";", 0, 1, TokenType.InfixDelimiter)]
+    [InlineData(",", 0, 1, TokenType.InfixDelimiter)]
 
-    [InlineData("x+y", 1, 1, TokenType.InfixOperator)]
-    [InlineData("x + y", 2, 1, TokenType.InfixOperator)]
-    [InlineData("x<=y", 1, 2, TokenType.InfixOperator)]
-    [InlineData("x <= y", 2, 2, TokenType.InfixOperator)]
+    [InlineData("x+y", 1, 1, TokenType.Operator)]
+    [InlineData("x + y", 2, 1, TokenType.Operator)]
+    [InlineData("x<=y", 1, 2, TokenType.Operator)]
+    [InlineData("x <= y", 2, 2, TokenType.Operator)]
 
-    [InlineData("!i", 0, 1, TokenType.PrefixOperator)]
-    [InlineData("! i", 0, 1, TokenType.PrefixOperator)]
-    [InlineData("++i", 0, 2, TokenType.PrefixOperator)]
-    [InlineData("++ i", 0, 2, TokenType.PrefixOperator)]
-    [InlineData("i++", 1, 2, TokenType.PostfixOperator)]
-    [InlineData("i ++", 2, 2, TokenType.PostfixOperator)]
-    // [InlineData(" ", 2, TokenType.CircumfixOperator)]
-    public void Returns_Expected_Token(string source, int position, int length, TokenType tokenType)
+    [InlineData("!i", 0, 1, TokenType.Operator)]
+    [InlineData("! i", 0, 1, TokenType.Operator)]
+    [InlineData("++i", 0, 2, TokenType.Operator)]
+    [InlineData("++ i", 0, 2, TokenType.Operator)]
+    [InlineData("i++", 1, 2, TokenType.Operator)]
+    [InlineData("i ++", 2, 2, TokenType.Operator)]
+    public void Returns_Expected_Token(string source, int position, int expectedLength, TokenType expectedTokenType)
     {
         var lexer = new Lexer(context, source);
         var token = lexer.ReadToken();
@@ -69,41 +68,41 @@ public sealed class LexerTests(LinguisticContext context)
             token = lexer.ReadToken();
         }
 
-        Assert.Equal(tokenType, token.Type);
-        Assert.Equal(length, token.Length);
+        Assert.Equal(expectedTokenType, token.Type);
+        Assert.Equal(expectedLength, token.Length);
     }
 
     [Theory]
     [InlineData(0, "if", 0, 2, TokenType.ReservedWord)]
     [InlineData(1, "", 2, 1, TokenType.Whitespace)]
-    [InlineData(2, "(", 3, 1, TokenType.Punctuation)]
+    [InlineData(2, "(", 3, 1, TokenType.CircumfixDelimiter)]
     [InlineData(3, "a", 4, 1, TokenType.Identifier)]
     [InlineData(4, "", 5, 1, TokenType.Whitespace)]
-    [InlineData(5, "+", 6, 1, TokenType.InfixOperator)]
+    [InlineData(5, "+", 6, 1, TokenType.Operator)]
     [InlineData(6, "", 7, 1, TokenType.Whitespace)]
     [InlineData(7, "b", 8, 1, TokenType.Identifier)]
-    [InlineData(8, ")", 9, 1, TokenType.Punctuation)]
+    [InlineData(8, ")", 9, 1, TokenType.CircumfixDelimiter)]
     [InlineData(9, "", 10, 1, TokenType.Whitespace)]
-    [InlineData(10, "{", 11, 1, TokenType.Punctuation)]
+    [InlineData(10, "{", 11, 1, TokenType.CircumfixDelimiter)]
     [InlineData(11, "", 12, 1, TokenType.Whitespace)]
     [InlineData(12, "let", 13, 3, TokenType.ReservedWord)]
     [InlineData(13, "", 16, 1, TokenType.Whitespace)]
     [InlineData(14, "c", 17, 1, TokenType.Identifier)]
     [InlineData(15, "", 18, 1, TokenType.Whitespace)]
-    [InlineData(16, "=", 19, 1, TokenType.InfixOperator)]
+    [InlineData(16, "=", 19, 1, TokenType.Operator)]
     [InlineData(17, "", 20, 1, TokenType.Whitespace)]
     [InlineData(18, "a", 21, 1, TokenType.Identifier)]
     [InlineData(19, "", 22, 1, TokenType.Whitespace)]
-    [InlineData(20, "+", 23, 1, TokenType.InfixOperator)]
+    [InlineData(20, "+", 23, 1, TokenType.Operator)]
     [InlineData(21, "", 24, 1, TokenType.Whitespace)]
     [InlineData(22, "b", 25, 1, TokenType.Identifier)]
-    [InlineData(23, "^", 26, 1, TokenType.InfixOperator)]
+    [InlineData(23, "^", 26, 1, TokenType.Operator)]
     [InlineData(24, "2", 27, 1, TokenType.NumericLiteral)]
-    [InlineData(25, ";", 28, 1, TokenType.Punctuation)]
+    [InlineData(25, ";", 28, 1, TokenType.InfixDelimiter)]
     [InlineData(26, "", 29, 1, TokenType.Whitespace)]
-    [InlineData(27, "}", 30, 1, TokenType.Punctuation)]
-    [InlineData(28, "", 31, 0, TokenType.Eof)]
-    public void ReadTokens_Returns_TokenTable(int index, string value, int offset, int length, TokenType tokenType)
+    [InlineData(27, "}", 30, 1, TokenType.CircumfixDelimiter)]
+    [InlineData(28, "", 31, 0, TokenType.EndOfSource)]
+    public void ReadTokens_Returns_TokenTable(int index, string expectedSymbol, int expectedOffset, int expectedLength, TokenType expectedTokenType)
     {
         var source = "if (a + b) { let c = a + b^2; }";
         var lexer = new Lexer(context, source);
@@ -114,10 +113,10 @@ public sealed class LexerTests(LinguisticContext context)
 
         Assert.Equal(29, tokens.Length);
 
-        Assert.Equal(value, tokens[index].Value);
-        Assert.Equal(offset, tokens[index].Offset);
-        Assert.Equal(length, tokens[index].Length);
-        Assert.Equal(tokenType, tokens[index].Type);
+        Assert.Equal(expectedSymbol, tokens[index].Symbol);
+        Assert.Equal(expectedOffset, tokens[index].Offset);
+        Assert.Equal(expectedLength, tokens[index].Length);
+        Assert.Equal(expectedTokenType, tokens[index].Type);
     }
 
     [Theory]
@@ -134,8 +133,8 @@ public sealed class LexerTests(LinguisticContext context)
     [InlineData(10, "0.1", 23, 3, TokenType.NumericLiteral)]
     [InlineData(11, "", 26, 2, TokenType.Whitespace)]
     [InlineData(12, "1237", 28, 4, TokenType.NumericLiteral)]
-    [InlineData(13, "", 32, 0, TokenType.Eof)]
-    public void ReadTokens_Returns_Numeric_Values(int index, string value, int offset, int length, TokenType tokenType)
+    [InlineData(13, "", 32, 0, TokenType.EndOfSource)]
+    public void ReadTokens_Returns_Numeric_Values(int index, string expectedSymbol, int expectedOffset, int expectedLength, TokenType expectedTokenType)
     {
         var source = "1.0 2.0 3.0 397.173 89 0.1  1237";
         var lexer = new Lexer(context, source);
@@ -146,9 +145,9 @@ public sealed class LexerTests(LinguisticContext context)
 
         Assert.Equal(14, tokens.Length);
 
-        Assert.Equal(value, tokens[index].Value);
-        Assert.Equal(offset, tokens[index].Offset);
-        Assert.Equal(length, tokens[index].Length);
-        Assert.Equal(tokenType, tokens[index].Type);
+        Assert.Equal(expectedSymbol, tokens[index].Symbol);
+        Assert.Equal(expectedOffset, tokens[index].Offset);
+        Assert.Equal(expectedLength, tokens[index].Length);
+        Assert.Equal(expectedTokenType, tokens[index].Type);
     }
 }

@@ -1,5 +1,4 @@
-﻿using Luthor.Spec;
-using Luthor.Tokens;
+﻿using Luthor.Tokens;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
@@ -7,178 +6,51 @@ using System.Text.RegularExpressions;
 
 namespace Luthor.Context;
 
-public sealed class LinguisticContext
+public sealed partial class LinguisticContext
     : IEnumerable<LinguisticExpression>
 {
-    // todo: an idea for later
-    // [GeneratedRegex]
-    // https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-source-generators
-
-    private const string Identifiers = @"[a-zA-Z_]\w*";
-    private const string StringLiterals = @"""(?:[^""\\\n\r]|\\.)*""";
-    private const string NumericLiterals = @"\b\d+(?:\.\d+)?\b";
-    // todo: need to add char literal pattern for escape codes like \b, \t, \n, \r, \f, \', \", \\, \u0000, \uFFFF
-    private const string CharacterLiterals = @"'[^']'";
-    private const string Whitespace = @"\s+";
-    private const string NewLine = @"\r\n|[\r\n]";
-
     private readonly ReadOnlyDictionary<TokenType, LinguisticExpression> map;
-    private readonly LinguisticExpression[] languages = null!;
+    private readonly LinguisticExpression[] expressions = null!;
 
     public LinguisticContext(LanguageSpecification spec)
     {
         ArgumentNullException.ThrowIfNull(spec);
 
-        var reservedWords = spec.ReservedWords.Any()
-            ? $@"(?:{String.Join("|", spec.ReservedWords.Select(Regex.Escape))})(?!\w)"
-            : String.Empty;
+        expressions = new LinguisticExpression[12];
+        var (index, reservedWordPattern) = AddReservedWords(spec, expressions);
+        (index, var booleanLiteralPattern) = AddBooleanLiterals(spec, expressions, index);
+        index = AddIdentifiers(expressions, index, booleanLiteralPattern, reservedWordPattern);
+        index = AddNumericLiterals(expressions, index);
+        index = AddStringLiterals(expressions, index);
+        index = AddCharacterLiterals(expressions, index);
+        index = AddNewLine(expressions, index);
+        index = AddWhitespace(expressions, index);
+        index = AddInfixDelimiters(spec, expressions, index);
+        index = AddCircumfixDelimiters(spec, expressions, index);
+        index = AddComments(spec, expressions, index);
+        index = AddOperators(spec, expressions, index);
 
-        var booleanLiterals = spec.Literals.Boolean.Any()
-            ? $@"(?:{String.Join("|", spec.Literals.Boolean.Select(Regex.Escape))})(?!\w)"
-            : String.Empty;
-
-        var identifiersAndLiterals = String.IsNullOrEmpty(booleanLiterals)
-            ? $@"{Identifiers}|{StringLiterals}|{NumericLiterals}|{CharacterLiterals}"
-            : $@"{Identifiers}|{StringLiterals}|{NumericLiterals}|{CharacterLiterals}|{booleanLiterals}";
-
-        var infixOperators = spec.Operators.Infix.Any()
-            ? String.Join("|", spec.Operators.Infix.Select(Regex.Escape))
-            : String.Empty;
-
-        infixOperators = String.IsNullOrEmpty(infixOperators)
-            ? String.Empty
-            : $@"(?<=(?:{identifiersAndLiterals})\s*)(?:{infixOperators})(?=\s*(?:{identifiersAndLiterals}))";
-
-        var prefixOperators = spec.Operators.Prefix.Any()
-            ? String.Join("|", spec.Operators.Prefix.Select(Regex.Escape))
-            : String.Empty;
-        prefixOperators = String.IsNullOrEmpty(prefixOperators)
-            ? String.Empty
-            : $@"(?<!(?:{identifiersAndLiterals})\s*)(?:{prefixOperators})(?=\s*(?:{identifiersAndLiterals}))";
-
-        var postfixOperators = spec.Operators.Postfix.Any()
-            ? String.Join("|", spec.Operators.Postfix.Select(Regex.Escape))
-            : String.Empty;
-        postfixOperators = String.IsNullOrEmpty(postfixOperators)
-            ? String.Empty
-            : $@"(?<=(?:{identifiersAndLiterals})\s*)(?:{postfixOperators})(?!\s*(?:{identifiersAndLiterals}))";
-
-        var punctuation = spec.Punctuation.Any()
-            ? String.Join("|", spec.Punctuation.Select(Regex.Escape))
-            : String.Empty;
-
-        var comments = spec.Literals.CommentPrefixes.Any()
-            ? String.Join("|", spec
-                .Literals
-                .CommentPrefixes
-                .Select(s => $@"{Regex.Escape(s)}.*?(?=\r?\n|$)"))
-            : String.Empty;
-
-        var regexs = new[]
-        {
-            new {
-                Type = TokenType.Identifier,
-                Expression = String.IsNullOrEmpty(reservedWords)
-                    ? String.IsNullOrEmpty(booleanLiterals)
-                        ? $@"\G(?:{Identifiers})"
-                        : $@"\G(?!{booleanLiterals})(?:{Identifiers})"
-                    : String.IsNullOrEmpty(booleanLiterals)
-                        ? $@"\G(?!{reservedWords})(?:{Identifiers})"
-                        : $@"\G(?!{reservedWords}|{booleanLiterals})(?:{Identifiers})"
-            },
-            new {
-                Type = TokenType.ReservedWord,
-                Expression = String.IsNullOrEmpty(reservedWords)
-                    ? String.Empty
-                    : $@"\G(?:{reservedWords})"
-            },
-            new {
-                Type = TokenType.BooleanLiteral,
-                Expression = String.IsNullOrEmpty(booleanLiterals)
-                    ? String.Empty
-                    : $@"\G(?:{booleanLiterals})"
-            },
-            new {
-                Type = TokenType.NumericLiteral,
-                Expression = $@"\G(?:{NumericLiterals})"
-            },
-            new {
-                Type = TokenType.StringLiteral,
-                Expression = $@"\G(?:{StringLiterals})"
-            },
-            new {
-                Type = TokenType.CharacterLiteral,
-                Expression = $@"\G(?:{CharacterLiterals})"
-            },
-            new {
-                Type = TokenType.NewLine,
-                Expression = $@"\G(?:{NewLine})"
-            },
-            new {
-                Type = TokenType.Whitespace,
-                Expression = $@"\G(?:{Whitespace})"
-            },
-            new {
-                Type = TokenType.InfixOperator,
-                Expression = String.IsNullOrEmpty(infixOperators)
-                    ? String.Empty
-                    : $@"\G(?:{infixOperators})"
-            },
-            new {
-                Type = TokenType.PrefixOperator,
-                Expression = String.IsNullOrEmpty(prefixOperators)
-                    ? String.Empty
-                    : $@"\G(?:{prefixOperators})"
-            },
-            new {
-                Type = TokenType.PostfixOperator,
-                Expression = String.IsNullOrEmpty(postfixOperators)
-                    ? String.Empty
-                    : $@"\G(?:{postfixOperators})"
-            },
-            new {
-                Type = TokenType.Punctuation,
-                Expression = String.IsNullOrEmpty(punctuation)
-                    ? String.Empty
-                    : $@"\G(?:{punctuation})"
-            },
-            new {
-                Type = TokenType.Comment,
-                Expression  = String.IsNullOrEmpty(comments)
-                    ? String.Empty
-                    : $@"\G(?:{comments})"
-            },
-        }
-        .Where(e => !String.IsNullOrEmpty(e.Expression))
-        .Select(e => new LinguisticExpression(
-            e.Type,
-            new Regex(
-                e.Expression,
-                RegexOptions.CultureInvariant |
-                RegexOptions.ExplicitCapture |
-                RegexOptions.Compiled)));
-
-        map = regexs
+        map = expressions[..index]
             .ToDictionary(e => e.Type, e => e)
             .AsReadOnly();
-        languages = [.. map.Values];
+
+        expressions = [.. map.Values];
     }
 
-    public int Length => languages.Length;
-    public LinguisticExpression this[int i] => languages[i];
+    public int Length => expressions.Length;
+    public LinguisticExpression this[int i] => expressions[i];
     public LinguisticExpression this[TokenType key] => map[key];
-
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<LinguisticExpression> AsReadOnlySpan()
     {
-        return languages.AsSpan();
+        return expressions.AsSpan();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerator<LinguisticExpression> GetEnumerator()
     {
-        return (IEnumerator<LinguisticExpression>)languages.GetEnumerator();
+        return (IEnumerator<LinguisticExpression>)expressions.GetEnumerator();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -186,4 +58,253 @@ public sealed class LinguisticContext
     {
         return GetEnumerator();
     }
+
+    private const RegexOptions ExpressionOptions =
+        RegexOptions.CultureInvariant |
+        RegexOptions.ExplicitCapture |
+        RegexOptions.Compiled;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static (int index, string? reservedWordPattern) AddReservedWords(
+    LanguageSpecification spec,
+    LinguisticExpression[] expressions)
+    {
+        if (spec.TryGetReservedWordPattern(out var reservedWordPattern))
+        {
+            expressions[0] = new
+            (
+                TokenType.ReservedWord,
+                new Regex(
+                    $@"\G(?:{reservedWordPattern})",
+                    ExpressionOptions)
+            );
+
+            return (1, reservedWordPattern);
+        }
+
+        return (0, reservedWordPattern);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static (int index, string? booleanLiteralPattern) AddBooleanLiterals(
+        LanguageSpecification spec,
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        if (spec.TryGetBooleanLiteralPattern(out var booleanLiteralPattern))
+        {
+            expressions[index] = new
+            (
+                TokenType.BooleanLiteral,
+                new Regex(
+                    $@"\G(?:{booleanLiteralPattern})",
+                    ExpressionOptions)
+            );
+
+            ++index;
+        }
+
+        return (index, booleanLiteralPattern);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddIdentifiers(
+        LinguisticExpression[] expressions,
+        int index,
+        string? booleanLiteralPattern,
+        string? reservedWordPattern)
+    {
+        var identifierPattern = reservedWordPattern is null
+            ? booleanLiteralPattern is null
+                ? $@"\G(?:{RegexConstants.Identifiers})"
+                : $@"\G(?:{RegexConstants.Identifiers})(?!{booleanLiteralPattern})"
+            : booleanLiteralPattern is null
+                ? $@"\G(?:{RegexConstants.Identifiers})(?!{reservedWordPattern})"
+                : $@"\G(?:{RegexConstants.Identifiers})(?!{reservedWordPattern}|{booleanLiteralPattern})";
+
+        expressions[index] = new
+        (
+            TokenType.Identifier,
+            new Regex(
+                identifierPattern,
+                ExpressionOptions)
+        );
+
+        return index + 1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddNumericLiterals(
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        expressions[index] = new
+        (
+            TokenType.NumericLiteral,
+            NumericLiteralExpression()
+        );
+
+        return index + 1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddStringLiterals(
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        expressions[index] = new
+        (
+            TokenType.StringLiteral,
+            StringLiteralExpression()
+        );
+
+        return index + 1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddCharacterLiterals(
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        expressions[index] = new
+        (
+            TokenType.CharacterLiteral,
+            CharacterLiteralExpression()
+        );
+
+        return index + 1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddNewLine(
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        expressions[index] = new
+        (
+            TokenType.NewLine,
+            NewLineExpression()
+        );
+
+        return index + 1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddWhitespace(
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        expressions[index] = new
+        (
+            TokenType.Whitespace,
+            WhitespaceExpression()
+        );
+
+
+        return index + 1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddInfixDelimiters(
+        LanguageSpecification spec,
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        if (spec.TryGetInfixDelimiterPattern(out var delimiterPattern))
+        {
+            expressions[index] = new
+            (
+                TokenType.InfixDelimiter,
+                new Regex(
+                    $@"\G(?:{delimiterPattern})",
+                    ExpressionOptions)
+            );
+
+            ++index;
+        }
+
+        return index;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddCircumfixDelimiters(
+        LanguageSpecification spec,
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        if (spec.TryGetCircumfixDelimiterOpenPattern(out var delimiterPattern))
+        {
+            expressions[index] = new
+            (
+                TokenType.CircumfixDelimiter,
+                new Regex(
+                    $@"\G(?:{delimiterPattern})",
+                    ExpressionOptions)
+            );
+
+            ++index;
+        }
+
+        return index;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddOperators(
+        LanguageSpecification spec,
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        if (spec.TryGetOperatorPattern(out var operatorPattern))
+        {
+            expressions[index] = new
+            (
+                TokenType.Operator,
+                new Regex(
+                    $@"\G(?:{operatorPattern})",
+                    ExpressionOptions)
+            );
+
+            ++index;
+        }
+
+        return index;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int AddComments(
+        LanguageSpecification spec,
+        LinguisticExpression[] expressions,
+        int index)
+    {
+        if (spec.TryGetCommentPattern(out var commentPattern))
+        {
+            expressions[index] = new
+            (
+                TokenType.Comment,
+                new Regex(
+                    $@"\G(?:{commentPattern})",
+                    ExpressionOptions)
+            );
+
+            ++index;
+        }
+
+        return index;
+    }
+
+    [GeneratedRegex(@"\G(?:\b\d+(?:\.\d+)?\b)", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex NumericLiteralExpression();
+
+    [GeneratedRegex(@"\G(?:""(?:[^""\\\n\r]|\\.)*"")", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex StringLiteralExpression();
+
+    // todo: need to add char literal pattern for escape codes like \b, \t, \n, \r, \f, \', \", \\, \u0000, \uFFFF
+    [GeneratedRegex(@"\G(?:'[^']')", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex CharacterLiteralExpression();
+
+    [GeneratedRegex(@"\G(?:\r\n|[\r\n])", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex NewLineExpression();
+
+    [GeneratedRegex(@"\G(?:\s+)", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex WhitespaceExpression();
 }
