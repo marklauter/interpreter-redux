@@ -5,7 +5,8 @@
 ///   IsLiteral(TokenType type) => type & TokenType.Literal == TokenType.Literal;
 /// </summary>
 [Flags]
-public enum Tokens : uint
+public enum Tokens
+    : uint
 {
     Error = 0,
     NoMatch = 1u << 0,

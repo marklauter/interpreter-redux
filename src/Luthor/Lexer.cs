@@ -5,33 +5,39 @@ namespace Luthor;
 
 public readonly ref struct Lexer(LexicalContext Context)
 {
-    private readonly ReadOnlySpan<TokenReader> readers = Context.AsReadOnlySpan();
+    private readonly ReadOnlySpan<TokenMatcher> matchers = Context.AsReadOnlySpan();
 
-    public ReadTokenResult ReadToken(string source, int offset, int lastNewLineOffset, int lineNumber)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void FirstToken(string source, ref MatchResult match)
     {
-        var length = readers.Length;
+        ReadToken(source, 0, 0, 1, ref match);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void NextToken(string source, ref MatchResult match)
+    {
+        ReadToken(source, match.NextOffset, match.LastNewLineOffset, match.LineNumber, ref match);
+    }
+
+    private void ReadToken(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+    {
+        var length = matchers.Length;
         for (var i = 0; i < length; ++i)
         {
-            var result = readers[i]
-                .Invoke(source, offset, lastNewLineOffset, lineNumber);
-
-            if (result.IsMatch)
+            matchers[i](source, offset, lastNewLineOffset, lineNumber, ref match);
+            if (match.IsMatch())
             {
-                return result;
+                return;
             }
         }
 
         var column = offset - lastNewLineOffset;
-        return new(
+        match = new(
             new Token(offset, 0, Tokens.Error, $"{{\"line\": {lineNumber}, \"column\": {column}}}"),
             offset,
             lastNewLineOffset,
             lineNumber);
-    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadTokenResult ReadToken(string source)
-    {
-        return ReadToken(source, 0, 0, 1);
+        return;
     }
 }

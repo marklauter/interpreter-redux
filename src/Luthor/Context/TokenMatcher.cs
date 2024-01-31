@@ -1,7 +1,8 @@
 ﻿namespace Luthor.Context;
 
-public delegate ReadTokenResult TokenReader(
+public delegate void TokenMatcher(
     string source,
     int offset,
     int lastNewLineOffset,
-    int lineNumber);
+    int lineNumber,
+    ref MatchResult match);

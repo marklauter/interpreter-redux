@@ -74,23 +74,27 @@ public sealed class LexerTests(LexicalContext context)
         string expectedSymbol,
         int expectedOffset,
         int expectedLength,
-        Tokens expectedTokens)
+        Tokens expectedToken)
     {
         var lexer = new Lexer(context);
-        var result = lexer.ReadToken(source);
+        var match = default(MatchResult);
+        lexer.FirstToken(source, ref match);
         if (expectedOffset > 0)
         {
-            while (result.NextOffset <= expectedOffset && result.Token.Type != Tokens.EndOfSource)
+            while (match.NextOffset <= expectedOffset && match.Token.Type != Tokens.EndOfSource)
             {
-                result = lexer.ReadToken(source, result.NextOffset, result.LastNewLineOffset, result.LineNumber);
+                lexer.NextToken(source, ref match);
             }
         }
 
-        _ = result.Token;
-        Assert.Equal(expectedTokens, result.Token.Type);
-        Assert.Equal(expectedLength, result.Token.Length);
-        Assert.Equal(expectedSymbol, result.Token.Symbol);
-        Assert.Equal(expectedOffset, result.Token.Offset);
+        Assert.True(
+            expectedToken == Tokens.Error && !match.IsMatch()
+            || expectedToken != Tokens.Error && match.IsMatch());
+
+        Assert.Equal(expectedToken, match.Token.Type);
+        Assert.Equal(expectedLength, match.Token.Length);
+        Assert.Equal(expectedSymbol, match.Token.Symbol);
+        Assert.Equal(expectedOffset, match.Token.Offset);
     }
 
     [Theory]
@@ -123,24 +127,29 @@ public sealed class LexerTests(LexicalContext context)
     [InlineData("", 29, 1, Tokens.Whitespace)]
     [InlineData("}", 30, 1, Tokens.CloseCircumfixDelimiter)]
     [InlineData("", 31, 0, Tokens.EndOfSource)]
-    public void Returns_Expected_Token_From_MultiToken_Source(string expectedSymbol, int expectedOffset, int expectedLength, Tokens expectedTokens)
+    public void Returns_Expected_Token_From_MultiToken_Source(string expectedSymbol, int expectedOffset, int expectedLength, Tokens expectedToken)
     {
         var source = "if (a + b) { let c = a + b^2; }";
         var lexer = new Lexer(context);
 
-        var response = lexer.ReadToken(source);
+        var match = default(MatchResult);
+        lexer.FirstToken(source, ref match);
         if (expectedOffset > 0)
         {
-            while (response.NextOffset <= expectedOffset && response.Token.Type != Tokens.EndOfSource)
+            while (match.NextOffset <= expectedOffset && match.Token.Type != Tokens.EndOfSource)
             {
-                response = lexer.ReadToken(source, response.NextOffset, response.LastNewLineOffset, response.LineNumber);
+                lexer.NextToken(source, ref match);
             }
         }
 
-        Assert.Equal(expectedTokens, response.Token.Type);
-        Assert.Equal(expectedLength, response.Token.Length);
-        Assert.Equal(expectedSymbol, response.Token.Symbol);
-        Assert.Equal(expectedOffset, response.Token.Offset);
+        Assert.True(
+            expectedToken == Tokens.Error && !match.IsMatch()
+            || expectedToken != Tokens.Error && match.IsMatch());
+
+        Assert.Equal(expectedToken, match.Token.Type);
+        Assert.Equal(expectedLength, match.Token.Length);
+        Assert.Equal(expectedSymbol, match.Token.Symbol);
+        Assert.Equal(expectedOffset, match.Token.Offset);
     }
 
     [Theory]
@@ -167,18 +176,20 @@ public sealed class LexerTests(LexicalContext context)
         var source = "1.0 2.0 3.0 397.173 89 0.1  1237";
         var lexer = new Lexer(context);
 
-        var result = lexer.ReadToken(source);
+        var match = default(MatchResult);
+        lexer.FirstToken(source, ref match);
         if (expectedOffset > 0)
         {
-            while (result.NextOffset <= expectedOffset && result.Token.Type != Tokens.EndOfSource)
+            while (match.NextOffset <= expectedOffset && match.Token.Type != Tokens.EndOfSource)
             {
-                result = lexer.ReadToken(source, result.NextOffset, result.LastNewLineOffset, result.LineNumber);
+                lexer.NextToken(source, ref match);
             }
         }
 
-        Assert.Equal(expectedTokens, result.Token.Type);
-        Assert.Equal(expectedLength, result.Token.Length);
-        Assert.Equal(expectedSymbol, result.Token.Symbol);
-        Assert.Equal(expectedOffset, result.Token.Offset);
+        Assert.True(match.IsMatch());
+        Assert.Equal(expectedTokens, match.Token.Type);
+        Assert.Equal(expectedLength, match.Token.Length);
+        Assert.Equal(expectedSymbol, match.Token.Symbol);
+        Assert.Equal(expectedOffset, match.Token.Offset);
     }
 }

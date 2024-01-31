@@ -1,7 +1,10 @@
 ﻿namespace Luthor.Context;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "it's a struct")]
-public readonly ref struct ReadTokenResult(
+[System.Diagnostics.CodeAnalysis.SuppressMessage
+    ("Design",
+    "CA1051:Do not declare visible instance fields",
+    Justification = "it's a struct")]
+public readonly ref struct MatchResult(
     Token token,
     int nextOffset,
     int lastNewLineOffset,
@@ -11,5 +14,4 @@ public readonly ref struct ReadTokenResult(
     public readonly int NextOffset = nextOffset;
     public readonly int LastNewLineOffset = lastNewLineOffset;
     public readonly int LineNumber = lineNumber;
-    public bool IsMatch => Token.Type.IsMatch();
 }

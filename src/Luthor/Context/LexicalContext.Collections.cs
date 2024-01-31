@@ -4,24 +4,24 @@ using System.Runtime.CompilerServices;
 namespace Luthor.Context;
 
 public sealed partial class LexicalContext
-    : IEnumerable<TokenReader>
+    : IEnumerable<TokenMatcher>
 {
-    public int Length => readers.Length;
+    public int Length => matchers.Length;
 
-    public TokenReader this[int i] => readers[i];
+    public TokenMatcher this[int i] => matchers[i];
 
-    public TokenReader this[Tokens key] => map[key];
+    public TokenMatcher this[Tokens key] => map[key];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<TokenReader> AsReadOnlySpan()
+    public ReadOnlySpan<TokenMatcher> AsReadOnlySpan()
     {
-        return readers.AsSpan();
+        return matchers.AsSpan();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public IEnumerator<TokenReader> GetEnumerator()
+    public IEnumerator<TokenMatcher> GetEnumerator()
     {
-        return (IEnumerator<TokenReader>)readers.GetEnumerator();
+        return (IEnumerator<TokenMatcher>)matchers.GetEnumerator();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

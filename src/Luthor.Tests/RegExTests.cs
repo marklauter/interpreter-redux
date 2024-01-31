@@ -1,12 +1,11 @@
 ﻿using Luthor.Context;
-using System.Text.RegularExpressions;
 
 namespace Luthor.Tests;
 
-public sealed class RegExTests(
-    LexicalContext readers,
-    LanguageSpecification languageSpecification)
+public sealed class RegExTests(LexicalContext context)
 {
+    private readonly LexicalContext context = context ?? throw new ArgumentNullException(nameof(context));
+
     [Theory]
     [InlineData(@"""hello, world.""", "hello, world.", true)]
     [InlineData(@"""hello, \""world.\""""", @"hello, \""world.\""", true)]
@@ -14,21 +13,17 @@ public sealed class RegExTests(
     [InlineData(@" ""hello, world.""", "", false)]
     public void StringLiterals(string source, string expectedSymbol, bool expectedSuccess)
     {
-        var reader = readers[Tokens.StringLiteral];
+        var matcher = context[Tokens.StringLiteral];
 
-        var result = reader.Invoke(source, 0, 0, 1);
-        Assert.Equal(expectedSuccess, result.IsMatch);
-        if (result.IsMatch)
+        var match = default(MatchResult);
+        matcher(source, 0, 0, 1, ref match);
+
+        Assert.Equal(expectedSuccess, match.IsMatch());
+        if (match.IsMatch())
         {
-            Assert.Equal(expectedSymbol, result.Token.Symbol[1..^1]);
+            Assert.Equal(expectedSymbol, match.Token.Symbol[1..^1]);
         }
     }
-
-    private const RegexOptions ExpressionOptions =
-        RegexOptions.CultureInvariant |
-        RegexOptions.ExplicitCapture |
-        RegexOptions.Compiled |
-        RegexOptions.Singleline;
 
     //[Theory]
     //[InlineData("(}", false, 0, 0)]
@@ -85,22 +80,15 @@ public sealed class RegExTests(
     //[InlineData("x[(x + y) *x] / x[2]", true, 1, 1)]
     //[InlineData("[", false, 0, 1)]
     //[InlineData("]", false, 0, 1)]
-    //public void CircumfixDelimiters(string source, bool expectedSuccess, int expectedOffset, int expectedLength)
+    //public void CircumfixDelimiters(string source, string expectedSymbol, bool expectedSuccess)
     //{
-    //    Assert.True(languageSpecification
-    //        .TryGetCircumfixDelimiterOpenPattern(out var pattern));
-    //    Assert.NotNull(pattern);
-    //    Assert.NotEmpty(pattern);
+    //    var matcher = context[Tokens.OpenCircumfixDelimiter];
 
-    //    var regex = new Regex($@"\G(?:{pattern})", ExpressionOptions);
-
-    //    var match = regex.Match(source, expectedOffset);
-    //    Assert.Equal(expectedSuccess, match.Success);
-    //    if (match.Success)
+    //    var match = matcher(source, 0, 0, 1);
+    //    Assert.Equal(expectedSuccess, match.IsMatch());
+    //    if (match.IsMatch())
     //    {
-    //        Assert.Equal(expectedOffset, match.Index);
-    //        //Assert.Equal(expectedLength, match.ValueSpan.Length);
-    //        Assert.Equal(expectedLength, expectedLength);
+    //        Assert.Equal(expectedSymbol, match.Token.Symbol[1..^1]);
     //    }
     //}
 }

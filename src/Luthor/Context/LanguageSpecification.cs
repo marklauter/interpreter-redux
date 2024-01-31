@@ -10,11 +10,11 @@ public sealed class LanguageSpecification
     public IEnumerable<string> CommentPrefixes { get; init; } = Array.Empty<string>();
     public IEnumerable<string> ReservedWords { get; init; } = Array.Empty<string>();
     /// <summary>
-    /// delimiters that appear in pairs, like parentheses, brackets, and braces
+    /// delimiters that appear in pairs and encapsulate sets of symbols to create blocks or groupings, like parentheses, brackets, and braces
     /// </summary>
     public IEnumerable<CircumfixPair> CircumfixDelimiterPairs { get; init; } = Array.Empty<CircumfixPair>();
     /// <summary>
-    /// delimiters that appear alone, like comma, semicolon, and period
+    /// delimiters that appear alone and separate elements, like comma, semicolon, and period
     /// </summary>
     public IEnumerable<string> InfixDelimiters { get; init; } = Array.Empty<string>();
 
