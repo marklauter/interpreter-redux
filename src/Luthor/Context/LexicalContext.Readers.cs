@@ -1,10 +1,9 @@
-﻿using Luthor.Exceptions;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Luthor.Context;
 
-public partial class LexicalContext
+public sealed partial class LexicalContext
 {
     private const RegexOptions RegularExpressionOptions =
         RegexOptions.CultureInvariant |
@@ -32,12 +31,12 @@ public partial class LexicalContext
         var match = regex.Match(source, offset);
 
         return match.Success
-            ? new ReadTokenResult(
+            ? new(
                 new(match.Index, match.Length, tokenType, match.Value),
                 match.Index + match.Length,
                 lastNewLineOffset,
                 lineNumber)
-            : new ReadTokenResult(
+            : new(
                 new(offset, 0, Tokens.NoMatch | tokenType, String.Empty),
                 offset,
                 lastNewLineOffset,
@@ -103,12 +102,12 @@ public partial class LexicalContext
         var match = regex.Match(source, offset);
 
         return match.Success
-            ? new ReadTokenResult(
+            ? new(
                 new(match.Index, match.Length, tokenType, String.Empty),
                 match.Index + match.Length,
                 lastNewLineOffset,
                 lineNumber)
-            : new ReadTokenResult(
+            : new(
                 new(offset, 0, Tokens.NoMatch & tokenType, String.Empty),
                 offset,
                 lastNewLineOffset,
@@ -138,7 +137,7 @@ public partial class LexicalContext
         int offset)
     {
         return offset + span.Length <= source.Length
-            && source[offset..].SequenceEqual(span);
+            && source[offset..(offset + span.Length)].SequenceEqual(span);
     }
 
     private static ReadTokenResult MatchCircumfixOpenDelimiter(
@@ -207,11 +206,15 @@ public partial class LexicalContext
         }
 
         // level > 0 means no match, return success = false
-        return level != 0
-            ? throw new CircumfixDelimiterMismatchException($"no matching close token for {openDelimiter}. Expected {closeDelimiter}")
-            : new(
+        return level == 0
+            ? new(
                 new(offset, openDelimiterLength, tokenType, openDelimiter),
                 offset + openDelimiterLength,
+                lastNewLineOffset,
+                lineNumber)
+            : new(
+                new(offset, 0, Tokens.NoMatch | tokenType, String.Empty),
+                offset,
                 lastNewLineOffset,
                 lineNumber);
     }
@@ -256,7 +259,7 @@ public partial class LexicalContext
         var closeDelimiter = closeDelimiters[index];
         var openDelimiterLength = openDelimiter.Length;
         var closeDelimiterLength = closeDelimiter.Length;
-        var position = offset;
+        var position = offset - 1;
         var level = 1;
 
         // while level > 0 and not BOF
@@ -282,11 +285,15 @@ public partial class LexicalContext
         }
 
         // level > 0 means no match, return success = false
-        return level > 0
-            ? throw new CircumfixDelimiterMismatchException($"no matching open token for {closeDelimiter}. Expected {openDelimiter}")
+        return level == 0
+            ? new(
+                new(offset, closeDelimiterLength, tokenType, closeDelimiter),
+                offset + closeDelimiterLength,
+                lastNewLineOffset,
+                lineNumber)
             : new(
-                new(offset, openDelimiterLength, tokenType, openDelimiter),
-                offset + openDelimiterLength,
+                new(offset, 0, Tokens.NoMatch | tokenType, String.Empty),
+                offset,
                 lastNewLineOffset,
                 lineNumber);
     }
@@ -628,19 +635,19 @@ public partial class LexicalContext
         return index;
     }
 
-    [GeneratedRegex(@"\G(?:\b\d+(?:\.{1}\d+)?\b)", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\G\b\d+(?:\.?\d+)?(?:[eE]{1}\d+)*(?!\.)\b", RegularExpressionOptions)]
     private static partial Regex NumericLiteralExpression();
 
-    [GeneratedRegex(@"\G(?:""(?:[^""\\\n\r]|\\.)*"")", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\G""(?:[^""\\\n\r]|\\.)*""", RegularExpressionOptions)]
     private static partial Regex StringLiteralExpression();
 
     // todo: need to add char literal pattern for escape codes like \b, \t, \n, \r, \f, \', \", \\, \u0000, \uFFFF
-    [GeneratedRegex(@"\G(?:'[^']')", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\G'[^']'", RegularExpressionOptions)]
     private static partial Regex CharacterLiteralExpression();
 
-    [GeneratedRegex(@"\G(?:\r\n|[\r\n])", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\G\r\n|[\r\n]", RegularExpressionOptions)]
     private static partial Regex NewLineExpression();
 
-    [GeneratedRegex(@"\G(?:\s+)", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\G\s+", RegularExpressionOptions)]
     private static partial Regex WhitespaceExpression();
 }

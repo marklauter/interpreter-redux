@@ -2,7 +2,7 @@
 
 namespace Luthor.Context;
 
-public partial class LexicalContext
+public sealed partial class LexicalContext
 {
     private readonly ReadOnlyDictionary<Tokens, TokenReader> map;
     private readonly TokenReader[] readers = null!;

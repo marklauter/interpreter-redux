@@ -27,7 +27,8 @@ public sealed class RegExTests(
     private const RegexOptions ExpressionOptions =
         RegexOptions.CultureInvariant |
         RegexOptions.ExplicitCapture |
-        RegexOptions.Compiled;
+        RegexOptions.Compiled |
+        RegexOptions.Singleline;
 
     //[Theory]
     //[InlineData("(}", false, 0, 0)]

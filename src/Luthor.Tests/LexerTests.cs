@@ -39,7 +39,7 @@ public sealed class LexerTests(LexicalContext context)
     [InlineData("12.340", "12.340", 0, 6, Tokens.NumericLiteral)]
     [InlineData("1.2340", "1.2340", 0, 6, Tokens.NumericLiteral)]
     [InlineData("0.1234", "0.1234", 0, 6, Tokens.NumericLiteral)]
-    [InlineData("1234. ", "", 0, 5, Tokens.Error)]
+    [InlineData("1234. ", @"{""line"": 1, ""column"": 0}", 0, 0, Tokens.Error)]
 
     [InlineData(@"""hello""", @"""hello""", 0, 7, Tokens.StringLiteral)]
     [InlineData(@"""hello \""world\""""", @"""hello \""world\""""", 0, 17, Tokens.StringLiteral)]
@@ -74,74 +74,74 @@ public sealed class LexerTests(LexicalContext context)
         string expectedSymbol,
         int expectedOffset,
         int expectedLength,
-        Tokens expectedTokenType)
+        Tokens expectedTokens)
     {
         var lexer = new Lexer(context);
         var result = lexer.ReadToken(source);
         if (expectedOffset > 0)
         {
-            while (result.Offset <= expectedOffset && result.Token.Type != Tokens.EndOfSource)
+            while (result.NextOffset <= expectedOffset && result.Token.Type != Tokens.EndOfSource)
             {
-                result = lexer.ReadToken(source, result.Offset, result.LastNewLineOffset, result.LineNumber);
+                result = lexer.ReadToken(source, result.NextOffset, result.LastNewLineOffset, result.LineNumber);
             }
         }
 
         _ = result.Token;
-        Assert.Equal(expectedTokenType, result.Token.Type);
+        Assert.Equal(expectedTokens, result.Token.Type);
         Assert.Equal(expectedLength, result.Token.Length);
         Assert.Equal(expectedSymbol, result.Token.Symbol);
         Assert.Equal(expectedOffset, result.Token.Offset);
     }
 
-    //    //[Theory]
-    //    //[InlineData("if", 0, 2, TokenType.ReservedWord)]
-    //    //[InlineData("", 2, 1, TokenType.Whitespace)]
-    //    //[InlineData("(", 3, 1, TokenType.Punctuation)]
-    //    //[InlineData("a", 4, 1, TokenType.Identifier)]
-    //    //[InlineData("", 5, 1, TokenType.Whitespace)]
-    //    //[InlineData("+", 6, 1, TokenType.InfixOperator)]
-    //    //[InlineData("", 7, 1, TokenType.Whitespace)]
-    //    //[InlineData("b", 8, 1, TokenType.Identifier)]
-    //    //[InlineData(")", 9, 1, TokenType.Punctuation)]
-    //    //[InlineData("", 10, 1, TokenType.Whitespace)]
-    //    //[InlineData("{", 11, 1, TokenType.Punctuation)]
-    //    //[InlineData("", 12, 1, TokenType.Whitespace)]
-    //    //[InlineData("let", 13, 3, TokenType.ReservedWord)]
-    //    //[InlineData("", 16, 1, TokenType.Whitespace)]
-    //    //[InlineData("c", 17, 1, TokenType.Identifier)]
-    //    //[InlineData("", 18, 1, TokenType.Whitespace)]
-    //    //[InlineData("=", 19, 1, TokenType.InfixOperator)]
-    //    //[InlineData("", 20, 1, TokenType.Whitespace)]
-    //    //[InlineData("a", 21, 1, TokenType.Identifier)]
-    //    //[InlineData("", 22, 1, TokenType.Whitespace)]
-    //    //[InlineData("+", 23, 1, TokenType.InfixOperator)]
-    //    //[InlineData("", 24, 1, TokenType.Whitespace)]
-    //    //[InlineData("b", 25, 1, TokenType.Identifier)]
-    //    //[InlineData("^", 26, 1, TokenType.InfixOperator)]
-    //    //[InlineData("2", 27, 1, TokenType.NumericLiteral)]
-    //    //[InlineData(";", 28, 1, TokenType.Punctuation)]
-    //    //[InlineData("", 29, 1, TokenType.Whitespace)]
-    //    //[InlineData("}", 30, 1, TokenType.Punctuation)]
-    //    //[InlineData("", 31, 0, TokenType.EndOfSource)]
-    //    //public void Returns_Expected_Token_From_MultiToken_Source(string expectedValue, int expectedOffset, int expectedLength, TokenType expectedTokenType)
-    //    //{
-    //    //    var source = "if (a + b) { let c = a + b^2; }";
-    //    //    var lexer = new Lexer(context);
+    [Theory]
+    [InlineData("if", 0, 2, Tokens.ReservedWord)]
+    [InlineData("", 2, 1, Tokens.Whitespace)]
+    [InlineData("(", 3, 1, Tokens.OpenCircumfixDelimiter)]
+    [InlineData("a", 4, 1, Tokens.Identifier)]
+    [InlineData("", 5, 1, Tokens.Whitespace)]
+    [InlineData("+", 6, 1, Tokens.Operator)]
+    [InlineData("", 7, 1, Tokens.Whitespace)]
+    [InlineData("b", 8, 1, Tokens.Identifier)]
+    [InlineData(")", 9, 1, Tokens.CloseCircumfixDelimiter)]
+    [InlineData("", 10, 1, Tokens.Whitespace)]
+    [InlineData("{", 11, 1, Tokens.OpenCircumfixDelimiter)]
+    [InlineData("", 12, 1, Tokens.Whitespace)]
+    [InlineData("let", 13, 3, Tokens.ReservedWord)]
+    [InlineData("", 16, 1, Tokens.Whitespace)]
+    [InlineData("c", 17, 1, Tokens.Identifier)]
+    [InlineData("", 18, 1, Tokens.Whitespace)]
+    [InlineData("=", 19, 1, Tokens.Operator)]
+    [InlineData("", 20, 1, Tokens.Whitespace)]
+    [InlineData("a", 21, 1, Tokens.Identifier)]
+    [InlineData("", 22, 1, Tokens.Whitespace)]
+    [InlineData("+", 23, 1, Tokens.Operator)]
+    [InlineData("", 24, 1, Tokens.Whitespace)]
+    [InlineData("b", 25, 1, Tokens.Identifier)]
+    [InlineData("^", 26, 1, Tokens.Operator)]
+    [InlineData("2", 27, 1, Tokens.NumericLiteral)]
+    [InlineData(";", 28, 1, Tokens.InfixDelimiter)]
+    [InlineData("", 29, 1, Tokens.Whitespace)]
+    [InlineData("}", 30, 1, Tokens.CloseCircumfixDelimiter)]
+    [InlineData("", 31, 0, Tokens.EndOfSource)]
+    public void Returns_Expected_Token_From_MultiToken_Source(string expectedSymbol, int expectedOffset, int expectedLength, Tokens expectedTokens)
+    {
+        var source = "if (a + b) { let c = a + b^2; }";
+        var lexer = new Lexer(context);
 
-    //    //    var response = lexer.ReadToken(source);
-    //    //    if (expectedOffset > 0)
-    //    //    {
-    //    //        while (response.Position <= expectedOffset && response.Token.Type != TokenType.EndOfSource)
-    //    //        {
-    //    //            response = lexer.ReadToken(source, response.Position, response.LastNewLineOffset, response.LineNumber);
-    //    //        }
-    //    //    }
+        var response = lexer.ReadToken(source);
+        if (expectedOffset > 0)
+        {
+            while (response.NextOffset <= expectedOffset && response.Token.Type != Tokens.EndOfSource)
+            {
+                response = lexer.ReadToken(source, response.NextOffset, response.LastNewLineOffset, response.LineNumber);
+            }
+        }
 
-    //    //    Assert.Equal(expectedTokenType, response.Token.Type);
-    //    //    Assert.Equal(expectedLength, response.Token.Length);
-    //    //    Assert.Equal(expectedValue, response.Token.Value);
-    //    //    Assert.Equal(expectedOffset, response.Token.Offset);
-    //    //}
+        Assert.Equal(expectedTokens, response.Token.Type);
+        Assert.Equal(expectedLength, response.Token.Length);
+        Assert.Equal(expectedSymbol, response.Token.Symbol);
+        Assert.Equal(expectedOffset, response.Token.Offset);
+    }
 
     [Theory]
     [InlineData("1.0", 0, 3, Tokens.NumericLiteral)]
@@ -162,7 +162,7 @@ public sealed class LexerTests(LexicalContext context)
         string expectedSymbol,
         int expectedOffset,
         int expectedLength,
-        Tokens expectedTokenType)
+        Tokens expectedTokens)
     {
         var source = "1.0 2.0 3.0 397.173 89 0.1  1237";
         var lexer = new Lexer(context);
@@ -170,13 +170,13 @@ public sealed class LexerTests(LexicalContext context)
         var result = lexer.ReadToken(source);
         if (expectedOffset > 0)
         {
-            while (result.Offset <= expectedOffset && result.Token.Type != Tokens.EndOfSource)
+            while (result.NextOffset <= expectedOffset && result.Token.Type != Tokens.EndOfSource)
             {
-                result = lexer.ReadToken(source, result.Offset, result.LastNewLineOffset, result.LineNumber);
+                result = lexer.ReadToken(source, result.NextOffset, result.LastNewLineOffset, result.LineNumber);
             }
         }
 
-        Assert.Equal(expectedTokenType, result.Token.Type);
+        Assert.Equal(expectedTokens, result.Token.Type);
         Assert.Equal(expectedLength, result.Token.Length);
         Assert.Equal(expectedSymbol, result.Token.Symbol);
         Assert.Equal(expectedOffset, result.Token.Offset);

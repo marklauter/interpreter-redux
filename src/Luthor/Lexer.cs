@@ -23,12 +23,12 @@ public readonly ref struct Lexer(LexicalContext Context)
         var length = readers.Length;
         for (var i = 0; i < length; ++i)
         {
-            var readResult = readers[i]
+            var result = readers[i]
                 .Invoke(source, offset, lastNewLineOffset, lineNumber);
 
-            if (readResult.Token.Type.IsMatch())
+            if (result.IsMatch)
             {
-                return readResult;
+                return result;
             }
         }
 

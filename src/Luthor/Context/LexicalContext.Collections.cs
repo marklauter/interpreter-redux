@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Luthor.Context;
 
-public partial class LexicalContext
+public sealed partial class LexicalContext
     : IEnumerable<TokenReader>
 {
     public int Length => readers.Length;

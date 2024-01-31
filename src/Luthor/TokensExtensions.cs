@@ -2,7 +2,7 @@
 
 namespace Luthor;
 
-public static class TokenTypeExtensions
+public static class TokensExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNoMatch(this Tokens type)
