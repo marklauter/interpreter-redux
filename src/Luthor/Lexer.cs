@@ -10,21 +10,26 @@ public readonly ref struct Lexer(LexicalContext Context)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void FirstToken(string source, ref MatchResult match)
     {
-        ReadToken(source, 0, 0, 1, ref match);
+        match = new(default, 0, 0, 1);
+        ReadToken(source, ref match);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void NextToken(string source, ref MatchResult match)
     {
-        ReadToken(source, match.NextOffset, match.LastNewLineOffset, match.LineNumber, ref match);
+        ReadToken(source, ref match);
     }
 
-    private void ReadToken(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+    private void ReadToken(string source, ref MatchResult match)
     {
+        var offset = match.NextOffset;
+        var lastNewLineOffset = match.LastNewLineOffset;
+        var lineNumber = match.LineNumber;
+
         var length = matchers.Length;
         for (var i = 0; i < length; ++i)
         {
-            matchers[i](source, offset, lastNewLineOffset, lineNumber, ref match);
+            matchers[i](source, ref match);
             if (match.IsMatch())
             {
                 return;

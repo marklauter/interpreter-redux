@@ -13,116 +13,104 @@ public sealed partial class LexicalContext
 
     private static void MatchRegex(
         string source,
-        int offset,
-        int lastNewLineOffset,
-        int lineNumber,
         Tokens tokenType,
         Regex regex,
         ref MatchResult match)
     {
-        if (offset >= source.Length)
+        if (match.NextOffset >= source.Length)
         {
             match = new(
-                new Token(offset, 0, Tokens.EndOfSource, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new Token(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
 
             return;
         }
 
-        var regexMatch = regex.Match(source, offset);
+        var regexMatch = regex.Match(source, match.NextOffset);
 
         match = regexMatch.Success
             ? new(
                 new(regexMatch.Index, regexMatch.Length, tokenType, regexMatch.Value),
                 regexMatch.Index + regexMatch.Length,
-                lastNewLineOffset,
-                lineNumber)
+                match.LastNewLineOffset,
+                match.LineNumber)
             : new(
-                new(offset, 0, Tokens.NoMatch | tokenType, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.NoMatch | tokenType, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
     }
 
     private static void MatchNewLine(
         string source,
-        int offset,
-        int lastNewLineOffset,
-        int lineNumber,
         Regex regex,
         ref MatchResult match)
     {
-        if (offset >= source.Length)
+        if (match.NextOffset >= source.Length)
         {
             match = new(
-                new(offset, 0, Tokens.EndOfSource, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
 
             return;
         }
 
         var tokenType = Tokens.NewLine;
-        var regexMatch = regex.Match(source, offset);
+        var regexMatch = regex.Match(source, match.NextOffset);
 
         if (!regexMatch.Success)
         {
             match = new(
-                new(offset, 0, Tokens.NoMatch & tokenType, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.NoMatch & tokenType, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
 
             return;
         }
 
-        // for error tracking. it helps establish the column where the error occurred
-        lastNewLineOffset = regexMatch.Index;
-        ++lineNumber;
-
         match = new(
             new(regexMatch.Index, regexMatch.Length, tokenType, String.Empty),
             regexMatch.Index + regexMatch.Length,
-            lastNewLineOffset,
-            lineNumber);
+            // for error tracking. it helps establish the column where the error occurred
+            regexMatch.Index,
+            match.LineNumber + 1);
     }
 
     private static void MatchWhitespace(
         string source,
-        int offset,
-        int lastNewLineOffset,
-        int lineNumber,
         Regex regex,
         ref MatchResult match)
     {
-        if (offset >= source.Length)
+        if (match.NextOffset >= source.Length)
         {
             match = new(
-                new(offset, 0, Tokens.EndOfSource, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
 
             return;
         }
 
         var tokenType = Tokens.Whitespace;
-        var regexMatch = regex.Match(source, offset);
+        var regexMatch = regex.Match(source, match.NextOffset);
 
         match = regexMatch.Success
             ? new(
                 new(regexMatch.Index, regexMatch.Length, tokenType, String.Empty),
                 regexMatch.Index + regexMatch.Length,
-                lastNewLineOffset,
-                lineNumber)
+                match.LastNewLineOffset,
+                match.LineNumber)
             : new(
-                new(offset, 0, Tokens.NoMatch & tokenType, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.NoMatch & tokenType, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
     }
 
     private static int IndexOfDelimeter(
@@ -154,39 +142,36 @@ public sealed partial class LexicalContext
 
     private static void MatchCircumfixOpenDelimiter(
         ReadOnlySpan<char> source,
-        int offset,
-        int lastNewLineOffset,
-        int lineNumber,
         ReadOnlySpan<string> openDelimiters,
         ReadOnlySpan<string> closeDelimiters,
         ref MatchResult match)
     {
-        if (offset >= source.Length)
+        if (match.NextOffset >= source.Length)
         {
             match = new(
-                new(offset, 0, Tokens.EndOfSource, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
 
             return;
         }
 
         var index = IndexOfDelimeter(
             ref source,
-            offset,
+            match.NextOffset,
             ref openDelimiters);
 
         var tokenType = Tokens.OpenCircumfixDelimiter;
 
-        // no match, return success = false
+        // no match
         if (index == -1)
         {
             match = new(
-                new(offset, 0, Tokens.NoMatch & tokenType, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.NoMatch & tokenType, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
 
             return;
         }
@@ -197,7 +182,7 @@ public sealed partial class LexicalContext
         var closeDelimiter = closeDelimiters[index].AsSpan();
         var openDelimiterLength = openDelimiter.Length;
         var closeDelimiterLength = closeDelimiter.Length;
-        var position = offset + openDelimiterLength;
+        var position = match.NextOffset + openDelimiterLength;
         var level = 1;
 
         // while level > 0 and not EOF
@@ -225,52 +210,49 @@ public sealed partial class LexicalContext
         // level > 0 means no match, return success = false
         match = level == 0
             ? new(
-                new(offset, openDelimiterLength, tokenType, openDelimiter.ToString()),
-                offset + openDelimiterLength,
-                lastNewLineOffset,
-                lineNumber)
+                new(match.NextOffset, openDelimiterLength, tokenType, openDelimiter.ToString()),
+                match.NextOffset + openDelimiterLength,
+                match.LastNewLineOffset,
+                match.LineNumber)
             : new(
-                new(offset, 0, Tokens.NoMatch | tokenType, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.NoMatch | tokenType, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
     }
 
     private static void MatchCircumfixCloseDelimiter(
         ReadOnlySpan<char> source,
-        int offset,
-        int lastNewLineOffset,
-        int lineNumber,
         ReadOnlySpan<string> openDelimiters,
         ReadOnlySpan<string> closeDelimiters,
         ref MatchResult match)
     {
-        if (offset >= source.Length)
+        if (match.NextOffset >= source.Length)
         {
             match = new(
-                new(offset, 0, Tokens.EndOfSource, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
 
             return;
         }
 
         var index = IndexOfDelimeter(
             ref source,
-            offset,
+            match.NextOffset,
             ref closeDelimiters);
 
         var tokenType = Tokens.CloseCircumfixDelimiter;
 
-        // no match, return success = false
+        // no match
         if (index == -1)
         {
             match = new(
-                new(offset, 0, Tokens.NoMatch & tokenType, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.NoMatch & tokenType, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
 
             return;
         }
@@ -281,7 +263,7 @@ public sealed partial class LexicalContext
         var closeDelimiter = closeDelimiters[index].AsSpan();
         var openDelimiterLength = openDelimiter.Length;
         var closeDelimiterLength = closeDelimiter.Length;
-        var position = offset - 1;
+        var position = match.NextOffset - 1;
         var level = 1;
 
         // while level > 0 and not BOF
@@ -309,15 +291,15 @@ public sealed partial class LexicalContext
         // level > 0 means no match
         match = level == 0
             ? new(
-                new(offset, closeDelimiterLength, tokenType, closeDelimiter.ToString()),
-                offset + closeDelimiterLength,
-                lastNewLineOffset,
-                lineNumber)
+                new(match.NextOffset, closeDelimiterLength, tokenType, closeDelimiter.ToString()),
+                match.NextOffset + closeDelimiterLength,
+                match.LastNewLineOffset,
+                match.LineNumber)
             : new(
-                new(offset, 0, Tokens.NoMatch | tokenType, String.Empty),
-                offset,
-                lastNewLineOffset,
-                lineNumber);
+                new(match.NextOffset, 0, Tokens.NoMatch | tokenType, String.Empty),
+                match.NextOffset,
+                match.LastNewLineOffset,
+                match.LineNumber);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -331,12 +313,9 @@ public sealed partial class LexicalContext
         {
             var regex = new Regex($@"\G(?:{reservedWordPattern})", RegularExpressionOptions);
 
-            void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+            void matcher(string source, ref MatchResult match)
                 => MatchRegex(
                     source,
-                    offset,
-                    lastNewLineOffset,
-                    lineNumber,
                     Tokens.ReservedWord,
                     regex,
                     ref match);
@@ -360,19 +339,16 @@ public sealed partial class LexicalContext
         if (spec.TryGetBooleanLiteralPattern(out var booleanLiteralPattern))
         {
             var regex = new Regex($@"\G(?:{booleanLiteralPattern})", RegularExpressionOptions);
-            void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+
+            void matcher(string source, ref MatchResult match)
                 => MatchRegex(
                     source,
-                    offset,
-                    lastNewLineOffset,
-                    lineNumber,
                     Tokens.BooleanLiteral,
                     regex,
                     ref match);
 
             matchers[index] = matcher;
             map[Tokens.BooleanLiteral] = matcher;
-
 
             ++index;
         }
@@ -398,12 +374,9 @@ public sealed partial class LexicalContext
 
         var regex = new Regex(identifierPattern, RegularExpressionOptions);
 
-        void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+        void matcher(string source, ref MatchResult match)
             => MatchRegex(
                 source,
-                offset,
-                lastNewLineOffset,
-                lineNumber,
                 Tokens.Identifier,
                 regex,
                 ref match);
@@ -421,12 +394,10 @@ public sealed partial class LexicalContext
         int index)
     {
         var regex = NumericLiteralExpression();
-        void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+
+        void matcher(string source, ref MatchResult match)
             => MatchRegex(
                 source,
-                offset,
-                lastNewLineOffset,
-                lineNumber,
                 Tokens.NumericLiteral,
                 regex,
                 ref match);
@@ -444,12 +415,10 @@ public sealed partial class LexicalContext
         int index)
     {
         var regex = StringLiteralExpression();
-        void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+
+        void matcher(string source, ref MatchResult match)
             => MatchRegex(
                 source,
-                offset,
-                lastNewLineOffset,
-                lineNumber,
                 Tokens.StringLiteral,
                 regex,
                 ref match);
@@ -467,12 +436,10 @@ public sealed partial class LexicalContext
         int index)
     {
         var regex = CharacterLiteralExpression();
-        void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+
+        void matcher(string source, ref MatchResult match)
             => MatchRegex(
                 source,
-                offset,
-                lastNewLineOffset,
-                lineNumber,
                 Tokens.CharacterLiteral,
                 regex,
                 ref match);
@@ -490,12 +457,9 @@ public sealed partial class LexicalContext
         int index)
     {
         var regex = NewLineExpression();
-        void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+        void matcher(string source, ref MatchResult match)
             => MatchNewLine(
                 source,
-                offset,
-                lastNewLineOffset,
-                lineNumber,
                 regex,
                 ref match);
 
@@ -512,12 +476,9 @@ public sealed partial class LexicalContext
         int index)
     {
         var regex = WhitespaceExpression();
-        void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+        void matcher(string source, ref MatchResult match)
             => MatchWhitespace(
                 source,
-                offset,
-                lastNewLineOffset,
-                lineNumber,
                 regex,
                 ref match);
 
@@ -538,12 +499,9 @@ public sealed partial class LexicalContext
         {
             var regex = new Regex($@"\G(?:{delimiterPattern})", RegularExpressionOptions);
 
-            void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+            void matcher(string source, ref MatchResult match)
                 => MatchRegex(
                     source,
-                    offset,
-                    lastNewLineOffset,
-                    lineNumber,
                     Tokens.InfixDelimiter,
                     regex,
                     ref match);
@@ -576,12 +534,9 @@ public sealed partial class LexicalContext
                 .Select(pair => pair.Close)
                 .ToArray();
 
-            void openMatcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+            void openMatcher(string source, ref MatchResult match)
                 => MatchCircumfixOpenDelimiter(
                     source,
-                    offset,
-                    lastNewLineOffset,
-                    lineNumber,
                     openDelimiters,
                     closeDelimiters,
                     ref match);
@@ -591,12 +546,9 @@ public sealed partial class LexicalContext
 
             ++index;
 
-            void closeMatcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+            void closeMatcher(string source, ref MatchResult match)
                 => MatchCircumfixCloseDelimiter(
                     source,
-                    offset,
-                    lastNewLineOffset,
-                    lineNumber,
                     openDelimiters,
                     closeDelimiters,
                     ref match);
@@ -621,12 +573,9 @@ public sealed partial class LexicalContext
         {
             var regex = new Regex($@"\G(?:{operatorPattern})", RegularExpressionOptions);
 
-            void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+            void matcher(string source, ref MatchResult match)
                 => MatchRegex(
                     source,
-                    offset,
-                    lastNewLineOffset,
-                    lineNumber,
                     Tokens.Operator,
                     regex,
                     ref match);
@@ -651,12 +600,9 @@ public sealed partial class LexicalContext
         {
             var regex = new Regex($@"\G(?:{commentPattern})", RegularExpressionOptions);
 
-            void matcher(string source, int offset, int lastNewLineOffset, int lineNumber, ref MatchResult match)
+            void matcher(string source, ref MatchResult match)
                 => MatchRegex(
                     source,
-                    offset,
-                    lastNewLineOffset,
-                    lineNumber,
                     Tokens.Comment,
                     regex,
                     ref match);

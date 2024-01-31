@@ -15,8 +15,8 @@ public sealed class RegExTests(LexicalContext context)
     {
         var matcher = context[Tokens.StringLiteral];
 
-        var match = default(MatchResult);
-        matcher(source, 0, 0, 1, ref match);
+        var match = new MatchResult(default, 0, 0, 1);
+        matcher(source, ref match);
 
         Assert.Equal(expectedSuccess, match.IsMatch());
         if (match.IsMatch())
