@@ -11,7 +11,7 @@ public sealed class Startup
         Operators = new string[] { "!", "~", "++", "--", "+", "-", "/", "*", "%", "|", "&", "?", "=", "<", ">", ">=", "<=", "^", },
         BooleanLiterals = new string[] { "true", "false" },
         ReservedWords = new string[] { "if", "else", "let" },
-        CommentPrefixes = new string[] { "//", "##" },
+        CommentPrefixes = new string[] { "//", "#" },
         CircumfixDelimiterPairs = new CircumfixPair[]
         {
             new ("(", ")"),
@@ -25,6 +25,6 @@ public sealed class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.TryAddSingleton(language);
-        services.TryAddSingleton(new LinguisticContext(language));
+        services.TryAddSingleton(new LexicalContext(language));
     }
 }

@@ -1,70 +1,42 @@
 ﻿using Luthor.Context;
-using Luthor.Tokens;
 using System.Runtime.CompilerServices;
 
 namespace Luthor;
 
 /// <summary>
-/// Mutable OO style lexer that maintains state internally.
+/// Immutable functional style lexer that maintains state on the stack.
 /// </summary>
 /// <param name="context">the linguistic context that defines the regex and scan precedence</param>
-/// <param name="source">the source to be parsed</param>
-public sealed class Lexer(
-    LinguisticContext context,
-    string source)
+// todo: Though the Flexer is slower in unit tests, the expectation is that the FLexer will be faster than the Lexer in real-world use cases because it never touches the heap. Will need to add bench to prove this with a parser.
+public readonly ref struct Lexer(LexicalContext Context)
 {
-    private int position;
-    private int lastNewLineOffset;
-    private int line = 1;
-    private readonly LinguisticContext context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly string source = source ?? throw new ArgumentNullException(nameof(source));
-
-    public IEnumerable<Token> ReadTokens()
-    {
-        var token = ReadToken();
-        yield return token;
-        while (token.Type != TokenType.EndOfSource)
-        {
-            token = ReadToken();
-            yield return token;
-        };
-    }
+    private readonly ReadOnlySpan<TokenReader> readers = Context.AsReadOnlySpan();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool IsEndOfSource()
+    public ReadTokenResult ReadToken(string source)
     {
-        return position >= source.Length;
+        return ReadToken(source, 0, 0, 1);
     }
 
-    public Token ReadToken()
+    public ReadTokenResult ReadToken(string source, int offset, int lastNewLineOffset, int lineNumber)
     {
-        if (IsEndOfSource())
-        {
-            return new Token(position, 0, TokenType.EndOfSource, String.Empty);
-        }
-
-        var length = context.Length;
-        var languages = context.AsReadOnlySpan();
+        var length = readers.Length;
         for (var i = 0; i < length; ++i)
         {
-            var language = languages[i];
-            var match = language.Expression.Match(source, position);
-            if (match.Success)
-            {
-                position += match.Length;
-                if (language.Type == TokenType.NewLine)
-                {
-                    lastNewLineOffset = match.Index; // for error tracking. it helps establish the column where the error occurred
-                    ++line;
-                }
+            var readResult = readers[i]
+                .Invoke(source, offset, lastNewLineOffset, lineNumber);
 
-                return language.Type is TokenType.Whitespace or TokenType.NewLine
-                    ? new Token(match.Index, match.Length, language.Type, String.Empty)
-                    : new Token(match.Index, match.Length, language.Type, match.Value);
+            if (readResult.Token.Type.IsMatch())
+            {
+                return readResult;
             }
         }
 
-        var column = position - lastNewLineOffset;
-        return new Token(position, 0, TokenType.Error, $"{{\"line\": {line}, \"column\": {column}}}");
+        var column = offset - lastNewLineOffset;
+        return new(
+            new Token(offset, 0, Tokens.Error, $"{{\"line\": {lineNumber}, \"column\": {column}}}"),
+            offset,
+            lastNewLineOffset,
+            lineNumber);
     }
 }

@@ -1,3 +1,5 @@
 ﻿namespace Luthor.Context;
 
-public sealed record CircumfixPair(string Open, string Close);
+public sealed record CircumfixPair(
+    string Open,
+    string Close);

@@ -61,49 +61,6 @@ public sealed class LanguageSpecification
         return pattern is not null;
     }
 
-    private string GetCircumfixDelimiterOpenPattern(CircumfixPair pair)
-    {
-        // https://stackoverflow.com/questions/546433/regular-expression-to-match-balanced-parentheses
-        // \((?>\((?<c>)|[^()]+|\)(?<-c>))*(?(c)(?!))\) 
-        // open(?>open(?<c>)|[^openclose]+|close(?<-c>))*(?(c)(?!))close 
-
-        var open = Regex.Escape(pair.Open);
-        var closeIsSquareBracket = pair.Close.Equals("]", StringComparison.OrdinalIgnoreCase);
-        var close = closeIsSquareBracket
-            ? @"\]"
-            : Regex.Escape(pair.Close);
-
-        var innerClose = closeIsSquareBracket
-            ? close
-            : close[^1].ToString();
-
-        return $@"({open})(?>{open}(?<c>)|[^{open}{innerClose}]+|{close}(?<-c>))*(?(c)(?!)){close}";
-
-        //https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions?redirectedfrom=MSDN#balancing_group_definition
-        //var pattern = $@"^[^{open}{innerClose}]*(((?'Open'{open})[^{open}{innerClose}]*)+((?'Close-Open'>)[^{open}{innerClose}]*)+)*(?(Open)(?!))$";
-        //return pattern;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetCircumfixDelimiterOpenPattern(out string? pattern)
-    {
-        pattern = null;
-        if (CircumfixDelimiterPairs.Any())
-        {
-            var patterns = CircumfixDelimiterPairs
-                .Select(GetCircumfixDelimiterOpenPattern);
-            pattern = String.Join("|", patterns);
-        }
-
-        return pattern is not null;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetCircumfixDelimiterClosePattern(out string? pattern)
-    {
-        return TryGetSimplePattern((IEnumerable<string>)CircumfixDelimiterPairs, out pattern);
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetInfixDelimiterPattern(out string? pattern)
     {
