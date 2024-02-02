@@ -1,5 +1,8 @@
-﻿namespace Luthor.Exceptions;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace Luthor.Exceptions;
+
+[ExcludeFromCodeCoverage]
 public class LexicalErrorException
     : Exception
 {

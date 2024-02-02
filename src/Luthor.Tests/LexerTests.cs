@@ -1,7 +1,9 @@
 ﻿using Luthor.Context;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luthor.Tests;
 
+[ExcludeFromCodeCoverage]
 public sealed class LexerTests(LexicalContext context)
 {
     private readonly LexicalContext context = context ?? throw new ArgumentNullException(nameof(context));

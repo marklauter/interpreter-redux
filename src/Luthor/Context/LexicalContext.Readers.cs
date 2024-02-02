@@ -11,20 +11,29 @@ public sealed partial class LexicalContext
         RegexOptions.Compiled |
         RegexOptions.Singleline;
 
-    private static void MatchRegex(
-        string source,
-        Tokens tokenType,
-        Regex regex,
-        ref MatchResult match)
+    private static bool CheckEndOfSource(ReadOnlySpan<char> source, ref MatchResult match)
     {
-        if (match.NextOffset >= source.Length)
+        var isEof = match.NextOffset >= source.Length;
+        if (isEof)
         {
             match = new(
                 new Token(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
                 match.NextOffset,
                 match.LastNewLineOffset,
                 match.LineNumber);
+        }
 
+        return isEof;
+    }
+
+    private static void MatchRegex(
+        string source,
+        Tokens tokenType,
+        Regex regex,
+        ref MatchResult match)
+    {
+        if (CheckEndOfSource(source, ref match))
+        {
             return;
         }
 
@@ -48,14 +57,8 @@ public sealed partial class LexicalContext
         Regex regex,
         ref MatchResult match)
     {
-        if (match.NextOffset >= source.Length)
+        if (CheckEndOfSource(source, ref match))
         {
-            match = new(
-                new(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
-                match.NextOffset,
-                match.LastNewLineOffset,
-                match.LineNumber);
-
             return;
         }
 
@@ -86,14 +89,8 @@ public sealed partial class LexicalContext
         Regex regex,
         ref MatchResult match)
     {
-        if (match.NextOffset >= source.Length)
+        if (CheckEndOfSource(source, ref match))
         {
-            match = new(
-                new(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
-                match.NextOffset,
-                match.LastNewLineOffset,
-                match.LineNumber);
-
             return;
         }
 
@@ -146,14 +143,8 @@ public sealed partial class LexicalContext
         ReadOnlySpan<string> closeDelimiters,
         ref MatchResult match)
     {
-        if (match.NextOffset >= source.Length)
+        if (CheckEndOfSource(source, ref match))
         {
-            match = new(
-                new(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
-                match.NextOffset,
-                match.LastNewLineOffset,
-                match.LineNumber);
-
             return;
         }
 
@@ -227,14 +218,8 @@ public sealed partial class LexicalContext
         ReadOnlySpan<string> closeDelimiters,
         ref MatchResult match)
     {
-        if (match.NextOffset >= source.Length)
+        if (CheckEndOfSource(source, ref match))
         {
-            match = new(
-                new(match.NextOffset, 0, Tokens.EndOfSource, String.Empty),
-                match.NextOffset,
-                match.LastNewLineOffset,
-                match.LineNumber);
-
             return;
         }
 

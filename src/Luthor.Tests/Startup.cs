@@ -1,9 +1,11 @@
 ﻿using Luthor.Context;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luthor.Tests;
 
+[ExcludeFromCodeCoverage]
 public sealed class Startup
 {
     private readonly LanguageSpecification language = new()

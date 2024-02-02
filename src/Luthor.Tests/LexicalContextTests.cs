@@ -1,7 +1,9 @@
 ﻿using Luthor.Context;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luthor.Tests;
 
+[ExcludeFromCodeCoverage]
 public sealed class LexicalContextTests(LanguageSpecification language)
 {
     private readonly LanguageSpecification language = language ?? throw new ArgumentNullException(nameof(language));
