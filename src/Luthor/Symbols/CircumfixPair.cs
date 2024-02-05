@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Luthor.Context;
+namespace Luthor.Symbols;
 
 [ExcludeFromCodeCoverage]
 public sealed record CircumfixPair(

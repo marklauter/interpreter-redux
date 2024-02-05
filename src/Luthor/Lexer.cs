@@ -1,48 +1,59 @@
-﻿using Luthor.Context;
-using System.Runtime.CompilerServices;
+﻿using Luthor.Tokens;
 
 namespace Luthor;
 
-public readonly ref struct Lexer(LexicalContext Context)
+public sealed class Lexer
 {
-    private readonly ReadOnlySpan<TokenMatcher> matchers = Context.AsReadOnlySpan();
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void FirstToken(string source, ref MatchResult match)
+    public Lexer(Tokenizers tokenizers,
+        string source)
     {
-        match = new(default, 0, 0, 1);
-        ReadToken(source, ref match);
+        this.tokenizers = tokenizers ?? throw new ArgumentNullException(nameof(tokenizers));
+        this.source = source ?? throw new ArgumentNullException(nameof(source));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void NextToken(string source, ref MatchResult match)
+    private readonly Tokenizers tokenizers;
+    private readonly string source;
+
+    private int offset;
+    private int lastNewLineOffset;
+    private int lineNumber = 1;
+
+    public IEnumerable<Token> Tokens()
     {
-        ReadToken(source, ref match);
+        var token = NextToken();
+        yield return token;
+        while (token.Type != TokenType.EndOfSource)
+        {
+            yield return NextToken();
+        };
     }
 
-    private void ReadToken(string source, ref MatchResult match)
+    public Token NextToken()
     {
-        var offset = match.NextOffset;
-        var lastNewLineOffset = match.LastNewLineOffset;
-        var lineNumber = match.LineNumber;
+        if (offset >= source.Length)
+        {
+            return new Token(offset, 0, TokenType.EndOfSource, String.Empty);
+        }
 
-        var length = matchers.Length;
+        var length = tokenizers.Length;
         for (var i = 0; i < length; ++i)
         {
-            matchers[i](source, ref match);
-            if (match.IsMatch())
+            var match = tokenizers[i];
+            var token = match(source, offset);
+            if (token.IsMatch())
             {
-                return;
+                offset += token.Length;
+                if (token.Type == TokenType.NewLine)
+                {
+                    lastNewLineOffset = token.Offset; // for error tracking. it helps establish the column where the error occurred
+                    ++lineNumber;
+                }
+
+                return token;
             }
         }
 
         var column = offset - lastNewLineOffset;
-        match = new(
-            new Token(offset, 0, Tokens.Error, $"{{\"line\": {lineNumber}, \"column\": {column}}}"),
-            offset,
-            lastNewLineOffset,
-            lineNumber);
-
-        return;
+        return new Token(offset, 0, TokenType.Error, $"{{\"line\": {lineNumber}, \"column\": {column}}}");
     }
 }

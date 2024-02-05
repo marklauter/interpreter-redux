@@ -1,19 +1,20 @@
-﻿using System.Collections.ObjectModel;
+﻿using Luthor.Symbols;
+using System.Collections.ObjectModel;
 
-namespace Luthor.Context;
+namespace Luthor.Tokens;
 
-public sealed partial class LexicalContext
+public sealed partial class Tokenizers
 {
-    private readonly ReadOnlyDictionary<Tokens, TokenMatcher> map;
-    private readonly TokenMatcher[] matchers = null!;
+    private readonly ReadOnlyDictionary<TokenType, PatternMatcher> map;
+    private readonly PatternMatcher[] patternMatchers = null!;
 
-    public LexicalContext(LanguageSpecification spec)
+    public Tokenizers(TerminalSymbolSpec spec)
     {
         ArgumentNullException.ThrowIfNull(spec);
 
         var index = 0;
-        var matchers = new TokenMatcher[13];
-        var map = new Dictionary<Tokens, TokenMatcher>();
+        var matchers = new PatternMatcher[13];
+        var map = new Dictionary<TokenType, PatternMatcher>();
 
         (index, var reservedWordPattern) = AddReservedWordMatcher(spec, matchers, map, index);
         (index, var booleanLiteralPattern) = AddBooleanLiteralMatcher(spec, matchers, map, index);
@@ -28,7 +29,7 @@ public sealed partial class LexicalContext
         index = AddCommentMatcher(spec, matchers, map, index);
         index = AddOperatorMatcher(spec, matchers, map, index);
 
-        this.matchers = matchers[..index];
+        patternMatchers = matchers[..index];
         this.map = map.AsReadOnly();
     }
 }

@@ -1,7 +1,15 @@
-﻿namespace Luthor.Context;
+﻿using System.Text.RegularExpressions;
 
-public static class RegexConstants
+namespace Luthor.Tokens;
+
+internal static class RegexConstants
 {
+    public const RegexOptions Options =
+        RegexOptions.CultureInvariant |
+        RegexOptions.ExplicitCapture |
+        RegexOptions.Compiled |
+        RegexOptions.Singleline;
+
     public const string Whitespace = @"\s+";
     public const string NewLine = @"\r\n|[\r\n]";
     public const string Identifiers = @"[a-zA-Z_]\w*";

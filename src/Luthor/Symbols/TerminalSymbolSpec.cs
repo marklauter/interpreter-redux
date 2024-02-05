@@ -1,10 +1,11 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace Luthor.Context;
+namespace Luthor.Symbols;
 
-public sealed class LanguageSpecification
+public sealed class TerminalSymbolSpec
 {
+    public TerminalSymbolOptions Options { get; init; } = TerminalSymbolOptions.IncludeAll;
     public IEnumerable<string> Operators { get; init; } = Array.Empty<string>();
     public IEnumerable<string> BooleanLiterals { get; init; } = Array.Empty<string>();
     public IEnumerable<string> CommentPrefixes { get; init; } = Array.Empty<string>();
