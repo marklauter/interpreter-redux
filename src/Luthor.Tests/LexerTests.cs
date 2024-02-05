@@ -85,6 +85,10 @@ public sealed class LexerTests(Tokenizers tokenizers)
             while (token.Offset < expectedOffset && token.Type != TokenType.EndOfSource)
             {
                 token = lexer.NextToken();
+                if (token.IsError())
+                {
+                    Assert.Fail(token.Symbol);
+                }
             }
         }
 
@@ -142,6 +146,10 @@ public sealed class LexerTests(Tokenizers tokenizers)
             while (token.Offset < expectedOffset && token.Type != TokenType.EndOfSource)
             {
                 token = lexer.NextToken();
+                if (token.IsError())
+                {
+                    Assert.Fail(token.Symbol);
+                }
             }
         }
 
@@ -184,6 +192,10 @@ public sealed class LexerTests(Tokenizers tokenizers)
             while (token.Offset < expectedOffset && token.Type != TokenType.EndOfSource)
             {
                 token = lexer.NextToken();
+                if (token.IsError())
+                {
+                    Assert.Fail(token.Symbol);
+                }
             }
         }
 

@@ -5,19 +5,97 @@ namespace Luthor.Symbols;
 
 public sealed class TerminalSymbolSpec
 {
-    public TerminalSymbolOptions Options { get; init; } = TerminalSymbolOptions.IncludeAll;
-    public IEnumerable<string> Operators { get; init; } = Array.Empty<string>();
-    public IEnumerable<string> BooleanLiterals { get; init; } = Array.Empty<string>();
-    public IEnumerable<string> CommentPrefixes { get; init; } = Array.Empty<string>();
-    public IEnumerable<string> ReservedWords { get; init; } = Array.Empty<string>();
+    public TerminalSymbolOptions Options { get; init; } = TerminalSymbolOptions.None;
+
+    private readonly IEnumerable<string> operators = Array.Empty<string>();
+    public IEnumerable<string> Operators
+    {
+        get => operators;
+        init
+        {
+            if (value.Any())
+            {
+                Options |= TerminalSymbolOptions.IncludeOperators;
+                operators = value;
+            }
+        }
+    }
+
+    private readonly IEnumerable<string> booleanLiterals = Array.Empty<string>();
+    public IEnumerable<string> BooleanLiterals
+    {
+        get => booleanLiterals;
+        init
+        {
+            if (value.Any())
+            {
+                Options |= TerminalSymbolOptions.IncludeBooleanLiterals;
+                booleanLiterals = value;
+            }
+        }
+    }
+
+    private IEnumerable<string> commentPrefixes = Array.Empty<string>();
+    public IEnumerable<string> CommentPrefixes
+    {
+        get => commentPrefixes;
+        init
+        {
+            if (value.Any())
+            {
+                Options |= TerminalSymbolOptions.IncludeComments;
+                commentPrefixes = value;
+            }
+        }
+    }
+
+    private IEnumerable<string> reservedWords = Array.Empty<string>();
+    public IEnumerable<string> ReservedWords
+    {
+        get => reservedWords;
+        init
+        {
+            if (value.Any())
+            {
+                Options |= TerminalSymbolOptions.IncludeReservedWords;
+                reservedWords = value;
+            }
+        }
+    }
+
     /// <summary>
     /// delimiters that appear in pairs and encapsulate sets of symbols to create blocks or groupings, like parentheses, brackets, and braces
     /// </summary>
-    public IEnumerable<CircumfixPair> CircumfixDelimiterPairs { get; init; } = Array.Empty<CircumfixPair>();
+    private IEnumerable<CircumfixPair> circumfixDelimiterPairs = Array.Empty<CircumfixPair>();
+    public IEnumerable<CircumfixPair> CircumfixDelimiterPairs
+    {
+        get => circumfixDelimiterPairs;
+        init
+        {
+            if (value.Any())
+            {
+                Options |= TerminalSymbolOptions.IncludeCircumfixDelimiters;
+                circumfixDelimiterPairs = value;
+            }
+        }
+    }
+
     /// <summary>
     /// delimiters that appear alone and separate elements, like comma, semicolon, and period
     /// </summary>
-    public IEnumerable<string> InfixDelimiters { get; init; } = Array.Empty<string>();
+    private IEnumerable<string> infixDelimiters = Array.Empty<string>();
+    public IEnumerable<string> InfixDelimiters
+    {
+        get => infixDelimiters;
+        init
+        {
+            if (value.Any())
+            {
+                Options |= TerminalSymbolOptions.IncludeInfixDelimiters;
+                infixDelimiters = value;
+            }
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetOperatorPattern(out string? pattern)

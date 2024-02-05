@@ -13,6 +13,11 @@ public sealed partial class Tokenizers
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeReservedWords))
+        {
+            return (index, null);
+        }
+
         if (spec.TryGetReservedWordPattern(out var reservedWordPattern))
         {
             var regex = new Regex($@"\G(?:{reservedWordPattern})", RegexConstants.Options);
@@ -41,6 +46,11 @@ public sealed partial class Tokenizers
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeBooleanLiterals))
+        {
+            return (index, null);
+        }
+
         if (spec.TryGetBooleanLiteralPattern(out var booleanLiteralPattern))
         {
             var regex = new Regex($@"\G(?:{booleanLiteralPattern})", RegexConstants.Options);
@@ -64,12 +74,18 @@ public sealed partial class Tokenizers
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int AddIdentifierMatcher(
+        TerminalSymbolSpec spec,
         PatternMatcher[] matchers,
         Dictionary<TokenType, PatternMatcher> map,
         int index,
         string? booleanLiteralPattern,
         string? reservedWordPattern)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeIdentifiers))
+        {
+            return index;
+        }
+
         var identifierPattern = reservedWordPattern is null
             ? booleanLiteralPattern is null
                 ? $@"\G(?:{RegexConstants.Identifiers})"
@@ -96,10 +112,16 @@ public sealed partial class Tokenizers
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int AddNumericLiteralMatcher(
+        TerminalSymbolSpec spec,
         PatternMatcher[] matchers,
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeNumericLiterals))
+        {
+            return index;
+        }
+
         var regex = NumericLiteralExpression();
         var tokenType = TokenType.NumericLiteral;
 
@@ -118,10 +140,16 @@ public sealed partial class Tokenizers
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int AddStringLiteralMatcher(
+        TerminalSymbolSpec spec,
         PatternMatcher[] matchers,
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeStringLiterals))
+        {
+            return index;
+        }
+
         var regex = StringLiteralExpression();
         var tokenType = TokenType.StringLiteral;
 
@@ -140,10 +168,16 @@ public sealed partial class Tokenizers
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int AddCharacterLiteralMatcher(
+        TerminalSymbolSpec spec,
         PatternMatcher[] matchers,
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeCharacterLiterals))
+        {
+            return index;
+        }
+
         var regex = CharacterLiteralExpression();
         var tokenType = TokenType.CharacterLiteral;
 
@@ -211,6 +245,11 @@ public sealed partial class Tokenizers
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeInfixDelimiters))
+        {
+            return index;
+        }
+
         if (spec.TryGetInfixDelimiterPattern(out var delimiterPattern))
         {
             var regex = new Regex($@"\G(?:{delimiterPattern})", RegexConstants.Options);
@@ -239,6 +278,11 @@ public sealed partial class Tokenizers
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeCircumfixDelimiters))
+        {
+            return index;
+        }
+
         if (spec.CircumfixDelimiterPairs.Any())
         {
             var openDelimiters = spec
@@ -286,6 +330,11 @@ public sealed partial class Tokenizers
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeOperators))
+        {
+            return index;
+        }
+
         if (spec.TryGetOperatorPattern(out var operatorPattern))
         {
             var regex = new Regex($@"\G(?:{operatorPattern})", RegexConstants.Options);
@@ -314,6 +363,11 @@ public sealed partial class Tokenizers
         Dictionary<TokenType, PatternMatcher> map,
         int index)
     {
+        if (!spec.Options.HasFlag(TerminalSymbolOptions.IncludeComments))
+        {
+            return index;
+        }
+
         if (spec.TryGetCommentPattern(out var commentPattern))
         {
             var regex = new Regex($@"\G(?:{commentPattern})", RegexConstants.Options);

@@ -2,17 +2,12 @@
 
 namespace Luthor;
 
-public sealed class Lexer
+public sealed class Lexer(
+    Tokenizers tokenizers,
+    string source)
 {
-    public Lexer(Tokenizers tokenizers,
-        string source)
-    {
-        this.tokenizers = tokenizers ?? throw new ArgumentNullException(nameof(tokenizers));
-        this.source = source ?? throw new ArgumentNullException(nameof(source));
-    }
-
-    private readonly Tokenizers tokenizers;
-    private readonly string source;
+    private readonly Tokenizers tokenizers = tokenizers ?? throw new ArgumentNullException(nameof(tokenizers));
+    private readonly string source = source ?? throw new ArgumentNullException(nameof(source));
 
     private int offset;
     private int lastNewLineOffset;

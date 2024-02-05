@@ -18,10 +18,10 @@ public sealed partial class Tokenizers
 
         (index, var reservedWordPattern) = AddReservedWordMatcher(spec, matchers, map, index);
         (index, var booleanLiteralPattern) = AddBooleanLiteralMatcher(spec, matchers, map, index);
-        index = AddIdentifierMatcher(matchers, map, index, booleanLiteralPattern, reservedWordPattern);
-        index = AddNumericLiteralMatcher(matchers, map, index);
-        index = AddStringLiteralMatcher(matchers, map, index);
-        index = AddCharacterLiteralMatcher(matchers, map, index);
+        index = AddIdentifierMatcher(spec, matchers, map, index, booleanLiteralPattern, reservedWordPattern);
+        index = AddNumericLiteralMatcher(spec, matchers, map, index);
+        index = AddStringLiteralMatcher(spec, matchers, map, index);
+        index = AddCharacterLiteralMatcher(spec, matchers, map, index);
         index = AddNewLineMatcher(matchers, map, index);
         index = AddWhitespaceMatcher(matchers, map, index);
         index = AddInfixDelimiterMatcher(spec, matchers, map, index);

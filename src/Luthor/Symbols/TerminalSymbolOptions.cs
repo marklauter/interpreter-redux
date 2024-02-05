@@ -4,7 +4,7 @@
 public enum TerminalSymbolOptions
     : uint
 {
-    Undefined = 0,
+    None = 0,
 
     IncludeInfixDelimiters = 1u << 0,
     IncludeCircumfixDelimiters = 1u << 1,

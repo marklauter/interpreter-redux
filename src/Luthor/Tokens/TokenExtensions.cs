@@ -15,4 +15,10 @@ public static class TokenExtensions
     {
         return token.Type.IsMatch();
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsError(this Token token)
+    {
+        return token.Type == TokenType.Error;
+    }
 }

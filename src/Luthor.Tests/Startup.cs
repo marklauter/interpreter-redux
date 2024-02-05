@@ -11,6 +11,11 @@ public sealed class Startup
 {
     private readonly TerminalSymbolSpec spec = new()
     {
+        Options =
+            TerminalSymbolOptions.IncludeStringLiterals
+            | TerminalSymbolOptions.IncludeNumericLiterals
+            | TerminalSymbolOptions.IncludeCharacterLiterals
+            | TerminalSymbolOptions.IncludeIdentifiers,
         Operators = new string[] { "!", "~", "++", "--", "+", "-", "/", "*", "%", "|", "&", "?", "=", "<", ">", ">=", "<=", "^", },
         BooleanLiterals = new string[] { "true", "false" },
         ReservedWords = new string[] { "if", "else", "let" },
