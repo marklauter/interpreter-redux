@@ -1,4 +1,5 @@
-﻿using Luthor.Context;
+﻿using Luthor.Symbols;
+using Luthor.Tokens;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +9,7 @@ namespace Luthor.Tests;
 [ExcludeFromCodeCoverage]
 public sealed class Startup
 {
-    private readonly LanguageSpecification language = new()
+    private readonly TerminalSymbolSpec spec = new()
     {
         Operators = new string[] { "!", "~", "++", "--", "+", "-", "/", "*", "%", "|", "&", "?", "=", "<", ">", ">=", "<=", "^", },
         BooleanLiterals = new string[] { "true", "false" },
@@ -26,7 +27,7 @@ public sealed class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.TryAddSingleton(language);
-        services.TryAddSingleton(new LexicalContext(language));
+        services.TryAddSingleton(spec);
+        services.TryAddSingleton<Tokenizers>();
     }
 }

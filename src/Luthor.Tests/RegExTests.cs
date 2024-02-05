@@ -1,12 +1,12 @@
-﻿using Luthor.Context;
+﻿using Luthor.Tokens;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Luthor.Tests;
 
 [ExcludeFromCodeCoverage]
-public sealed class RegExTests(LexicalContext context)
+public sealed class RegExTests(Tokenizers tokenizers)
 {
-    private readonly LexicalContext context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly Tokenizers tokenizers = tokenizers ?? throw new ArgumentNullException(nameof(tokenizers));
 
     [Theory]
     [InlineData(@"""hello, world.""", "hello, world.", true)]
@@ -15,82 +15,14 @@ public sealed class RegExTests(LexicalContext context)
     [InlineData(@" ""hello, world.""", "", false)]
     public void StringLiterals(string source, string expectedSymbol, bool expectedSuccess)
     {
-        var matcher = context[Tokens.StringLiteral];
+        var matcher = tokenizers[TokenType.StringLiteral];
 
-        var match = new MatchResult(default, 0, 0, 1);
-        matcher(source, ref match);
+        var token = matcher(source, 0);
 
-        Assert.Equal(expectedSuccess, match.IsMatch());
-        if (match.IsMatch())
+        Assert.Equal(expectedSuccess, token.IsMatch());
+        if (token.IsMatch())
         {
-            Assert.Equal(expectedSymbol, match.Token.Symbol[1..^1]);
+            Assert.Equal(expectedSymbol, token.Symbol[1..^1]);
         }
     }
-
-    //[Theory]
-    //[InlineData("(}", false, 0, 0)]
-    //[InlineData("(]", false, 0, 0)]
-    //[InlineData("(/>", false, 0, 0)]
-    //[InlineData("{)", false, 0, 0)]
-    //[InlineData("{]", false, 0, 0)]
-    //[InlineData("{/>", false, 0, 0)]
-    //[InlineData("[}", false, 0, 0)]
-    //[InlineData("[)", false, 0, 0)]
-    //[InlineData("[/>", false, 0, 0)]
-    //[InlineData("<}", false, 0, 0)]
-    //[InlineData("<)", false, 0, 0)]
-    //[InlineData("<]", false, 0, 0)]
-
-    //[InlineData("()", true, 0, 1)]
-    //[InlineData("( )", true, 0, 1)]
-    //[InlineData("( 1 + 1 )", true, 0, 1)]
-    //[InlineData("( x / y )", true, 0, 1)]
-    //[InlineData("x / (y + z)", true, 4, 1)]
-    //[InlineData("x / (y + (z / 3))", true, 4, 1)]
-    //[InlineData("x / (y + z", false, 0, 1)]
-    //[InlineData("x(1)", true, 1, 1)]
-    //[InlineData("(", false, 0, 1)]
-    //[InlineData(")", false, 0, 1)]
-
-    //[InlineData("{}", true, 0, 1)]
-    //[InlineData("{ }", true, 0, 1)]
-    //[InlineData("{ x = 1 + 1; }", true, 0, 1)]
-    //[InlineData("{ x / y }", true, 0, 1)]
-    //[InlineData("x / {y + z}", true, 4, 1)]
-    //[InlineData("x / {y + {z / 3}}", true, 4, 1)]
-    //[InlineData("x / {y + z", false, 0, 1)]
-    //[InlineData("x{1}", true, 1, 1)]
-    //[InlineData("{", false, 0, 1)]
-    //[InlineData("}", false, 0, 1)]
-
-    //[InlineData("</>", true, 0, 1)]
-    //[InlineData("< />", true, 0, 1)]
-    //[InlineData("<tag/>", true, 0, 1)]
-    //[InlineData("<tag />", true, 0, 1)]
-    //[InlineData(@"<tag name=""mytag""/>", true, 0, 1)]
-    //[InlineData(@"<tag name=""mytag"" />", true, 0, 1)]
-    //[InlineData(@"<tag name=""mytag[]""/>", true, 0, 1)]
-    //[InlineData(@"<tag name=""mytag[]"" />", true, 0, 1)]
-    //[InlineData("<", false, 0, 1)]
-    //[InlineData("<123>", false, 0, 1)]
-    //[InlineData("< / >", false, 0, 1)]
-
-    //[InlineData("[]", true, 0, 1)]
-    //[InlineData("[ ]", true, 0, 1)]
-    //[InlineData("x[1]", true, 1, 1)]
-    //[InlineData("x[1] / x[2]", true, 1, 1)]
-    //[InlineData("x[(x + y) *x] / x[2]", true, 1, 1)]
-    //[InlineData("[", false, 0, 1)]
-    //[InlineData("]", false, 0, 1)]
-    //public void CircumfixDelimiters(string source, string expectedSymbol, bool expectedSuccess)
-    //{
-    //    var matcher = context[Tokens.OpenCircumfixDelimiter];
-
-    //    var match = matcher(source, 0, 0, 1);
-    //    Assert.Equal(expectedSuccess, match.IsMatch());
-    //    if (match.IsMatch())
-    //    {
-    //        Assert.Equal(expectedSymbol, match.Token.Symbol[1..^1]);
-    //    }
-    //}
 }
