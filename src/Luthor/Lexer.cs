@@ -19,7 +19,8 @@ public sealed class Lexer(
         yield return token;
         while (token.Type != TokenType.EndOfSource)
         {
-            yield return NextToken();
+            token = NextToken();
+            yield return token;
         };
     }
 
