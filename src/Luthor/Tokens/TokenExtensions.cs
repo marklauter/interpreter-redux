@@ -21,4 +21,22 @@ public static class TokenExtensions
     {
         return token.Type == TokenType.Error;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsWhiteSpace(this Token token)
+    {
+        return token.Type.IsWhitespace();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsEndOfSource(this Token token)
+    {
+        return token.Type.HasFlag(TokenType.EndOfSource);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNumber(this Token token)
+    {
+        return token.Type.HasFlag(TokenType.NumericLiteral);
+    }
 }
