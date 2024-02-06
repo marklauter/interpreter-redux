@@ -205,4 +205,22 @@ public sealed class LexerTests(Tokenizers tokenizers)
         Assert.Equal(expectedSymbol, token.Symbol);
         Assert.Equal(expectedOffset, token.Offset);
     }
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("1 1.0 2.0 3.0 397.173 89 0.1  1237")]
+    public void ReadTokens(string source)
+    {
+        var lexer = new Lexer(tokenizers, source);
+        var tokens = lexer.Tokens();
+        foreach (var token in tokens)
+        {
+            if (token.Type is not TokenType.NumericLiteral and not TokenType.Whitespace and not TokenType.EndOfSource)
+            {
+                Assert.Fail("shit");
+            }
+
+            Assert.True(token.Type is TokenType.NumericLiteral or TokenType.Whitespace or TokenType.EndOfSource);
+        }
+    }
 }
