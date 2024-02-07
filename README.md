@@ -18,9 +18,9 @@ The lexer accepts a linguistic contex that maps token types to regular expressio
 Not yet built. I saw an interesting video on parsing where the guy started with the parser, and step by step, moved functionality out to the lexer. I feel like I have a better understanding of the lexer, so I started there instead. Maybe the current lexer code continues to exist in a month. Maybe it doesn't.
 
 ## Dev Log
-- 29 JAN 2024 - built a functional, immutable lexer. state passed on stack. expected to be faster in real-world use cases.
-- 05 FEB 2024 - abandoned the functional due to complexity, though it worked well and was fast. went back to OOP design for simplicity of object managed state
-- 07 FEB 2024 - completed simple math expression parser with CLI based REPL output looks like
+ - 29 JAN 2024 - built a functional, immutable lexer. state passed on stack. expected to be faster in real-world use cases.
+ - 05 FEB 2024 - abandoned the functional due to complexity, though it worked well and was fast. went back to OOP design for simplicity of object managed state
+ - 07 FEB 2024 - completed simple math expression parser with CLI based REPL output looks like
 ```console
 math:> (1 + 1) / 2 * 3
 BinaryOperation
