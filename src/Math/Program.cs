@@ -38,7 +38,7 @@ while (!String.IsNullOrWhiteSpace(source))
 
     Console.ForegroundColor = ConsoleColor.White;
     var result = syntaxTree.Evaluate();
-    Console.WriteLine($"math:> {result}");
+    Console.WriteLine($"result:> {result}");
     Console.ForegroundColor = color;
     Console.WriteLine();
     Console.Write("math:> ");
