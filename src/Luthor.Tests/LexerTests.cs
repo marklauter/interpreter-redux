@@ -223,4 +223,13 @@ public sealed class LexerTests(Tokenizers tokenizers)
             Assert.True(token.Type is TokenType.NumericLiteral or TokenType.Whitespace or TokenType.EndOfSource);
         }
     }
+
+    [Fact]
+    public void Parens()
+    {
+        var source = "(1+2)*3";
+        var lexer = new Lexer(tokenizers, source);
+        var tokens = lexer.Tokens();
+        Assert.Equal(source.Length + 1, tokens.Length);
+    }
 }

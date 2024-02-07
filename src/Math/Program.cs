@@ -14,9 +14,35 @@ var source = Console.ReadLine();
 while (!String.IsNullOrWhiteSpace(source))
 {
     var syntaxTree = parser.Parse(source);
-    var result = syntaxTree.Evaluate();
-    Console.WriteLine($"result: {result}");
+    var color = Console.ForegroundColor;
+    if (syntaxTree.Errors.Any())
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        foreach (var error in syntaxTree.Errors)
+        {
+            Console.WriteLine(error);
+        }
 
+        Console.ForegroundColor = color;
+
+        Console.WriteLine();
+        Console.Write("math:> ");
+        source = Console.ReadLine();
+
+        continue;
+    }
+
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    syntaxTree.Print();
+    Console.ForegroundColor = color;
+
+    Console.WriteLine("-------------");
+
+    Console.ForegroundColor = ConsoleColor.Green;
+    var result = syntaxTree.Evaluate();
+    Console.WriteLine($"math:> {result}");
+    Console.ForegroundColor = color;
+    Console.WriteLine();
     Console.Write("math:> ");
     source = Console.ReadLine();
 }

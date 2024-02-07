@@ -2,12 +2,13 @@
 
 namespace Math.Parser;
 
-public record Expression
+public abstract record Expression
 {
-    public virtual double Evaluate()
-    {
-        throw new InvalidOperationException("empty expression");
-    }
+    public abstract double Evaluate();
+
+    public abstract IEnumerable<Expression> Children();
+
+    public abstract void Print(string indent = "");
 };
 
 public record BinaryOperation(
@@ -16,6 +17,22 @@ public record BinaryOperation(
     Operators Operator)
     : Expression
 {
+    public override void Print(string indent = "")
+    {
+        Console.WriteLine($"{indent}{nameof(BinaryOperation)}");
+        Console.WriteLine($"{indent}Left");
+        Left.Print($"{indent}    ");
+        Console.WriteLine($"{indent}{Operator}");
+        Console.WriteLine($"{indent}Right");
+        Right.Print($"{indent}    ");
+    }
+
+    public override IEnumerable<Expression> Children()
+    {
+        yield return Left;
+        yield return Right;
+    }
+
     public override double Evaluate()
     {
         var left = Left.Evaluate();
@@ -49,16 +66,38 @@ public record Number(
     {
         return Value;
     }
+
+    public override IEnumerable<Expression> Children()
+    {
+        return Enumerable.Empty<Expression>();
+    }
+
+    public override void Print(string indent = "")
+    {
+        Console.WriteLine($"{indent}{nameof(Number)}: {Value}");
+    }
 }
 
 public record Group(
     Expression Expression)
     : Expression
 {
+    public override IEnumerable<Expression> Children()
+    {
+        yield return Expression;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override double Evaluate()
     {
         return Expression.Evaluate();
+    }
+
+    public override void Print(string indent = "")
+    {
+        Console.WriteLine($"{indent}{nameof(Group)}");
+        Console.WriteLine($"{indent}Expression");
+        Expression.Print($"{indent}    ");
     }
 }
 

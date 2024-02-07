@@ -62,29 +62,29 @@ public sealed class Parser(Tokenizers tokenizers)
         }
 
         var errors = new List<string>();
+        var index = 0;
         var expression = ParseExpression(
             tokens.ToArray().AsSpan(),
-            errors);
+            errors,
+            ref index);
 
         return new SyntaxTree(expression, [.. errors]);
     }
 
     private static Expression ParseExpression(
         ReadOnlySpan<Token> tokens,
-        List<string> errors)
-    {
-        var index = 0;
-        return ParseTerm(tokens, errors, ref index);
-    }
-
-    private static Expression ParseTerm(
-        ReadOnlySpan<Token> tokens,
         List<string> errors,
         ref int index)
     {
-        var left = ParseFactor(tokens, errors, ref index);
-
         var token = tokens[index];
+        if (token.IsEndOfSource())
+        {
+            throw new InvalidOperationException("Unexpected end of source");
+        }
+
+        var left = ParseTerm(tokens, errors, ref index);
+
+        token = tokens[index];
         while (!token.IsEndOfSource()
             && token.IsOperator()
             && AdditiveOperators.Contains(token.Symbol))
@@ -92,8 +92,39 @@ public sealed class Parser(Tokenizers tokenizers)
             ++index;
             left = new BinaryOperation(
                 left,
+                ParseTerm(tokens, errors, ref index),
+                AsOperator(token.Symbol));
+
+            token = tokens[index];
+        }
+
+        return left;
+    }
+
+    private static Expression ParseTerm(
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
+    {
+        var token = tokens[index];
+        if (token.IsEndOfSource())
+        {
+            throw new InvalidOperationException("Unexpected end of source");
+        }
+
+        var left = ParseFactor(tokens, errors, ref index);
+
+        token = tokens[index];
+        while (!token.IsEndOfSource()
+            && token.IsOperator()
+            && MultiplicitiveOperators.Contains(token.Symbol))
+        {
+            ++index;
+            left = new BinaryOperation(
+                left,
                 ParseFactor(tokens, errors, ref index),
                 AsOperator(token.Symbol));
+
             token = tokens[index];
         }
 
@@ -111,34 +142,24 @@ public sealed class Parser(Tokenizers tokenizers)
             throw new InvalidOperationException("Unexpected end of source");
         }
 
-        var left = ParseNumber(token, errors);
-
-        token = tokens[++index];
-        while (!token.IsEndOfSource()
-            && token.IsOperator()
-            && MultiplicitiveOperators.Contains(token.Symbol))
+        if (token.IsNumber())
         {
             ++index;
-            left = new BinaryOperation(
-                left,
-                ParseFactor(tokens, errors, ref index),
-                AsOperator(token.Symbol));
-            token = tokens[index];
+            return ParseNumber(token);
         }
 
-        return left;
+        if (token.Type == TokenType.OpenCircumfixDelimiter)
+        {
+            return ParseGroup(tokens, errors, ref index);
+        }
+
+        errors.Add($"Unexpected token {token.Symbol}");
+        return new Number(NumberTypes.NotANumber, 0);
     }
 
-    private static Expression ParseNumber(
-        Token token,
-        List<string> errors)
+    private static Number ParseNumber(Token token)
     {
-        if (!token.IsNumber())
-        {
-            errors.Add($"Unexpected token {token.Symbol}");
-            return new Number(NumberTypes.NotANumber, 0);
-        }
-
+        // todo: use TryParse and add error msg on false
         return token.Symbol.Contains('.')
             ? new Number(
                 NumberTypes.Float,
@@ -148,93 +169,51 @@ public sealed class Parser(Tokenizers tokenizers)
                 Int32.Parse(token.Symbol, CultureInfo.InvariantCulture));
     }
 
-    //else if (token.Type == TokenType.OpenCircumfixDelimiter)
-    //{
-    //    // todo: group expression
-    //}
-
-    //    if (match.Token.Type == TokenKind.OpenCircumfixDelimiter)
-    //    {
-    //        lexer.NextToken(source, ref match);
-    //        var expression = ParseExpression(source, lexer, ref match);
-    //        if (match.Token.Type != TokenKind.CloseCircumfixDelimiter)
-    //        {
-    //            throw new InvalidOperationException("Expected closing parenthesis");
-    //        }
-
-    //        lexer.NextToken(source, ref match);
-    //        return expression;
-    //    }
-    //    else
-    //    {
-    //        throw new InvalidOperationException($"Unexpected token {match.Token.Symbol}");
-    //    }
-
-    //private static Expression ParseMultiplyDivide(Lexer lexer)
-    //{
-    //    var left = ParseFactor(
-    //        source,
-    //        lexer,
-    //        ref match);
-
-    //    while (match.Token.Type == TokenKind.Operator
-    //        && MultiplicitiveOperators.Contains(match.Token.Symbol))
-    //    {
-    //        var @operator = ReadOperator(match.Token.Symbol);
-
-    //        var right = ParseFactor(
-    //            source,
-    //            lexer,
-    //            ref match);
-
-    //        left = new BinaryOperation(
-    //            left,
-    //            right,
-    //            @operator);
-    //    }
-
-    //    return left;
-    //}
-
-    //private static bool TryParseGroup(ref MatchResult match, out Group? group)
-    //{
-    //    if (match.Token.Type == TokenKind.OpenCircumfixDelimiter)
-    //    {
-
-    //    }
-    //}
-
-    /*
-    private ExpressionNode ParseFactor()
+    private static Group ParseGroup(
+       ReadOnlySpan<Token> tokens,
+       List<string> errors,
+       ref int index)
+    {
+        ++index;
+        var expression = ParseExpression(tokens, errors, ref index);
+        if (tokens[index].Type != TokenType.CloseCircumfixDelimiter)
         {
-            if (position >= input.Length)
-                throw new ArgumentException("Unexpected end of input");
-
-            if (char.IsDigit(input[position]))
-            {
-                // Parse a number
-                int start = position;
-                while (position < input.Length && char.IsDigit(input[position]))
-                    position++;
-
-                int value = int.Parse(input[start..position]);
-                return new NumberNode { Value = value };
-            }
-            else if (input[position] == '(')
-            {
-                // Parse a parenthesized expression
-                position++; // Skip the opening parenthesis
-                var innerExpression = ParseExpression();
-                if (position >= input.Length || input[position] != ')')
-                    throw new ArgumentException("Missing closing parenthesis");
-                position++; // Skip the closing parenthesis
-                return new ParenthesizedExpressionNode { InnerExpression = innerExpression };
-            }
-            else
-            {
-                throw new ArgumentException($"Unexpected character '{input[position]}' at position {position}");
-            }
+            errors.Add("Expected close circumfix delimiter");
+            return new Group(new Number(NumberTypes.NotANumber, 0));
         }
 
-     */
+        ++index;
+        return new Group(expression);
+    }
+
+    //private static Group ParseGroup(
+    //    ReadOnlySpan<Token> tokens,
+    //    List<string> errors,
+    //    ref int index)
+    //{
+    //    var open = index + 1;
+    //    var close = 0;
+    //    for (var i = open; i < tokens.Length; ++i)
+    //    {
+    //        if (tokens[i].Type == TokenType.CloseCircumfixDelimiter)
+    //        {
+    //            close = i;
+    //            break;
+    //        }
+    //    }
+
+    //    if (close == 0)
+    //    {
+    //        errors.Add("Expected close circumfix delimiter");
+    //        ++index;
+    //        return new Group(new Number(NumberTypes.NotANumber, 0));
+    //    }
+
+    //    var localIndex = 0;
+    //    var expression = ParseExpression(tokens[open..close], errors, ref localIndex);
+
+    //    index = close + 2;
+
+    //    return new Group(expression);
+    //}
 }

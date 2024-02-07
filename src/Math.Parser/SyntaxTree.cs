@@ -8,4 +8,9 @@ public sealed record SyntaxTree(
     {
         return Root.Evaluate();
     }
+
+    public void Print()
+    {
+        Root.Print();
+    }
 }

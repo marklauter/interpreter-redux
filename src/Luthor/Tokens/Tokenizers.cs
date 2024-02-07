@@ -42,14 +42,13 @@ public sealed partial class Tokenizers
     }
 
     private static int IndexOfDelimeter(
-        ref ReadOnlySpan<char> source,
-        int offset,
-        ref ReadOnlySpan<string> delimiters)
+        ReadOnlySpan<char> source,
+        ReadOnlySpan<string> delimiters,
+        int offset)
     {
         for (var i = 0; i < delimiters.Length; ++i)
         {
-            var delimiter = delimiters[i].AsSpan();
-            if (MatchSpan(ref source, ref delimiter, offset))
+            if (MatchSpan(source, delimiters[i].AsSpan(), offset))
             {
                 return i;
             }
@@ -60,8 +59,8 @@ public sealed partial class Tokenizers
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool MatchSpan(
-        ref ReadOnlySpan<char> source,
-        ref ReadOnlySpan<char> span,
+        ReadOnlySpan<char> source,
+        ReadOnlySpan<char> span,
         int offset)
     {
         return offset + span.Length <= source.Length
@@ -81,9 +80,9 @@ public sealed partial class Tokenizers
         }
 
         var index = IndexOfDelimeter(
-            ref source,
-            offset,
-            ref openDelimiters);
+            source,
+            openDelimiters,
+            offset);
 
         var tokenType = TokenType.OpenCircumfixDelimiter;
 
@@ -106,7 +105,7 @@ public sealed partial class Tokenizers
         while (level > 0 && position < length)
         {
             // when a close is encountered, decrement level
-            if (MatchSpan(ref source, ref closeDelimiter, position))
+            if (MatchSpan(source, closeDelimiter, position))
             {
                 --level;
                 position += closeDelimiterLength;
@@ -114,7 +113,7 @@ public sealed partial class Tokenizers
             }
 
             // when an open is encountered, increment level
-            if (MatchSpan(ref source, ref openDelimiter, position))
+            if (MatchSpan(source, openDelimiter, position))
             {
                 ++level;
                 position += openDelimiterLength;
@@ -142,9 +141,9 @@ public sealed partial class Tokenizers
         }
 
         var index = IndexOfDelimeter(
-            ref source,
-            offset,
-            ref closeDelimiters);
+            source,
+            closeDelimiters,
+            offset);
 
         var tokenType = TokenType.CloseCircumfixDelimiter;
 
@@ -164,10 +163,10 @@ public sealed partial class Tokenizers
         var level = 1;
 
         // while level > 0 and not BOF
-        while (level > 0 && position > 0)
+        while (level > 0 && position >= 0)
         {
             // when an open is encountered, decrement level
-            if (MatchSpan(ref source, ref openDelimiter, position))
+            if (MatchSpan(source, openDelimiter, position))
             {
                 --level;
                 position -= openDelimiterLength;
@@ -175,7 +174,7 @@ public sealed partial class Tokenizers
             }
 
             // when a close is encountered, increment level
-            if (MatchSpan(ref source, ref closeDelimiter, position))
+            if (MatchSpan(source, closeDelimiter, position))
             {
                 ++level;
                 position -= closeDelimiterLength;
