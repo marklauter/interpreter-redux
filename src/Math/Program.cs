@@ -13,8 +13,8 @@ Console.Write("math:> ");
 var source = Console.ReadLine();
 while (!String.IsNullOrWhiteSpace(source))
 {
-    var expression = parser.Parse(source);
-    var result = expression.Evaluate();
+    var syntaxTree = parser.Parse(source);
+    var result = syntaxTree.Evaluate();
     Console.WriteLine($"result: {result}");
 
     Console.Write("math:> ");

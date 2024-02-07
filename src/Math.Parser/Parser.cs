@@ -10,36 +10,22 @@ namespace Math.Parser;
 <factor>     ::= <number> | "(" <expression> ")"
 <number>     ::= <digit> | <digit> <number>
 <digit>      ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+bottom up:
+parse number
+parse factor
+parse term
+parse expression
 */
 
 public sealed class Parser(Tokenizers tokenizers)
 {
     private readonly Tokenizers tokenizers = tokenizers
         ?? throw new ArgumentNullException(nameof(tokenizers));
-
-    public Expression Parse(string source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        ReadOnlySpan<Token> tokens = new Lexer(tokenizers, source)
-            .Tokens()
-            .Where(token => !token.IsWhiteSpace())
-            .ToArray()
-            .AsSpan();
-
-        return ParseExpression(tokens);
-    }
-
-    private static Expression ParseExpression(ReadOnlySpan<Token> tokens)
-    {
-        var index = 0;
-        return ParseFactor(tokens, ref index);
-    }
-
     private static readonly HashSet<string> AdditiveOperators = ["+", "-"];
     private static readonly HashSet<string> MultiplicitiveOperators = ["*", "/", "%"];
 
-    private static Operators ReadOperator(string symbol)
+    private static Operators AsOperator(string symbol)
     {
         return symbol switch
         {
@@ -52,25 +38,72 @@ public sealed class Parser(Tokenizers tokenizers)
         };
     }
 
-    private static bool TryParseNumber(
-        Token token,
-        out Number number)
+    public SyntaxTree Parse(string source)
     {
-        var isNumber = token.IsNumber();
-        number = isNumber
-            ? token.Symbol.Contains('.')
-                ? new Number(
-                    NumberTypes.Float,
-                    Double.Parse(token.Symbol, CultureInfo.InvariantCulture))
-                : new Number(
-                    NumberTypes.Integer,
-                    Int32.Parse(token.Symbol, CultureInfo.InvariantCulture))
-            : new Number(NumberTypes.NotANumber, 0);
+        ArgumentNullException.ThrowIfNull(source);
 
-        return isNumber;
+        var tokens = new Lexer(tokenizers, source)
+            .Tokens()
+            .Where(token => !token.IsWhiteSpace());
+
+        if (tokens.Any(t => t.IsError()))
+        {
+            return new SyntaxTree(
+                new Number(NumberTypes.NotANumber, 0),
+                tokens
+                    .Where(t => t.IsError())
+                    .Select(t => t.Symbol)
+                    .ToArray());
+        }
+
+        if (tokens.First().IsEndOfSource())
+        {
+            return new SyntaxTree(new Number(NumberTypes.NotANumber, 0), Array.Empty<string>());
+        }
+
+        var errors = new List<string>();
+        var expression = ParseExpression(
+            tokens.ToArray().AsSpan(),
+            errors);
+
+        return new SyntaxTree(expression, [.. errors]);
     }
 
-    private static Expression ParseFactor(ReadOnlySpan<Token> tokens, ref int index)
+    private static Expression ParseExpression(
+        ReadOnlySpan<Token> tokens,
+        List<string> errors)
+    {
+        var index = 0;
+        return ParseTerm(tokens, errors, ref index);
+    }
+
+    private static Expression ParseTerm(
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
+    {
+        var left = ParseFactor(tokens, errors, ref index);
+
+        var token = tokens[index];
+        while (!token.IsEndOfSource()
+            && token.IsOperator()
+            && AdditiveOperators.Contains(token.Symbol))
+        {
+            ++index;
+            left = new BinaryOperation(
+                left,
+                ParseFactor(tokens, errors, ref index),
+                AsOperator(token.Symbol));
+            token = tokens[index];
+        }
+
+        return left;
+    }
+
+    private static Expression ParseFactor(
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
     {
         var token = tokens[index];
         if (token.IsEndOfSource())
@@ -78,14 +111,47 @@ public sealed class Parser(Tokenizers tokenizers)
             throw new InvalidOperationException("Unexpected end of source");
         }
 
-        if (TryParseNumber(token, out var number))
+        var left = ParseNumber(token, errors);
+
+        token = tokens[++index];
+        while (!token.IsEndOfSource()
+            && token.IsOperator()
+            && MultiplicitiveOperators.Contains(token.Symbol))
         {
             ++index;
-            return number;
+            left = new BinaryOperation(
+                left,
+                ParseFactor(tokens, errors, ref index),
+                AsOperator(token.Symbol));
+            token = tokens[index];
         }
 
-        throw new InvalidOperationException($"Unexpected token {token.Symbol}");
+        return left;
     }
+
+    private static Expression ParseNumber(
+        Token token,
+        List<string> errors)
+    {
+        if (!token.IsNumber())
+        {
+            errors.Add($"Unexpected token {token.Symbol}");
+            return new Number(NumberTypes.NotANumber, 0);
+        }
+
+        return token.Symbol.Contains('.')
+            ? new Number(
+                NumberTypes.Float,
+                Double.Parse(token.Symbol, CultureInfo.InvariantCulture))
+            : new Number(
+                NumberTypes.Integer,
+                Int32.Parse(token.Symbol, CultureInfo.InvariantCulture));
+    }
+
+    //else if (token.Type == TokenType.OpenCircumfixDelimiter)
+    //{
+    //    // todo: group expression
+    //}
 
     //    if (match.Token.Type == TokenKind.OpenCircumfixDelimiter)
     //    {

@@ -1,8 +1,13 @@
-﻿namespace Math.Parser;
+﻿using System.Runtime.CompilerServices;
 
-public abstract record Expression
+namespace Math.Parser;
+
+public record Expression
 {
-    public abstract double Evaluate();
+    public virtual double Evaluate()
+    {
+        throw new InvalidOperationException("empty expression");
+    }
 };
 
 public record BinaryOperation(
@@ -32,6 +37,14 @@ public record Number(
     double Value)
     : Expression
 {
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsNaN()
+    {
+        return Type == NumberTypes.NotANumber;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override double Evaluate()
     {
         return Value;
@@ -42,6 +55,7 @@ public record Group(
     Expression Expression)
     : Expression
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override double Evaluate()
     {
         return Expression.Evaluate();
@@ -51,9 +65,9 @@ public record Group(
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "<Pending>")]
 public enum NumberTypes
 {
-    Integer = 0,
-    Float = 1,
-    NotANumber = 3, // NaN
+    NotANumber = 0, // NaN
+    Integer = 1,
+    Float = 2,
 }
 
 public enum Operators
