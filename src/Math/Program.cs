@@ -32,13 +32,11 @@ while (!String.IsNullOrWhiteSpace(source))
         continue;
     }
 
-    Console.ForegroundColor = ConsoleColor.Yellow;
     syntaxTree.Print();
-    Console.ForegroundColor = color;
 
     Console.WriteLine("-------------");
 
-    Console.ForegroundColor = ConsoleColor.Green;
+    Console.ForegroundColor = ConsoleColor.White;
     var result = syntaxTree.Evaluate();
     Console.WriteLine($"math:> {result}");
     Console.ForegroundColor = color;

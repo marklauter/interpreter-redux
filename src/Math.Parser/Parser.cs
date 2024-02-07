@@ -1,5 +1,6 @@
 ﻿using Luthor;
 using Luthor.Tokens;
+using Math.Parser.Expressions;
 using System.Globalization;
 
 namespace Math.Parser;
@@ -25,15 +26,15 @@ public sealed class Parser(Tokenizers tokenizers)
     private static readonly HashSet<string> AdditiveOperators = ["+", "-"];
     private static readonly HashSet<string> MultiplicitiveOperators = ["*", "/", "%"];
 
-    private static Operators AsOperator(string symbol)
+    private static OperatorTypes AsOperator(string symbol)
     {
         return symbol switch
         {
-            "+" => Operators.Add,
-            "-" => Operators.Subtract,
-            "*" => Operators.Multiply,
-            "/" => Operators.Divide,
-            "%" => Operators.Modulus,
+            "+" => OperatorTypes.Add,
+            "-" => OperatorTypes.Subtract,
+            "*" => OperatorTypes.Multiply,
+            "/" => OperatorTypes.Divide,
+            "%" => OperatorTypes.Modulus,
             _ => throw new InvalidOperationException(),
         };
     }

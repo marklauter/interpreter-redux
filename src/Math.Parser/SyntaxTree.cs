@@ -1,4 +1,6 @@
-﻿namespace Math.Parser;
+﻿using Math.Parser.Expressions;
+
+namespace Math.Parser;
 
 public sealed record SyntaxTree(
     Expression Root,

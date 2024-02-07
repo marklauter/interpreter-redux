@@ -1,3 +1,5 @@
+using Math.Parser.Expressions;
+
 namespace Math.Parser.Tests;
 
 public class MathParseTests(Parser parser)
