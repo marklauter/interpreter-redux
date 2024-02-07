@@ -39,4 +39,11 @@ public static class TokenExtensions
     {
         return token.Type.HasFlag(TokenType.NumericLiteral);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsOperator(this Token token)
+    {
+        return token.Type.HasFlag(TokenType.Operator);
+    }
+
 }

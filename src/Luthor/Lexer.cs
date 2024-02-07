@@ -13,15 +13,26 @@ public sealed class Lexer(
     private int lastNewLineOffset;
     private int lineNumber = 1;
 
-    public IEnumerable<Token> Tokens()
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0305:Simplify collection initialization", Justification = "span created with collection initialization can't be exposed outside the function")]
+    public Token[] Tokens()
     {
+        var tokens = new List<Token>();
         var token = NextToken();
-        yield return token;
-        while (token.Type != TokenType.EndOfSource)
+        while (!token.IsEndOfSource()
+            && !token.IsError())
         {
+            tokens.Add(token);
             token = NextToken();
-            yield return token;
-        };
+        }
+
+        tokens.Add(token);
+
+        offset = 0;
+        lastNewLineOffset = 0;
+        lineNumber = 1;
+
+        return tokens
+            .ToArray();
     }
 
     public Token NextToken()
