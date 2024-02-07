@@ -20,7 +20,7 @@ Not yet built. I saw an interesting video on parsing where the guy started with 
 ## Dev Log
  - 29 JAN 2024 - built a functional, immutable lexer. state passed on stack. expected to be faster in real-world use cases.
  - 05 FEB 2024 - abandoned the functional due to complexity, though it worked well and was fast. went back to OOP design for simplicity of object managed state
- - 07 FEB 2024 - completed simple math expression parser with CLI based REPL output looks like
+ - 07 FEB 2024 - completed simple math expression parser with CLI based REPL. The output looks like:
 ```console
 math:> (1 + 1) / 2 * 3
 BinaryOperation
