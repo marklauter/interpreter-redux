@@ -185,35 +185,4 @@ public sealed class Parser(Tokenizers tokenizers)
         ++index;
         return new Group(expression);
     }
-
-    //private static Group ParseGroup(
-    //    ReadOnlySpan<Token> tokens,
-    //    List<string> errors,
-    //    ref int index)
-    //{
-    //    var open = index + 1;
-    //    var close = 0;
-    //    for (var i = open; i < tokens.Length; ++i)
-    //    {
-    //        if (tokens[i].Type == TokenType.CloseCircumfixDelimiter)
-    //        {
-    //            close = i;
-    //            break;
-    //        }
-    //    }
-
-    //    if (close == 0)
-    //    {
-    //        errors.Add("Expected close circumfix delimiter");
-    //        ++index;
-    //        return new Group(new Number(NumberTypes.NotANumber, 0));
-    //    }
-
-    //    var localIndex = 0;
-    //    var expression = ParseExpression(tokens[open..close], errors, ref localIndex);
-
-    //    index = close + 2;
-
-    //    return new Group(expression);
-    //}
 }
