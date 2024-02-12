@@ -2,8 +2,8 @@
 
 namespace Math.Parser.Expressions;
 
-public record Number(
-    NumberTypes Type,
+public sealed record Number(
+    NumericTypes Type,
     double Value)
     : Expression
 {
@@ -11,7 +11,7 @@ public record Number(
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsNaN()
     {
-        return Type == NumberTypes.NotANumber;
+        return Type == NumericTypes.NotANumber;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

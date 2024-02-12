@@ -1,6 +1,6 @@
 ﻿namespace Math.Parser.Expressions;
 
-public record BinaryOperation(
+public sealed record BinaryOperation(
     Expression Left,
     Expression Right,
     OperatorTypes Operator)

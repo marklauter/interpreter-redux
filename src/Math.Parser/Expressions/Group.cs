@@ -2,7 +2,7 @@
 
 namespace Math.Parser.Expressions;
 
-public record Group(
+public sealed record Group(
     Expression Expression)
     : Expression
 {

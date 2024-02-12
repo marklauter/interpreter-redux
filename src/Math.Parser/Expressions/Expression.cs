@@ -7,4 +7,4 @@ public abstract record Expression
     public abstract IEnumerable<Expression> Children();
 
     public abstract void Print(string indent = "");
-};
+}
