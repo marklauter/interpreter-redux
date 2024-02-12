@@ -134,7 +134,7 @@ public sealed class TerminalSymbolSpec
         pattern = ReservedWords.Any()
             ? $@"(?:{String.Join(
                 "|",
-                ReservedWords.Select(Regex.Escape))})(?!\w)"
+                ReservedWords.Select(Regex.Escape))})\b" // (?!\w)
             : null;
 
         return pattern is not null;

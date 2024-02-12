@@ -20,7 +20,7 @@ public sealed partial class Tokenizers
 
         if (spec.TryGetReservedWordPattern(out var reservedWordPattern))
         {
-            var regex = new Regex($@"\G(?:{reservedWordPattern})", RegexConstants.Options);
+            var regex = new Regex($@"\G{reservedWordPattern}", RegexConstants.Options);
             var tokenType = TokenType.ReservedWord;
 
             Token patternMatcher(string source, int offset)
