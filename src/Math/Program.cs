@@ -15,7 +15,7 @@ while (!String.IsNullOrWhiteSpace(source))
 {
     var syntaxTree = parser.Parse(source);
     var color = Console.ForegroundColor;
-    if (syntaxTree.Errors.Any())
+    if (syntaxTree.Errors.Length != 0)
     {
         Console.ForegroundColor = ConsoleColor.Red;
         foreach (var error in syntaxTree.Errors)
