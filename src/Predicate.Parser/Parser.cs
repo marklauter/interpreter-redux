@@ -5,19 +5,19 @@ using Predicate.Parser.Expressions;
 namespace Predicate.Parser;
 
 /*
-<predicate>             ::= <from-clause> <where-clause>
-<from-clause>           ::= "from" <identifier>
-<where-clause>          ::= "where" <condition>
-<condition>             ::= <expression> | <grouped-expression>
-<grouped-expression>    ::= "(" <expression> ")"
-<expression>            ::= <term> | <expression> "||" <term>
-<term>                  ::= <factor> | <term> "&&" <factor>
-<factor>                ::= <property> <comparison> <value>
-<property>              ::= <identifier>
-<comparison>            ::= "==" | "!=" | "<" | ">" | "<=" | ">=" | "-s" | "-e" | "-c"
-<value>                 ::= <string-literal> | <numeric-literal>
-<string-literal>        ::= <quoted-string>
-<numeric-literal>       ::= <number>
+<predicate>                 ::= <from-clause> <where-clause>
+<from-clause>               ::= "from" <identifier>
+<where-clause>              ::= "where" <condition>
+<condition>                 ::= <expression> | <parenthetical-expression>
+<parenthetical-expression>  ::= "(" <expression> ")"
+<expression>                ::= <term> | <expression> "||" <term>
+<term>                      ::= <factor> | <term> "&&" <factor>
+<factor>                    ::= <property> <comparison-operator> <value>
+<property>                  ::= <identifier>
+<comparison-operator>       ::= "==" | "!=" | "<" | ">" | "<=" | ">=" | "-s" | "-e" | "-c"
+<value>                     ::= <string-literal> | <numeric-literal>
+<string-literal>            ::= <quoted-string>
+<numeric-literal>           ::= <number>
 
 bottom up:
 parse numeric literal
