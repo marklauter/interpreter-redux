@@ -1,6 +1,6 @@
 ﻿namespace Luthor.Tokens;
 
-public record Token(
+public sealed record Token(
     int Offset,
     int Length,
     TokenType Type,
