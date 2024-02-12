@@ -2,7 +2,7 @@ using Math.Parser.Expressions;
 
 namespace Math.Parser.Tests;
 
-public class MathParseTests(Parser parser)
+public sealed class MathParseTests(Parser parser)
 {
     private readonly Parser parser = parser ?? throw new ArgumentNullException(nameof(parser));
 
@@ -14,29 +14,29 @@ public class MathParseTests(Parser parser)
     {
         var ast = parser.Parse(source);
         var number = Assert.IsType<Number>(ast.Root);
-        Assert.Equal(NumberTypes.NotANumber, number.Type);
+        Assert.Equal(NumericTypes.NotANumber, number.Type);
     }
 
     [Theory]
-    [InlineData("1", 1, NumberTypes.Integer)]
-    [InlineData("12", 12, NumberTypes.Integer)]
-    [InlineData("123", 123, NumberTypes.Integer)]
-    [InlineData("123.4", 123.4, NumberTypes.Float)]
-    [InlineData("0.123", 0.123, NumberTypes.Float)]
-    public void Parse_Returns_Number(string source, double expectedValue, NumberTypes expectedType)
+    [InlineData("1", 1, NumericTypes.Integer)]
+    [InlineData("12", 12, NumericTypes.Integer)]
+    [InlineData("123", 123, NumericTypes.Integer)]
+    [InlineData("123.4", 123.4, NumericTypes.FloatingPoint)]
+    [InlineData("0.123", 0.123, NumericTypes.FloatingPoint)]
+    public void Parse_Returns_Number(string source, double expectedValue, NumericTypes expectedType)
     {
         var ast = parser.Parse(source);
         var number = Assert.IsType<Number>(ast.Root);
         Assert.Equal(expectedType, number.Type);
         switch (number.Type)
         {
-            case NumberTypes.Integer:
+            case NumericTypes.Integer:
                 Assert.Equal(Convert.ToInt32(expectedValue), Convert.ToInt32(number.Evaluate()));
                 break;
-            case NumberTypes.Float:
+            case NumericTypes.FloatingPoint:
                 Assert.Equal(expectedValue, number.Evaluate(), 4);
                 break;
-            case NumberTypes.NotANumber:
+            case NumericTypes.NotANumber:
                 Assert.Fail("NaN");
                 break;
             default:
