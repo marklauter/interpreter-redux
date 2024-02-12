@@ -45,3 +45,4 @@ result:> 3
 
 math:>
 ```
+- 11 FEB 2024 - started predicate expression parser. worked out a draft BNF to describe the behavior of the parser. 
