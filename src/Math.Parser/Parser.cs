@@ -2,6 +2,7 @@
 using Luthor.Tokens;
 using Math.Parser.Expressions;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Math.Parser;
 
@@ -26,6 +27,7 @@ public sealed class Parser(Tokenizers tokenizers)
     private static readonly HashSet<string> AdditiveOperators = ["+", "-"];
     private static readonly HashSet<string> MultiplicitiveOperators = ["*", "/", "%"];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static OperatorTypes AsOperator(string symbol)
     {
         return symbol switch
@@ -50,7 +52,7 @@ public sealed class Parser(Tokenizers tokenizers)
         if (tokens.Any(t => t.IsError()))
         {
             return new SyntaxTree(
-                new Number(NumberTypes.NotANumber, 0),
+                new Number(NumericTypes.NotANumber, 0),
                 tokens
                     .Where(t => t.IsError())
                     .Select(t => t.Symbol)
@@ -59,7 +61,7 @@ public sealed class Parser(Tokenizers tokenizers)
 
         if (tokens.First().IsEndOfSource())
         {
-            return new SyntaxTree(new Number(NumberTypes.NotANumber, 0), Array.Empty<string>());
+            return new SyntaxTree(new Number(NumericTypes.NotANumber, 0), []);
         }
 
         var errors = new List<string>();
@@ -155,7 +157,7 @@ public sealed class Parser(Tokenizers tokenizers)
         }
 
         errors.Add($"Unexpected token {token.Symbol}");
-        return new Number(NumberTypes.NotANumber, 0);
+        return new Number(NumericTypes.NotANumber, 0);
     }
 
     private static Number ParseNumber(Token token)
@@ -163,10 +165,10 @@ public sealed class Parser(Tokenizers tokenizers)
         // todo: use TryParse and add error msg on false
         return token.Symbol.Contains('.')
             ? new Number(
-                NumberTypes.Float,
+                NumericTypes.FloatingPoint,
                 Double.Parse(token.Symbol, CultureInfo.InvariantCulture))
             : new Number(
-                NumberTypes.Integer,
+                NumericTypes.Integer,
                 Int32.Parse(token.Symbol, CultureInfo.InvariantCulture));
     }
 
@@ -180,7 +182,7 @@ public sealed class Parser(Tokenizers tokenizers)
         if (tokens[index].Type != TokenType.CloseCircumfixDelimiter)
         {
             errors.Add("Expected close circumfix delimiter");
-            return new Group(new Number(NumberTypes.NotANumber, 0));
+            return new Group(new Number(NumericTypes.NotANumber, 0));
         }
 
         ++index;
