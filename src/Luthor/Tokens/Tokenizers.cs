@@ -13,7 +13,7 @@ public sealed partial class Tokenizers
     {
         var isEof = offset >= sourceLength;
         token = isEof
-            ? new Token(offset, 0, TokenType.EndOfSource, String.Empty)
+            ? new Token(offset, 0, TokenType.EndOfSource)
             : default;
 
         return isEof;
@@ -32,13 +32,9 @@ public sealed partial class Tokenizers
 
         var match = regex.Match(source, offset);
 
-        var value = tokenType is TokenType.Whitespace or TokenType.NewLine
-            ? String.Empty
-            : match.Value;
-
         return match.Success
-           ? new(match.Index, match.Length, tokenType, value)
-           : new(offset, 0, TokenType.NoMatch | tokenType, String.Empty);
+           ? new(match.Index, match.Length, tokenType)
+           : new(offset, 0, TokenType.NoMatch | tokenType);
     }
 
     private static int IndexOfDelimeter(
@@ -89,7 +85,7 @@ public sealed partial class Tokenizers
         // no match
         if (index == -1)
         {
-            return new(offset, 0, TokenType.NoMatch & tokenType, String.Empty);
+            return new(offset, 0, TokenType.NoMatch & tokenType);
         }
 
         // found open delimiter so read ahead and try to find matching close delimiter
@@ -125,8 +121,8 @@ public sealed partial class Tokenizers
 
         // level > 0 means no match
         return level == 0
-            ? new(offset, openDelimiterLength, tokenType, openDelimiter.ToString())
-            : new(offset, 0, TokenType.NoMatch | tokenType, String.Empty);
+            ? new(offset, openDelimiterLength, tokenType)
+            : new(offset, 0, TokenType.NoMatch | tokenType);
     }
 
     private static Token MatchCircumfixCloseDelimiter(
@@ -150,7 +146,7 @@ public sealed partial class Tokenizers
         // no match
         if (index == -1)
         {
-            return new(offset, 0, TokenType.NoMatch & tokenType, String.Empty);
+            return new(offset, 0, TokenType.NoMatch & tokenType);
         }
 
         // found close delimiter so read back and try to find matching open delimiter
@@ -186,8 +182,8 @@ public sealed partial class Tokenizers
 
         // level > 0 means no match
         return level == 0
-            ? new(offset, closeDelimiterLength, tokenType, closeDelimiter.ToString())
-            : new(offset, 0, TokenType.NoMatch | tokenType, String.Empty);
+            ? new(offset, closeDelimiterLength, tokenType)
+            : new(offset, 0, TokenType.NoMatch | tokenType);
     }
 
     [GeneratedRegex(@"\G\b\d+(?:\.?\d+)?(?:[eE]{1}\d+)*(?!\.)\b", RegexConstants.Options)]

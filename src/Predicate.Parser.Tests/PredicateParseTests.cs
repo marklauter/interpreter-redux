@@ -13,7 +13,7 @@ public sealed class PredicateParseTests(Parser parser)
     {
         var predicate = parser.Parse(String.Empty);
         Assert.NotNull(predicate);
-        Assert.True(predicate.Root is ErrorExpression);
+        Assert.True(predicate.Expression is ErrorExpression);
         Assert.Contains("unexpected end of source", predicate.Errors);
     }
 
@@ -24,7 +24,7 @@ public sealed class PredicateParseTests(Parser parser)
         var source = $"from {expectedIdentifier}";
         var predicate = parser.Parse(source);
         Assert.NotNull(predicate);
-        Assert.True(predicate.Root is FromClause);
+        Assert.True(predicate.Expression is From);
         Assert.Empty(predicate.Errors);
     }
 }

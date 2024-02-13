@@ -1,4 +1,5 @@
 ﻿using Luthor.Tokens;
+using System.Runtime.CompilerServices;
 
 namespace Luthor;
 
@@ -8,10 +9,49 @@ public sealed class Lexer(
 {
     private readonly Tokenizers tokenizers = tokenizers ?? throw new ArgumentNullException(nameof(tokenizers));
     private readonly string source = source ?? throw new ArgumentNullException(nameof(source));
-
+    private readonly List<int> newLineOffsets = [];
     private int offset;
-    private int lastNewLineOffset;
-    private int lineNumber = 1;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private (int line, int column) LineAndColumn(int offset)
+    {
+        var offsets = newLineOffsets.ToArray().AsSpan();
+        for (var line = 0; line < offsets.Length; ++line)
+        {
+            var newLineOffset = offsets[line];
+            if (offset > newLineOffset)
+            {
+                return (line, offset - newLineOffset);
+            }
+        }
+
+        return (1, offset);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public string ReadSymbol(Token token)
+    {
+        if (token.IsEndOfSource())
+        {
+            return "EOF";
+        }
+
+        if (token.IsError())
+        {
+            var (lineNumber, column) = LineAndColumn(token.Offset);
+            return $"{{\"line\": {lineNumber}, \"column\": {column}}}";
+        }
+
+        return source[token.Offset..(token.Offset + token.Length)];
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string ReadSymbol(string source, Token token)
+    {
+        return token.IsEndOfSource()
+            ? "EOF"
+            : source[token.Offset..(token.Offset + token.Length)];
+    }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0305:Simplify collection initialization", Justification = "span created with collection initialization can't be exposed outside the function")]
     public Token[] Tokens()
@@ -28,8 +68,6 @@ public sealed class Lexer(
         tokens.Add(token);
 
         offset = 0;
-        lastNewLineOffset = 0;
-        lineNumber = 1;
 
         return tokens
             .ToArray();
@@ -39,7 +77,7 @@ public sealed class Lexer(
     {
         if (offset >= source.Length)
         {
-            return new Token(offset, 0, TokenType.EndOfSource, String.Empty);
+            return new Token(offset, 0, TokenType.EndOfSource);
         }
 
         var length = tokenizers.Length;
@@ -52,15 +90,14 @@ public sealed class Lexer(
                 offset += token.Length;
                 if (token.Type == TokenType.NewLine)
                 {
-                    lastNewLineOffset = token.Offset; // for error tracking. it helps establish the column where the error occurred
-                    ++lineNumber;
+                    // for error tracking. it helps establish the column where the error occurred
+                    newLineOffsets.Add(token.Offset);
                 }
 
                 return token;
             }
         }
 
-        var column = offset - lastNewLineOffset;
-        return new Token(offset, 0, TokenType.Error, $"{{\"line\": {lineNumber}, \"column\": {column}}}");
+        return new Token(offset, 0, TokenType.Error);
     }
 }

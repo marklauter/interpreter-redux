@@ -1,5 +1,5 @@
 ﻿namespace Predicate.Parser.Expressions;
 
 public sealed record Predicate(
-    Expression Root,
+    Expression Expression, // from, where, skiptake
     IEnumerable<string> Errors);

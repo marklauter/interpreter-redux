@@ -11,15 +11,15 @@ public sealed class LexerTests(Tokenizers tokenizers)
     [Theory]
     [InlineData("2a", @"{""line"": 1, ""column"": 0}", 0, 0, TokenType.Error)]
 
-    [InlineData(" ", "", 0, 1, TokenType.Whitespace)]
-    [InlineData("  ", "", 0, 2, TokenType.Whitespace)]
-    [InlineData(" x", "", 0, 1, TokenType.Whitespace)]
+    [InlineData(" ", " ", 0, 1, TokenType.Whitespace)]
+    [InlineData("  ", "  ", 0, 2, TokenType.Whitespace)]
+    [InlineData(" x", " ", 0, 1, TokenType.Whitespace)]
 
-    [InlineData("", "", 0, 0, TokenType.EndOfSource)]
+    [InlineData("", "EOF", 0, 0, TokenType.EndOfSource)]
 
-    [InlineData("\r", "", 0, 1, TokenType.NewLine)]
-    [InlineData("\n", "", 0, 1, TokenType.NewLine)]
-    [InlineData("\r\n", "", 0, 2, TokenType.NewLine)]
+    [InlineData("\r", "\r", 0, 1, TokenType.NewLine)]
+    [InlineData("\n", "\n", 0, 1, TokenType.NewLine)]
+    [InlineData("\r\n", "\r\n", 0, 2, TokenType.NewLine)]
 
     [InlineData("if", "if", 0, 2, TokenType.ReservedWord)]
     [InlineData("else", "else", 0, 4, TokenType.ReservedWord)]
@@ -87,7 +87,7 @@ public sealed class LexerTests(Tokenizers tokenizers)
                 token = lexer.NextToken();
                 if (token.IsError())
                 {
-                    Assert.Fail(token.Symbol);
+                    Assert.Fail(lexer.ReadSymbol(token));
                 }
             }
         }
@@ -98,40 +98,40 @@ public sealed class LexerTests(Tokenizers tokenizers)
 
         Assert.Equal(expectedToken, token.Type);
         Assert.Equal(expectedLength, token.Length);
-        Assert.Equal(expectedSymbol, token.Symbol);
+        Assert.Equal(expectedSymbol, lexer.ReadSymbol(token));
         Assert.Equal(expectedOffset, token.Offset);
     }
 
     [Theory]
     [InlineData("if", 0, 2, TokenType.ReservedWord)]
-    [InlineData("", 2, 1, TokenType.Whitespace)]
+    [InlineData(" ", 2, 1, TokenType.Whitespace)]
     [InlineData("(", 3, 1, TokenType.OpenCircumfixDelimiter)]
     [InlineData("a", 4, 1, TokenType.Identifier)]
-    [InlineData("", 5, 1, TokenType.Whitespace)]
+    [InlineData(" ", 5, 1, TokenType.Whitespace)]
     [InlineData("+", 6, 1, TokenType.Operator)]
-    [InlineData("", 7, 1, TokenType.Whitespace)]
+    [InlineData(" ", 7, 1, TokenType.Whitespace)]
     [InlineData("b", 8, 1, TokenType.Identifier)]
     [InlineData(")", 9, 1, TokenType.CloseCircumfixDelimiter)]
-    [InlineData("", 10, 1, TokenType.Whitespace)]
+    [InlineData(" ", 10, 1, TokenType.Whitespace)]
     [InlineData("{", 11, 1, TokenType.OpenCircumfixDelimiter)]
-    [InlineData("", 12, 1, TokenType.Whitespace)]
+    [InlineData(" ", 12, 1, TokenType.Whitespace)]
     [InlineData("let", 13, 3, TokenType.ReservedWord)]
-    [InlineData("", 16, 1, TokenType.Whitespace)]
+    [InlineData(" ", 16, 1, TokenType.Whitespace)]
     [InlineData("c", 17, 1, TokenType.Identifier)]
-    [InlineData("", 18, 1, TokenType.Whitespace)]
+    [InlineData(" ", 18, 1, TokenType.Whitespace)]
     [InlineData("=", 19, 1, TokenType.Operator)]
-    [InlineData("", 20, 1, TokenType.Whitespace)]
+    [InlineData(" ", 20, 1, TokenType.Whitespace)]
     [InlineData("a", 21, 1, TokenType.Identifier)]
-    [InlineData("", 22, 1, TokenType.Whitespace)]
+    [InlineData(" ", 22, 1, TokenType.Whitespace)]
     [InlineData("+", 23, 1, TokenType.Operator)]
-    [InlineData("", 24, 1, TokenType.Whitespace)]
+    [InlineData(" ", 24, 1, TokenType.Whitespace)]
     [InlineData("b", 25, 1, TokenType.Identifier)]
     [InlineData("^", 26, 1, TokenType.Operator)]
     [InlineData("2", 27, 1, TokenType.NumericLiteral)]
     [InlineData(";", 28, 1, TokenType.InfixDelimiter)]
-    [InlineData("", 29, 1, TokenType.Whitespace)]
+    [InlineData(" ", 29, 1, TokenType.Whitespace)]
     [InlineData("}", 30, 1, TokenType.CloseCircumfixDelimiter)]
-    [InlineData("", 31, 0, TokenType.EndOfSource)]
+    [InlineData("EOF", 31, 0, TokenType.EndOfSource)]
     public void Returns_Expected_Token_From_MultiToken_Source(
         string expectedSymbol,
         int expectedOffset,
@@ -148,7 +148,7 @@ public sealed class LexerTests(Tokenizers tokenizers)
                 token = lexer.NextToken();
                 if (token.IsError())
                 {
-                    Assert.Fail(token.Symbol);
+                    Assert.Fail(lexer.ReadSymbol(token));
                 }
             }
         }
@@ -159,25 +159,25 @@ public sealed class LexerTests(Tokenizers tokenizers)
 
         Assert.Equal(expectedToken, token.Type);
         Assert.Equal(expectedLength, token.Length);
-        Assert.Equal(expectedSymbol, token.Symbol);
+        Assert.Equal(expectedSymbol, lexer.ReadSymbol(token));
         Assert.Equal(expectedOffset, token.Offset);
     }
 
     [Theory]
     [InlineData("1.0", 0, 3, TokenType.NumericLiteral)]
-    [InlineData("", 3, 1, TokenType.Whitespace)]
+    [InlineData(" ", 3, 1, TokenType.Whitespace)]
     [InlineData("2.0", 4, 3, TokenType.NumericLiteral)]
-    [InlineData("", 7, 1, TokenType.Whitespace)]
+    [InlineData(" ", 7, 1, TokenType.Whitespace)]
     [InlineData("3.0", 8, 3, TokenType.NumericLiteral)]
-    [InlineData("", 11, 1, TokenType.Whitespace)]
+    [InlineData(" ", 11, 1, TokenType.Whitespace)]
     [InlineData("397.173", 12, 7, TokenType.NumericLiteral)]
-    [InlineData("", 19, 1, TokenType.Whitespace)]
+    [InlineData(" ", 19, 1, TokenType.Whitespace)]
     [InlineData("89", 20, 2, TokenType.NumericLiteral)]
-    [InlineData("", 22, 1, TokenType.Whitespace)]
+    [InlineData(" ", 22, 1, TokenType.Whitespace)]
     [InlineData("0.1", 23, 3, TokenType.NumericLiteral)]
-    [InlineData("", 26, 2, TokenType.Whitespace)]
+    [InlineData("  ", 26, 2, TokenType.Whitespace)]
     [InlineData("1237", 28, 4, TokenType.NumericLiteral)]
-    [InlineData("", 32, 0, TokenType.EndOfSource)]
+    [InlineData("EOF", 32, 0, TokenType.EndOfSource)]
     public void ReadTokens_Returns_Numeric_Values(
         string expectedSymbol,
         int expectedOffset,
@@ -194,7 +194,7 @@ public sealed class LexerTests(Tokenizers tokenizers)
                 token = lexer.NextToken();
                 if (token.IsError())
                 {
-                    Assert.Fail(token.Symbol);
+                    Assert.Fail(lexer.ReadSymbol(token));
                 }
             }
         }
@@ -202,7 +202,7 @@ public sealed class LexerTests(Tokenizers tokenizers)
         Assert.True(token.IsMatch());
         Assert.Equal(expectedTokens, token.Type);
         Assert.Equal(expectedLength, token.Length);
-        Assert.Equal(expectedSymbol, token.Symbol);
+        Assert.Equal(expectedSymbol, lexer.ReadSymbol(token));
         Assert.Equal(expectedOffset, token.Offset);
     }
 

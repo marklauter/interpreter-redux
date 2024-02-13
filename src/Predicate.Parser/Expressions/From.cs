@@ -1,8 +1,8 @@
 ﻿namespace Predicate.Parser.Expressions;
 
-public sealed record FromClause(
+public sealed record From(
     string Identifier,
-    Expression WhereClause)
+    Expression Where)
     : Expression
 {
     public override void Print(string indent = "")

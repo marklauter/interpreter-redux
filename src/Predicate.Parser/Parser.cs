@@ -60,7 +60,8 @@ public sealed class Parser(Tokenizers tokenizers)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        var tokens = new Lexer(tokenizers, source)
+        var lexer = new Lexer(tokenizers, source);
+        var tokens = lexer
             .Tokens()
             .Where(token => !token.IsWhiteSpace());
 
@@ -70,7 +71,7 @@ public sealed class Parser(Tokenizers tokenizers)
                 new ErrorExpression("errors encountered"),
                 tokens
                     .Where(t => t.IsError())
-                    .Select(t => t.Symbol)
+                    .Select(lexer.ReadSymbol)
                     .ToArray());
         }
 
@@ -84,6 +85,7 @@ public sealed class Parser(Tokenizers tokenizers)
         var errors = new List<string>();
         var index = 0;
         var expression = ParsePredicate(
+            lexer,
             tokens.ToArray().AsSpan(),
             errors,
             ref index);
@@ -92,14 +94,20 @@ public sealed class Parser(Tokenizers tokenizers)
     }
 
     private static Expression ParsePredicate(
+        Lexer lexer,
         ReadOnlySpan<Token> tokens,
         List<string> errors,
         ref int index)
     {
-        return ParseFromClause(tokens, errors, ref index);
+        return ParseFromClause(
+            lexer,
+            tokens,
+            errors,
+            ref index);
     }
 
     private static Expression ParseFromClause(
+        Lexer lexer,
         ReadOnlySpan<Token> tokens,
         List<string> errors,
         ref int index)
@@ -111,6 +119,7 @@ public sealed class Parser(Tokenizers tokenizers)
         }
 
         var expression = ParseReservedWord(
+            lexer,
             token,
             ReservedWords.From,
             errors,
@@ -123,18 +132,20 @@ public sealed class Parser(Tokenizers tokenizers)
 
         token = tokens[index];
         expression = ParseIdentifier(
+            lexer,
             token,
             errors,
             ref index);
 
         return expression is Identfier identifier
-            ? new FromClause(
+            ? new From(
                 identifier.Value,
                 new ErrorExpression("not implemented"))
             : expression;
     }
 
     private static Expression ParseReservedWord(
+        Lexer lexer,
         Token token,
         ReservedWords expectedWord,
         List<string> errors,
@@ -147,15 +158,15 @@ public sealed class Parser(Tokenizers tokenizers)
 
         if (!token.IsReservedWord())
         {
-            var message = $"unexpected token {token.Symbol}. expected reserved word '{expectedWord}'.";
+            var message = $"unexpected token {lexer.ReadSymbol(token)}. expected reserved word '{expectedWord}'.";
             errors.Add(message);
             return new ErrorExpression(message);
         }
 
-        var reservedWord = (ReservedWord)token.Symbol;
+        var reservedWord = (ReservedWord)lexer.ReadSymbol(token);
         if (reservedWord.Value != expectedWord)
         {
-            var message = $"unexpected token {token.Symbol}. expected reserved word '{expectedWord}'.";
+            var message = $"unexpected token {lexer.ReadSymbol(token)}. expected reserved word '{expectedWord}'.";
             errors.Add(message);
             return new ErrorExpression(message);
         }
@@ -165,6 +176,7 @@ public sealed class Parser(Tokenizers tokenizers)
     }
 
     private static Expression ParseIdentifier(
+        Lexer lexer,
         Token token,
         List<string> errors,
         ref int index)
@@ -176,13 +188,13 @@ public sealed class Parser(Tokenizers tokenizers)
 
         if (!token.IsIdentifier())
         {
-            var message = $"unexpected token {token.Symbol}. expected identifier.";
+            var message = $"unexpected token {lexer.ReadSymbol(token)}. expected identifier.";
             errors.Add(message);
             return new ErrorExpression(message);
         }
 
         ++index;
-        return new Identfier(token.Symbol);
+        return new Identfier(lexer.ReadSymbol(token));
     }
 
     //private static Expression ParseLiteral(

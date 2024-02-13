@@ -45,7 +45,8 @@ public sealed class Parser(Tokenizers tokenizers)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        var tokens = new Lexer(tokenizers, source)
+        var lexer = new Lexer(tokenizers, source);
+        var tokens = lexer
             .Tokens()
             .Where(token => !token.IsWhiteSpace());
 
@@ -55,7 +56,7 @@ public sealed class Parser(Tokenizers tokenizers)
                 new Number(NumericTypes.NotANumber, 0),
                 tokens
                     .Where(t => t.IsError())
-                    .Select(t => t.Symbol)
+                    .Select(lexer.ReadSymbol)
                     .ToArray());
         }
 
@@ -67,6 +68,7 @@ public sealed class Parser(Tokenizers tokenizers)
         var errors = new List<string>();
         var index = 0;
         var expression = ParseExpression(
+            lexer,
             tokens.ToArray().AsSpan(),
             errors,
             ref index);
@@ -75,6 +77,7 @@ public sealed class Parser(Tokenizers tokenizers)
     }
 
     private static Expression ParseExpression(
+        Lexer lexer,
         ReadOnlySpan<Token> tokens,
         List<string> errors,
         ref int index)
@@ -85,18 +88,28 @@ public sealed class Parser(Tokenizers tokenizers)
             throw new InvalidOperationException("Unexpected end of source");
         }
 
-        var left = ParseTerm(tokens, errors, ref index);
+        var left = ParseTerm(
+            lexer,
+            tokens,
+            errors,
+            ref index);
 
         token = tokens[index];
         while (!token.IsEndOfSource()
-            && token.IsOperator()
-            && AdditiveOperators.Contains(token.Symbol))
+        && token.IsOperator()
+            && AdditiveOperators.Contains(lexer.ReadSymbol(token)))
         {
             ++index;
+            var right = ParseTerm(
+                lexer,
+                tokens,
+                errors,
+                ref index);
+
             left = new BinaryOperation(
                 left,
-                ParseTerm(tokens, errors, ref index),
-                AsOperator(token.Symbol));
+                right,
+                AsOperator(lexer.ReadSymbol(token)));
 
             token = tokens[index];
         }
@@ -105,6 +118,7 @@ public sealed class Parser(Tokenizers tokenizers)
     }
 
     private static Expression ParseTerm(
+        Lexer lexer,
         ReadOnlySpan<Token> tokens,
         List<string> errors,
         ref int index)
@@ -115,18 +129,28 @@ public sealed class Parser(Tokenizers tokenizers)
             throw new InvalidOperationException("Unexpected end of source");
         }
 
-        var left = ParseFactor(tokens, errors, ref index);
+        var left = ParseFactor(
+            lexer,
+            tokens,
+            errors,
+            ref index);
 
         token = tokens[index];
         while (!token.IsEndOfSource()
             && token.IsOperator()
-            && MultiplicitiveOperators.Contains(token.Symbol))
+            && MultiplicitiveOperators.Contains(lexer.ReadSymbol(token)))
         {
             ++index;
+            var right = ParseFactor(
+                lexer,
+                tokens,
+                errors,
+                ref index);
+
             left = new BinaryOperation(
                 left,
-                ParseFactor(tokens, errors, ref index),
-                AsOperator(token.Symbol));
+                right,
+                AsOperator(lexer.ReadSymbol(token)));
 
             token = tokens[index];
         }
@@ -135,6 +159,7 @@ public sealed class Parser(Tokenizers tokenizers)
     }
 
     private static Expression ParseFactor(
+        Lexer lexer,
         ReadOnlySpan<Token> tokens,
         List<string> errors,
         ref int index)
@@ -148,37 +173,47 @@ public sealed class Parser(Tokenizers tokenizers)
         if (token.IsNumber())
         {
             ++index;
-            return ParseNumber(token);
+            return ParseNumber(lexer.ReadSymbol(token));
         }
 
         if (token.Type == TokenType.OpenCircumfixDelimiter)
         {
-            return ParseGroup(tokens, errors, ref index);
+            return ParseGroup(
+                lexer,
+                tokens,
+                errors,
+                ref index);
         }
 
-        errors.Add($"Unexpected token {token.Symbol}");
+        errors.Add($"Unexpected token {lexer.ReadSymbol(token)}");
         return new Number(NumericTypes.NotANumber, 0);
     }
 
-    private static Number ParseNumber(Token token)
+    private static Number ParseNumber(string symbol)
     {
         // todo: use TryParse and add error msg on false
-        return token.Symbol.Contains('.')
+        return symbol.Contains('.')
             ? new Number(
                 NumericTypes.FloatingPoint,
-                Double.Parse(token.Symbol, CultureInfo.InvariantCulture))
+                Double.Parse(symbol, CultureInfo.InvariantCulture))
             : new Number(
                 NumericTypes.Integer,
-                Int32.Parse(token.Symbol, CultureInfo.InvariantCulture));
+                Int32.Parse(symbol, CultureInfo.InvariantCulture));
     }
 
     private static Group ParseGroup(
-       ReadOnlySpan<Token> tokens,
-       List<string> errors,
-       ref int index)
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
     {
         ++index;
-        var expression = ParseExpression(tokens, errors, ref index);
+        var expression = ParseExpression(
+            lexer,
+            tokens,
+            errors,
+            ref index);
+
         if (tokens[index].Type != TokenType.CloseCircumfixDelimiter)
         {
             errors.Add("Expected close circumfix delimiter");

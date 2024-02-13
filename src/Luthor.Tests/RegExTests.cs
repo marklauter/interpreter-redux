@@ -22,7 +22,7 @@ public sealed class RegExTests(Tokenizers tokenizers)
         Assert.Equal(expectedSuccess, token.IsMatch());
         if (token.IsMatch())
         {
-            Assert.Equal(expectedSymbol, token.Symbol[1..^1]);
+            Assert.Equal(expectedSymbol, Lexer.ReadSymbol(source, token)[1..^1]);
         }
     }
 }
