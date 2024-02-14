@@ -7,11 +7,6 @@ public sealed record class Skip(
     int Value)
     : Expression
 {
-    public override void Print(string indent = "")
-    {
-        throw new NotImplementedException();
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator string(Skip value)
     {
@@ -32,11 +27,6 @@ public sealed record class Take(
     int Value)
     : Expression
 {
-    public override void Print(string indent = "")
-    {
-        throw new NotImplementedException();
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator string(Take value)
     {

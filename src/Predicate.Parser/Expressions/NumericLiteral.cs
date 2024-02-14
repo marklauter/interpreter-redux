@@ -14,18 +14,6 @@ public sealed record NumericLiteral(
         return Type == NumericTypes.NotANumber;
     }
 
-    public override void Print(string indent = "")
-    {
-        var color = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        var value = IsNaN()
-            ? "NaN"
-            : $"{Value}";
-
-        Console.WriteLine($"{indent}{nameof(NumericLiteral)}: {value}");
-        Console.ForegroundColor = color;
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static NumericLiteral ParseNumericLiteral(string symbol)
     {

@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using Predicate.Parser.Exceptions;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
 namespace Predicate.Parser.Expressions;
@@ -20,6 +21,11 @@ public enum ComparisonOperators
 internal readonly ref struct ComparisonOperator(ComparisonOperators Operator)
 {
     public ComparisonOperators Operator { get; } = Operator;
+
+    internal static string[] AsArray()
+    {
+        return [.. Operators.Keys];
+    }
 
     private static readonly ReadOnlyDictionary<string, ComparisonOperators> Operators =
         new Dictionary<string, ComparisonOperators>
@@ -58,7 +64,7 @@ internal readonly ref struct ComparisonOperator(ComparisonOperators Operator)
     private static ComparisonOperators FromSymbol(string symbol)
     {
         return !Operators.TryGetValue(symbol, out var value)
-            ? ComparisonOperators.Error
+            ? throw new ParseException($"Unknown comparison operator: {symbol}")
             : value;
     }
 

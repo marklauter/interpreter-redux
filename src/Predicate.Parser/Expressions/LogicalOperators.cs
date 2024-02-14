@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using Predicate.Parser.Exceptions;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
 namespace Predicate.Parser.Expressions;
@@ -13,6 +14,11 @@ public enum LogicalOperators
 internal readonly ref struct LogicalOperator(LogicalOperators Operator)
 {
     public LogicalOperators Operator { get; } = Operator;
+
+    internal static string[] AsArray()
+    {
+        return [.. Operators.Keys];
+    }
 
     private static readonly ReadOnlyDictionary<string, LogicalOperators> Operators =
         new Dictionary<string, LogicalOperators>
@@ -37,7 +43,7 @@ internal readonly ref struct LogicalOperator(LogicalOperators Operator)
     private static LogicalOperators FromSymbol(string symbol)
     {
         return !Operators.TryGetValue(symbol, out var value)
-            ? LogicalOperators.Error
+            ? throw new ParseException($"Unknown logical operator: {symbol}")
             : value;
     }
 

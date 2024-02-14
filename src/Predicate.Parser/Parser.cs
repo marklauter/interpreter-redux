@@ -1,6 +1,8 @@
 ﻿using Luthor;
 using Luthor.Tokens;
+using Predicate.Parser.Exceptions;
 using Predicate.Parser.Expressions;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Predicate.Parser;
@@ -45,10 +47,11 @@ public sealed class Parser(Tokenizers tokenizers)
     private readonly Tokenizers tokenizers = tokenizers
         ?? throw new ArgumentNullException(nameof(tokenizers));
 
-    private static readonly string[] EndOfSourceError = ["unexpected end of source"];
-    private static readonly ErrorExpression EndOfSourceErrorExpression = new("unexpected end of source");
+    internal const string EndOfSourceError = "unexpected end of source";
+    internal const string ParserError = "parser encountered errors";
+    internal const string LexerError = "lexer encountered errors";
 
-    public Expressions.Predicate Parse(string source)
+    public Expressions.Statement Parse(string source)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -59,107 +62,84 @@ public sealed class Parser(Tokenizers tokenizers)
 
         if (tokens.Any(t => t.IsError()))
         {
-            return new Expressions.Predicate(
-                new ErrorExpression("errors encountered"),
+            var ex = new ParseException(LexerError);
+            ex.Data.Add(
+                "errors",
                 tokens
                     .Where(t => t.IsError())
                     .Select(lexer.ReadSymbol)
                     .ToArray());
+            throw ex;
         }
 
         if (tokens.First().IsEndOfSource())
         {
-            return new Expressions.Predicate(
-                EndOfSourceErrorExpression,
-                EndOfSourceError);
+            throw new UnexpectedEndOfSourceException(EndOfSourceError);
         }
 
-        var errors = new List<string>();
         var index = 0;
-        var expression = ParseStatement(
+        return ParseStatement(
             lexer,
             tokens.ToArray().AsSpan(),
-            errors,
             ref index);
-
-        return new Expressions.Predicate(expression, errors);
     }
 
-    private static Expression ParseStatement(
+    private static Statement ParseStatement(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
-        List<string> errors,
         ref int index)
     {
-        var token = tokens[index];
-        var expression = ParseReservedWord(
+        _ = ParseReservedWord(
             lexer,
-            token,
+            tokens,
             ReservedWords.From,
-            errors,
             ref index);
 
-        if (expression is ErrorExpression)
-        {
-            return expression;
-        }
-
-        token = tokens[index];
-        expression = ParseIdentifier(
+        var from = ParseIdentifier(
             lexer,
-            token,
-            errors,
+            tokens,
             ref index);
 
-        if (expression is Identifier identifier)
-        {
-            var where = ParseWhereClause(
-                lexer,
-                tokens,
-                errors,
-                ref index);
+        var predicate = ParsePredicate(
+            lexer,
+            tokens,
+            ref index);
 
-            return new From(
-                identifier.Value,
-                where);
-        }
+        // todo: var skip = ParseSkip();
+        // todo: var take = ParseTake();
 
-        return expression;
+        return new Statement(
+            from,
+            predicate,
+            null,
+            null);
     }
 
-    private static Expression ParseWhereClause(
+    private static Expression ParsePredicate(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
-        List<string> errors,
         ref int index)
     {
-        var token = tokens[index];
-        var expression = ParseReservedWord(
+        _ = ParseReservedWord(
             lexer,
-            token,
+            tokens,
             ReservedWords.Where,
-            errors,
             ref index);
 
-        return expression is ErrorExpression
-            ? expression
-            : ParseLogicalOr(
-                lexer,
-                tokens,
-                errors,
-                ref index);
+        return ParseLogicalOr(
+            lexer,
+            tokens,
+            ref index);
     }
 
     private static Expression ParseLogicalOr(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
-        List<string> errors,
         ref int index)
     {
         var left = ParseLogicalAnd(
             lexer,
             tokens,
-            errors,
             ref index);
 
         var token = tokens[index];
@@ -168,16 +148,20 @@ public sealed class Parser(Tokenizers tokenizers)
             && token.IsOperator()
             && (LogicalOperator)lexer.ReadSymbol(token) == LogicalOperators.Or)
         {
-            ++index;
+            var op = ParseLogicalOperator(
+                lexer,
+                tokens,
+                LogicalOperators.Or,
+                ref index);
+
             var right = ParseLogicalAnd(
                 lexer,
                 tokens,
-                errors,
                 ref index);
 
             left = new LogicalExpression(
                 left,
-                LogicalOperators.Or,
+                op,
                 right);
 
             token = tokens[index];
@@ -189,13 +173,11 @@ public sealed class Parser(Tokenizers tokenizers)
     private static Expression ParseLogicalAnd(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
-        List<string> errors,
         ref int index)
     {
         var left = ParseComparison(
             lexer,
             tokens,
-            errors,
             ref index);
 
         var token = tokens[index];
@@ -204,16 +186,20 @@ public sealed class Parser(Tokenizers tokenizers)
             && token.IsOperator()
             && (LogicalOperator)lexer.ReadSymbol(token) == LogicalOperators.And)
         {
-            ++index;
+            var op = ParseLogicalOperator(
+                lexer,
+                tokens,
+                LogicalOperators.And,
+                ref index);
+
             var right = ParseComparison(
                 lexer,
                 tokens,
-                errors,
                 ref index);
 
             left = new LogicalExpression(
                 left,
-                LogicalOperators.Or,
+                op,
                 right);
 
             token = tokens[index];
@@ -222,118 +208,138 @@ public sealed class Parser(Tokenizers tokenizers)
         return left;
     }
 
+    [SuppressMessage("Style", "IDE0010:Add missing cases", Justification = "switch is complete")]
     private static Expression ParseComparison(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
-        List<string> errors,
         ref int index)
     {
         var token = tokens[index];
-        if (token.IsIdentifier())
+        switch (token.Type)
         {
-            var identifier = (Identifier)lexer.ReadSymbol(token);
-            ++index;
-            token = tokens[index];
-            if (token.IsOperator())
-            {
-                ++index;
-                var value = ParseValue(
+            case TokenType.OpenCircumfixDelimiter:
+                return ParseParentheticalGroup(
                     lexer,
                     tokens,
-                    errors,
                     ref index);
 
-                return new ComparisonExpression(
-                    identifier,
-                    (ComparisonOperator)lexer.ReadSymbol(token),
-                    value);
-            }
+            case TokenType.Identifier:
+                var left = ParseIdentifier(
+                    lexer,
+                    tokens,
+                    ref index);
+
+                var op = ParseComparisonOperator(
+                    lexer,
+                    tokens,
+                    ref index);
+
+                var right = ParseLiteral(
+                    lexer,
+                    tokens,
+                    ref index);
+
+                return new ComparisonExpression(left, op, right);
+
+            default:
+                throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected identifier or open parenthesis.");
         }
-
-        if (token.IsOpenCircumfixDelimiter())
-        {
-            return ParseParentheticalGroup(
-                lexer,
-                tokens,
-                errors,
-                ref index);
-        }
-
-        var message = $"unexpected token {lexer.ReadSymbol(token)}. expected identifier or open parenthesis.";
-        errors.Add(message);
-        return new ErrorExpression(message);
-
     }
 
     private static Expression ParseParentheticalGroup(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
-        List<string> errors,
         ref int index)
     {
         throw new NotImplementedException(nameof(ParseParentheticalGroup));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void CheckEndOfSource(Token token)
-    {
-        if (token.IsEndOfSource())
-        {
-            throw new InvalidOperationException("Unexpected end of source");
-        }
-    }
-
-    private static Expression ParseReservedWord(
-        Lexer lexer,
-        Token token,
-        ReservedWords expectedWord,
-        List<string> errors,
-        ref int index)
-    {
-        CheckEndOfSource(token);
-
-        if (!token.IsReservedWord())
-        {
-            var message = $"unexpected token {lexer.ReadSymbol(token)}. expected reserved word '{expectedWord}'.";
-            errors.Add(message);
-            return new ErrorExpression(message);
-        }
-
-        var reservedWord = (ReservedWord)lexer.ReadSymbol(token);
-        if (reservedWord.Value != expectedWord)
-        {
-            var message = $"unexpected token {lexer.ReadSymbol(token)}. expected reserved word '{expectedWord}'.";
-            errors.Add(message);
-            return new ErrorExpression(message);
-        }
-
-        ++index;
-        return new ReservedWordExpression(reservedWord);
-    }
-
-    private static Expression ParseIdentifier(
-        Lexer lexer,
-        Token token,
-        List<string> errors,
-        ref int index)
-    {
-        CheckEndOfSource(token);
-
-        if (!token.IsIdentifier())
-        {
-            var message = $"unexpected token {lexer.ReadSymbol(token)}. expected identifier.";
-            errors.Add(message);
-            return new ErrorExpression(message);
-        }
-
-        ++index;
-        return (Identifier)lexer.ReadSymbol(token);
-    }
-
-    private static Expression ParseValue(
+    private static ComparisonOperator ParseComparisonOperator(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
-        List<string> errors,
+        ref int index)
+    {
+        var token = tokens[index];
+        CheckEndOfSource(token);
+
+        if (token.IsOperator())
+        {
+            ++index;
+            return (ComparisonOperator)lexer.ReadSymbol(token);
+        }
+
+        throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {nameof(ComparisonOperator)}.");
+    }
+
+    private static LogicalOperator ParseLogicalOperator(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        LogicalOperators expectedOperator,
+        ref int index)
+    {
+        var token = tokens[index];
+        CheckEndOfSource(token);
+
+        if (token.IsOperator())
+        {
+            var logicalOperator = (LogicalOperator)lexer.ReadSymbol(token);
+            if (logicalOperator.Operator != expectedOperator)
+            {
+                throw new ParseException($"unexpected operator {logicalOperator.Operator}. expected {expectedOperator}.");
+            }
+
+            ++index;
+            return logicalOperator;
+        }
+
+        throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {TokenType.Operator}.");
+    }
+
+    private static ReservedWord ParseReservedWord(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        ReservedWords expectedWord,
+        ref int index)
+    {
+        var token = tokens[index];
+        CheckEndOfSource(token);
+
+        if (token.IsReservedWord())
+        {
+            var reservedWord = (ReservedWord)lexer.ReadSymbol(token);
+            if (reservedWord.Value != expectedWord)
+            {
+                throw new ParseException($"unexpected identifier {reservedWord.Value}. expected {expectedWord}.");
+            }
+
+            ++index;
+            return reservedWord;
+        }
+
+        throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {TokenType.ReservedWord}.");
+    }
+
+    private static Identifier ParseIdentifier(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        ref int index)
+    {
+        var token = tokens[index];
+        CheckEndOfSource(token);
+
+        if (token.IsIdentifier())
+        {
+            ++index;
+            return (Identifier)lexer.ReadSymbol(token);
+        }
+
+        throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {TokenType.Identifier}.");
+    }
+
+    [SuppressMessage("Style", "IDE0010:Add missing cases", Justification = "switch is complete")]
+    private static Expression ParseLiteral(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
         ref int index)
     {
         var token = tokens[index];
@@ -342,28 +348,31 @@ public sealed class Parser(Tokenizers tokenizers)
         if (token.IsLiteral())
         {
             var symbol = lexer.ReadSymbol(token);
-            if (token.IsNumber())
+            switch (token.Type)
             {
-                ++index;
-                return (NumericLiteral)symbol;
-            }
-
-            if (token.IsString())
-            {
-                ++index;
-                return (StringLiteral)symbol;
-            }
-
-            if (token.IsBoolean())
-            {
-                ++index;
-                return (BooleanLiteral)symbol;
+                case TokenType.BooleanLiteral:
+                    ++index;
+                    return (BooleanLiteral)symbol;
+                case TokenType.StringLiteral:
+                    ++index;
+                    return (StringLiteral)symbol;
+                case TokenType.NumericLiteral:
+                    ++index;
+                    return (NumericLiteral)symbol;
+                default:
+                    throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {TokenType.BooleanLiteral} | {TokenType.StringLiteral} | {TokenType.NumericLiteral}.");
             }
         }
 
-        ++index;
-        var message = $"unexpected token {lexer.ReadSymbol(token)}. expected literal.";
-        errors.Add(message);
-        return new ErrorExpression(message);
+        throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {TokenType.Literal}.");
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void CheckEndOfSource(Token token)
+    {
+        if (token.IsEndOfSource())
+        {
+            throw new UnexpectedEndOfSourceException(EndOfSourceError);
+        }
     }
 }

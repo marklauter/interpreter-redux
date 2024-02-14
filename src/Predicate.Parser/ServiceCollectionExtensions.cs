@@ -2,6 +2,7 @@
 using Luthor.Tokens;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Predicate.Parser.Expressions;
 
 namespace Predicate.Parser;
 
@@ -12,19 +13,11 @@ public static class ServiceCollectionExtensions
         | TerminalSymbolOptions.IncludeNumericLiterals
         | TerminalSymbolOptions.IncludeCharacterLiterals
         | TerminalSymbolOptions.IncludeIdentifiers;
-    private static readonly string[] Operators = [
-        "&&", // and
-        "||", // or
-        "==",
-        "!=",
-        ">",
-        "<",
-        ">=",
-        "<=",
-        "-s", // starts with
-        "-e", // ends with
-        "-c"]; // contains
-    private static readonly string[] ReservedWords = ["from", "where"];
+    private static readonly string[] Operators = ComparisonOperator
+        .AsArray()
+        .Union(LogicalOperator.AsArray())
+        .ToArray();
+    private static readonly string[] ReservedWords = ReservedWord.AsArray();
     private static readonly string[] BooleanLiterals = ["true", "false"];
     private static readonly CircumfixPair[] CircumfixDelimiterPairs = [new("(", ")")];
 

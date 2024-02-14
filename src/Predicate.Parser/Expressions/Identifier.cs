@@ -6,11 +6,6 @@ public sealed record Identifier(
     string Value)
     : Expression
 {
-    public override void Print(string indent = "")
-    {
-        throw new NotImplementedException();
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Identifier(string value)
     {
@@ -18,8 +13,8 @@ public sealed record Identifier(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator string(Identifier identifier)
+    public static implicit operator string(Identifier value)
     {
-        return identifier.Value;
+        return value.Value;
     }
 }

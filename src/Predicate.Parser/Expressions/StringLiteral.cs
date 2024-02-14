@@ -6,11 +6,6 @@ public sealed record StringLiteral(
     string Value)
     : Expression
 {
-    public override void Print(string indent = "")
-    {
-        throw new NotImplementedException();
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator StringLiteral(string value)
     {
