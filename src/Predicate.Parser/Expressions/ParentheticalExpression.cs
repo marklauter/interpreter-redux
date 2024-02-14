@@ -1,6 +1,6 @@
 ﻿namespace Predicate.Parser.Expressions;
 
-public sealed record GroupedExpression(
+public sealed record ParentheticalExpression(
     Expression Expression)
     : Expression
 {
@@ -9,7 +9,7 @@ public sealed record GroupedExpression(
         var color = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Cyan;
 
-        Console.WriteLine($"{indent}{nameof(GroupedExpression)} Expression");
+        Console.WriteLine($"{indent}{nameof(ParentheticalExpression)} Expression");
         Expression.Print($"{indent}   ");
 
         Console.ForegroundColor = color;
