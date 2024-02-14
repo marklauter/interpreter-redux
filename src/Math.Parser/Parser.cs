@@ -95,8 +95,9 @@ public sealed class Parser(Tokenizers tokenizers)
             ref index);
 
         token = tokens[index];
-        while (!token.IsEndOfSource()
-        && token.IsOperator()
+        while (
+            !token.IsEndOfSource()
+            && token.IsOperator()
             && AdditiveOperators.Contains(lexer.ReadSymbol(token)))
         {
             ++index;
