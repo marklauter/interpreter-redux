@@ -2,7 +2,7 @@
 
 namespace Predicate.Parser.Expressions;
 
-public sealed record Identfier(
+public sealed record Identifier(
     string Value)
     : Expression
 {
@@ -12,13 +12,13 @@ public sealed record Identfier(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Identfier(string value)
+    public static implicit operator Identifier(string value)
     {
         return new(value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator string(Identfier identifier)
+    public static implicit operator string(Identifier identifier)
     {
         return identifier.Value;
     }
