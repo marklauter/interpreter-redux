@@ -8,6 +8,8 @@ public enum ReservedWords
     Error = 0,
     From = 1,
     Where = 2,
+    Skip = 3,
+    Take = 4,
 }
 
 internal readonly ref struct ReservedWord(
@@ -19,7 +21,10 @@ internal readonly ref struct ReservedWord(
         new Dictionary<string, ReservedWords>
         {
             { "from", Expressions.ReservedWords.From },
-            { "where", Expressions.ReservedWords.Where }
+            { "where", Expressions.ReservedWords.Where },
+            { "skip", Expressions.ReservedWords.Skip },
+            { "take", Expressions.ReservedWords.Take },
+
         }.AsReadOnly();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -43,14 +48,14 @@ internal readonly ref struct ReservedWord(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator ReservedWord(string symbol)
+    public static implicit operator ReservedWord(string symbol)
     {
         var reservedWord = FromSymbol(symbol);
         return new ReservedWord(reservedWord);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator string(ReservedWord reservedWord)
+    public static implicit operator string(ReservedWord reservedWord)
     {
         return ToSymbol(reservedWord.Value);
     }

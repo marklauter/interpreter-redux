@@ -12,7 +12,7 @@ public sealed record StringLiteral(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator StringLiteral(string value)
+    public static implicit operator StringLiteral(string value)
     {
         var start = value.StartsWith('"')
             ? 1
@@ -26,7 +26,7 @@ public sealed record StringLiteral(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator string(StringLiteral literal)
+    public static implicit operator string(StringLiteral literal)
     {
         return literal.Value;
     }

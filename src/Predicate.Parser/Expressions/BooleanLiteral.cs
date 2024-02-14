@@ -12,25 +12,25 @@ public sealed record BooleanLiteral(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator bool(BooleanLiteral literal)
+    public static implicit operator bool(BooleanLiteral literal)
     {
         return literal.Value;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator BooleanLiteral(bool value)
+    public static implicit operator BooleanLiteral(bool value)
     {
         return new(value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator string(BooleanLiteral literal)
+    public static implicit operator string(BooleanLiteral literal)
     {
         return literal.Value.ToString();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator BooleanLiteral(string value)
+    public static implicit operator BooleanLiteral(string value)
     {
         return Boolean.TryParse(value, out var result)
             ? new(result)

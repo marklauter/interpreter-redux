@@ -50,13 +50,13 @@ public sealed record NumericLiteral(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator int(NumericLiteral literal)
+    public static implicit operator int(NumericLiteral literal)
     {
         return Convert.ToInt32(Math.Round(literal.Value, 0));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator NumericLiteral(int value)
+    public static implicit operator NumericLiteral(int value)
     {
         return new(
             NumericTypes.Integer,
@@ -64,13 +64,13 @@ public sealed record NumericLiteral(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator double(NumericLiteral literal)
+    public static implicit operator double(NumericLiteral literal)
     {
         return literal.Value;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator NumericLiteral(double value)
+    public static implicit operator NumericLiteral(double value)
     {
         return new(
             NumericTypes.FloatingPoint,
@@ -78,7 +78,7 @@ public sealed record NumericLiteral(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator string(NumericLiteral literal)
+    public static implicit operator string(NumericLiteral literal)
     {
         return literal.Type switch
         {
@@ -91,7 +91,7 @@ public sealed record NumericLiteral(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator NumericLiteral(string value)
+    public static implicit operator NumericLiteral(string value)
     {
         return ParseNumericLiteral(value);
     }

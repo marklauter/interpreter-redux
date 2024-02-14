@@ -11,14 +11,14 @@ public sealed record ErrorExpression(string Value)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator ErrorExpression(string value)
+    public static implicit operator ErrorExpression(string value)
     {
         // todo: remove the quotes from the string
         return new(value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator string(ErrorExpression literal)
+    public static implicit operator string(ErrorExpression literal)
     {
         return literal.Value;
     }
