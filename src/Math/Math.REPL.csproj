@@ -7,7 +7,13 @@
 		<Nullable>enable</Nullable>
 		<PublishAot>True</PublishAot>
 		<EnableCompressionInSingleFile>True</EnableCompressionInSingleFile>
+		<TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+		<DebuggerSupport>false</DebuggerSupport>
 		<Trimming>full</Trimming>
+		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<StackTraceSupport>false</StackTraceSupport>
+		<UseSystemResourceKeys>true</UseSystemResourceKeys>
 	</PropertyGroup>
 
 	<ItemGroup>
