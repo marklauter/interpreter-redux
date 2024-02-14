@@ -1,6 +1,7 @@
 ﻿using Luthor;
 using Luthor.Tokens;
 using Predicate.Parser.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace Predicate.Parser;
 
@@ -9,43 +10,34 @@ https://bnfplayground.pauliankline.com/?bnf=%3Cpredicate%3E%20%20%20%20%20%20%20
 
 <predicate>                 ::= <fromclause> <requiredwhitespace> <whereclause>
 <fromclause>                ::= "from" <requiredwhitespace> <identifier>
-<whereclause>               ::= "where" <requiredwhitespace> <condition>
-<condition>                 ::= <term> | <condition> <or> <term>
+<whereclause>               ::= "where" <requiredwhitespace> <logicalor>
+<logicalor>                 ::= <logicaland>| <logicalor> <or> <term>
+<logicaland>                ::= <comparison> | <logicaland><and> <comparison>
+<comparison>                ::= <property> <comparisonoperator> <value> | <parentheticalexpression>
+<parentheticalexpression>   ::= "(" <optionalwhitespace> <logicalor> <optionalwhitespace> ")"
+
 <or>                        ::= <requiredwhitespace> "||" <requiredwhitespace> 
-<term>                      ::= <factor> | <term> <and> <factor>
 <and>                       ::= <requiredwhitespace> "&&" <requiredwhitespace> 
-<factor>                    ::= <property> <comparisonoperator> <value> | <parentheticalexpression>
-<parentheticalexpression>   ::= "(" <optionalwhitespace> <condition> <optionalwhitespace> ")"
 <requiredwhitespace>        ::= <whitespace>+
 <optionalwhitespace>        ::= <whitespace>*
 <property>                  ::= <identifier>
 <comparisonoperator>        ::= <optionalwhitespace> ("==" | "!=" | "<" | ">" | "<=" | ">=" | "-s" | "-e" | "-c") <optionalwhitespace>
-<value>                     ::= <stringliteral> | <numericliteral>
-<identifier>                ::= (<uppercase> | <lowercase>)+ <character>*
-<stringliteral>             ::= <quote> <string> <quote>
-<string>                    ::= (<character> | <whitespace>)*
-<quote>                     ::= "\""
+<value>                     ::= <stringliteral> | <numericliteral> | <booleanliteral>
+<booleanliteral>            ::= "true" | "false"
+<stringliteral>             ::= <quotedstring>
 <numericliteral>            ::= <positivenumber> | <negativenumber>
 <negativenumber>            ::= "-" <positivenumber>
 <positivenumber>            ::= ("0" |  [1-9] <digit>*) ("." <digit>+ )?
 <integer>                   ::= <digit>+
+<quotedstring>              ::= <quote> <string> <quote>
+<quote>                     ::= "\""
+<identifier>                ::= (<uppercase> | <lowercase>)+ <character>*
+<string>                    ::= (<character> | <whitespace>)*
 <character>                 ::= <uppercase> | <lowercase> | <digit>
 <uppercase>                 ::= [A-Z]
 <lowercase>                 ::= [a-z]
 <digit>                     ::= [0-9]
 <whitespace>                ::= (" " | "\t" | "\r" | "\n" | "\r\n")
-
-bottom up:
-parse numeric literal
-parse string literal
-parse value
-parse property
-parse factor
-parse term
-parse expression
-parse grouped expression
-parse condition
-parse predicate
 */
 
 public sealed class Parser(Tokenizers tokenizers)
@@ -84,7 +76,7 @@ public sealed class Parser(Tokenizers tokenizers)
 
         var errors = new List<string>();
         var index = 0;
-        var expression = ParsePredicate(
+        var expression = ParseStatement(
             lexer,
             tokens.ToArray().AsSpan(),
             errors,
@@ -93,31 +85,13 @@ public sealed class Parser(Tokenizers tokenizers)
         return new Expressions.Predicate(expression, errors);
     }
 
-    private static Expression ParsePredicate(
-        Lexer lexer,
-        ReadOnlySpan<Token> tokens,
-        List<string> errors,
-        ref int index)
-    {
-        return ParseFromClause(
-            lexer,
-            tokens,
-            errors,
-            ref index);
-    }
-
-    private static Expression ParseFromClause(
+    private static Expression ParseStatement(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
         List<string> errors,
         ref int index)
     {
         var token = tokens[index];
-        if (token.IsEndOfSource())
-        {
-            throw new InvalidOperationException("Unexpected end of source");
-        }
-
         var expression = ParseReservedWord(
             lexer,
             token,
@@ -125,7 +99,7 @@ public sealed class Parser(Tokenizers tokenizers)
             errors,
             ref index);
 
-        if (expression is not ReservedWordExpression)
+        if (expression is ErrorExpression)
         {
             return expression;
         }
@@ -137,11 +111,176 @@ public sealed class Parser(Tokenizers tokenizers)
             errors,
             ref index);
 
-        return expression is Identfier identifier
-            ? new From(
+        if (expression is Identifier identifier)
+        {
+            var where = ParseWhereClause(
+                lexer,
+                tokens,
+                errors,
+                ref index);
+
+            return new From(
                 identifier.Value,
-                new ErrorExpression("not implemented"))
-            : expression;
+                where);
+        }
+
+        return expression;
+    }
+
+    private static Expression ParseWhereClause(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
+    {
+        var token = tokens[index];
+        var expression = ParseReservedWord(
+            lexer,
+            token,
+            ReservedWords.Where,
+            errors,
+            ref index);
+
+        return expression is ErrorExpression
+            ? expression
+            : ParseLogicalOr(
+                lexer,
+                tokens,
+                errors,
+                ref index);
+    }
+
+    private static Expression ParseLogicalOr(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
+    {
+        var left = ParseLogicalAnd(
+            lexer,
+            tokens,
+            errors,
+            ref index);
+
+        var token = tokens[index];
+        while (
+            !token.IsEndOfSource()
+            && token.IsOperator()
+            && (LogicalOperator)lexer.ReadSymbol(token) == LogicalOperators.Or)
+        {
+            ++index;
+            var right = ParseLogicalAnd(
+                lexer,
+                tokens,
+                errors,
+                ref index);
+
+            left = new LogicalExpression(
+                left,
+                LogicalOperators.Or,
+                right);
+
+            token = tokens[index];
+        }
+
+        return left;
+    }
+
+    private static Expression ParseLogicalAnd(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
+    {
+        var left = ParseComparison(
+            lexer,
+            tokens,
+            errors,
+            ref index);
+
+        var token = tokens[index];
+        while (
+            !token.IsEndOfSource()
+            && token.IsOperator()
+            && (LogicalOperator)lexer.ReadSymbol(token) == LogicalOperators.And)
+        {
+            ++index;
+            var right = ParseComparison(
+                lexer,
+                tokens,
+                errors,
+                ref index);
+
+            left = new LogicalExpression(
+                left,
+                LogicalOperators.Or,
+                right);
+
+            token = tokens[index];
+        }
+
+        return left;
+    }
+
+    private static Expression ParseComparison(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
+    {
+        var token = tokens[index];
+        if (token.IsIdentifier())
+        {
+            var identifier = (Identifier)lexer.ReadSymbol(token);
+            ++index;
+            token = tokens[index];
+            if (token.IsOperator())
+            {
+                ++index;
+                var value = ParseValue(
+                    lexer,
+                    tokens,
+                    errors,
+                    ref index);
+
+                return new ComparisonExpression(
+                    identifier,
+                    (ComparisonOperator)lexer.ReadSymbol(token),
+                    value);
+            }
+        }
+
+        if (token.IsOpenCircumfixDelimiter())
+        {
+            return ParseParentheticalGroup(
+                lexer,
+                tokens,
+                errors,
+                ref index);
+        }
+
+        var message = $"unexpected token {lexer.ReadSymbol(token)}. expected identifier or open parenthesis.";
+        errors.Add(message);
+        return new ErrorExpression(message);
+
+    }
+
+    private static Expression ParseParentheticalGroup(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
+    {
+        throw new NotImplementedException(nameof(ParseParentheticalGroup));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void CheckEndOfSource(Token token)
+    {
+        if (token.IsEndOfSource())
+        {
+            throw new InvalidOperationException("Unexpected end of source");
+        }
     }
 
     private static Expression ParseReservedWord(
@@ -151,10 +290,7 @@ public sealed class Parser(Tokenizers tokenizers)
         List<string> errors,
         ref int index)
     {
-        if (token.IsEndOfSource())
-        {
-            throw new InvalidOperationException("Unexpected end of source");
-        }
+        CheckEndOfSource(token);
 
         if (!token.IsReservedWord())
         {
@@ -181,10 +317,7 @@ public sealed class Parser(Tokenizers tokenizers)
         List<string> errors,
         ref int index)
     {
-        if (token.IsEndOfSource())
-        {
-            throw new InvalidOperationException("Unexpected end of source");
-        }
+        CheckEndOfSource(token);
 
         if (!token.IsIdentifier())
         {
@@ -194,42 +327,43 @@ public sealed class Parser(Tokenizers tokenizers)
         }
 
         ++index;
-        return new Identfier(lexer.ReadSymbol(token));
+        return (Identifier)lexer.ReadSymbol(token);
     }
 
-    //private static Expression ParseLiteral(
-    //    ReadOnlySpan<Token> tokens,
-    //    List<string> errors,
-    //    ref int index)
-    //{
-    //    var token = tokens[index];
-    //    if (token.IsEndOfSource())
-    //    {
-    //        throw new InvalidOperationException("Unexpected end of source");
-    //    }
+    private static Expression ParseValue(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        List<string> errors,
+        ref int index)
+    {
+        var token = tokens[index];
+        CheckEndOfSource(token);
 
-    //    if (!token.IsLiteral())
-    //    {
-    //        ++index;
-    //        errors.Add($"Unexpected token {token.Symbol}. Expected literal.");
-    //    }
+        if (token.IsLiteral())
+        {
+            var symbol = lexer.ReadSymbol(token);
+            if (token.IsNumber())
+            {
+                ++index;
+                return (NumericLiteral)symbol;
+            }
 
-    //    if (token.IsNumber())
-    //    {
-    //        ++index;
-    //        return ParseNumericLiteral(token);
-    //    }
+            if (token.IsString())
+            {
+                ++index;
+                return (StringLiteral)symbol;
+            }
 
-    //    if (token.IsString())
-    //    {
-    //        ++index;
-    //        return ParseStringLiteral(token);
-    //    }
+            if (token.IsBoolean())
+            {
+                ++index;
+                return (BooleanLiteral)symbol;
+            }
+        }
 
-    //    if (token.IsBoolean())
-    //    {
-    //        ++index;
-    //        return ParseStringLiteral(token);
-    //    }
-    //}
+        ++index;
+        var message = $"unexpected token {lexer.ReadSymbol(token)}. expected literal.";
+        errors.Add(message);
+        return new ErrorExpression(message);
+    }
 }

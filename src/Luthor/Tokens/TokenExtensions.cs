@@ -47,6 +47,12 @@ public static class TokenExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsOpenCircumfixDelimiter(this Token token)
+    {
+        return token.Type.HasFlag(TokenType.OpenCircumfixDelimiter);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsReservedWord(this Token token)
     {
         return token.Type.HasFlag(TokenType.ReservedWord);
