@@ -5,7 +5,24 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<PublishAot>True</PublishAot>
+		<EnableCompressionInSingleFile>True</EnableCompressionInSingleFile>
+		<TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+		<DebuggerSupport>false</DebuggerSupport>
+		<Trimming>full</Trimming>
+		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<StackTraceSupport>false</StackTraceSupport>
+		<UseSystemResourceKeys>true</UseSystemResourceKeys>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IDisposableAnalyzers" Version="4.0.7">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Predicate.Parser\Predicate.Parser.csproj" />

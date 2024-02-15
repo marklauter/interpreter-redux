@@ -11,7 +11,7 @@ public enum LogicalOperators
     Or = 2,
 }
 
-internal readonly ref struct LogicalOperator(LogicalOperators Operator)
+public readonly ref struct LogicalOperator(LogicalOperators Operator)
 {
     public LogicalOperators Operator { get; } = Operator;
 
@@ -48,14 +48,14 @@ internal readonly ref struct LogicalOperator(LogicalOperators Operator)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator LogicalOperator(string symbol)
+    public static implicit operator LogicalOperator(string symbol)
     {
         var op = FromSymbol(symbol);
         return new LogicalOperator(op);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator string(LogicalOperator logicalOperator)
+    public static implicit operator string(LogicalOperator logicalOperator)
     {
         return ToSymbol(logicalOperator.Operator);
     }
@@ -64,6 +64,12 @@ internal readonly ref struct LogicalOperator(LogicalOperators Operator)
     public static implicit operator LogicalOperators(LogicalOperator logicalOperator)
     {
         return logicalOperator.Operator;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator LogicalOperator(LogicalOperators op)
+    {
+        return new LogicalOperator(op);
     }
 }
 

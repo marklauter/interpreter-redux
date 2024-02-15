@@ -23,9 +23,15 @@ public sealed class PredicateParseTests(Parser parser)
         var propertyValue = 2;
         var from = $"from {expectedIdentifier}";
         var predicate = $"where {propertyName} == {propertyValue}";
-        var source = $"{from} {predicate}";
+        var skipValue = 11;
+        var takeValue = 22;
+        var skip = $"skip {skipValue}";
+        var take = $"take {takeValue}";
+        var source = $"{from} {predicate} {skip} {take}";
 
         var statement = parser.Parse(source);
         Assert.Equal(expectedIdentifier, statement.From.Value);
+        Assert.Equal(skipValue, statement.Skip?.Value);
+        Assert.Equal(takeValue, statement.Take?.Value);
     }
 }

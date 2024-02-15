@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Predicate.Parser.Expressions;
 
-internal sealed record ReservedWord(
+public sealed record ReservedWord(
     ReservedWords Value)
     : Expression
 {

@@ -105,14 +105,21 @@ public sealed class Parser(Tokenizers tokenizers)
             tokens,
             ref index);
 
-        // todo: var skip = ParseSkip();
-        // todo: var take = ParseTake();
+        var skip = ParseSkip(
+            lexer,
+            tokens,
+            ref index);
+
+        var take = ParseTake(
+            lexer,
+            tokens,
+            ref index);
 
         return new Statement(
             from,
             predicate,
-            null,
-            null);
+            skip,
+            take);
     }
 
     private static Expression ParsePredicate(
@@ -366,6 +373,68 @@ public sealed class Parser(Tokenizers tokenizers)
 
         throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {TokenType.Literal}.");
     }
+
+    private static NumericLiteral ParseNumericLiteral(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        ref int index)
+    {
+        var token = tokens[index];
+        CheckEndOfSource(token);
+
+        if (token.IsNumber())
+        {
+            ++index;
+            return (NumericLiteral)lexer.ReadSymbol(token);
+        }
+
+        throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {TokenType.NumericLiteral}.");
+    }
+
+    private static NumericLiteral? ParseSkip(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        ref int index)
+    {
+        if (tokens[index].IsEndOfSource())
+        {
+            return null;
+        }
+
+        _ = ParseReservedWord(
+            lexer,
+            tokens,
+            ReservedWords.Skip,
+            ref index);
+
+        return ParseNumericLiteral(
+            lexer,
+            tokens,
+            ref index);
+    }
+
+    private static NumericLiteral? ParseTake(
+        Lexer lexer,
+        ReadOnlySpan<Token> tokens,
+        ref int index)
+    {
+        if (tokens[index].IsEndOfSource())
+        {
+            return null;
+        }
+
+        _ = ParseReservedWord(
+            lexer,
+            tokens,
+            ReservedWords.Take,
+            ref index);
+
+        return ParseNumericLiteral(
+            lexer,
+            tokens,
+            ref index);
+    }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void CheckEndOfSource(Token token)

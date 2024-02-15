@@ -18,7 +18,7 @@ public enum ComparisonOperators
     Contains = 9,
 }
 
-internal readonly ref struct ComparisonOperator(ComparisonOperators Operator)
+public readonly ref struct ComparisonOperator(ComparisonOperators Operator)
 {
     public ComparisonOperators Operator { get; } = Operator;
 
@@ -69,14 +69,14 @@ internal readonly ref struct ComparisonOperator(ComparisonOperators Operator)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator ComparisonOperator(string symbol)
+    public static implicit operator ComparisonOperator(string symbol)
     {
         var op = FromSymbol(symbol);
         return new ComparisonOperator(op);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator string(ComparisonOperator comparisonOperator)
+    public static implicit operator string(ComparisonOperator comparisonOperator)
     {
         return ToSymbol(comparisonOperator.Operator);
     }
@@ -85,5 +85,11 @@ internal readonly ref struct ComparisonOperator(ComparisonOperators Operator)
     public static implicit operator ComparisonOperators(ComparisonOperator comparisonOperator)
     {
         return comparisonOperator.Operator;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator ComparisonOperator(ComparisonOperators op)
+    {
+        return new ComparisonOperator(op);
     }
 }

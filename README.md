@@ -30,7 +30,7 @@ I'm using the recursive descent pattern to implement some simple L1 parsers, inc
 ## Dev Log
  - 29 JAN 2024 - built a functional, immutable lexer. state passed on stack. expected to be faster in real-world use cases.
  - 05 FEB 2024 - abandoned the functional due to complexity, though it worked well and was fast. went back to OOP design for simplicity of object managed state
- - 07 FEB 2024 - completed simple math expression parser with CLI based REPL. The output looks like:
+ - 07 FEB 2024 - completed simple math expression parser and evaluator with CLI based REPL. The output looks like:
 ```console
 math:> (1 + 1) / 2 * 3
 BinaryOperation
@@ -56,3 +56,19 @@ result:> 3
 math:>
 ```
 - 11 FEB 2024 - started predicate expression parser. worked out a draft BNF to describe the behavior of the parser. 
+- 14 FEB 2024 - nearly completed a simple query statement parser with CLI based REPL. The output looks like:
+```console
+predicate:> from t where x == "y" || b == "c"
+From: t
+LogicalExpression:
+   ComparisonExpression:
+      Identifier: x
+      Operator: ==
+      StringLiteral: y
+   Operator: ||
+   ComparisonExpression:
+      Identifier: b
+      Operator: ==
+      StringLiteral: c
+predicate:>
+```
