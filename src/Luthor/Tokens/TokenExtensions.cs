@@ -53,6 +53,12 @@ public static class TokenExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsCloseCircumfixDelimiter(this Token token)
+    {
+        return token.Type.HasFlag(TokenType.CloseCircumfixDelimiter);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsReservedWord(this Token token)
     {
         return token.Type.HasFlag(TokenType.ReservedWord);

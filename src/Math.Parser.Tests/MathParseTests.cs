@@ -12,8 +12,8 @@ public sealed class MathParseTests(Parser parser)
     [InlineData("x")]
     public void Parse_Returns_Empty_Expression(string source)
     {
-        var ast = parser.Parse(source);
-        var number = Assert.IsType<Number>(ast.Root);
+        var statement = parser.Parse(source);
+        var number = Assert.IsType<Number>(statement.Expression);
         Assert.Equal(NumericTypes.NotANumber, number.Type);
     }
 
@@ -25,8 +25,8 @@ public sealed class MathParseTests(Parser parser)
     [InlineData("0.123", 0.123, NumericTypes.FloatingPoint)]
     public void Parse_Returns_Number(string source, double expectedValue, NumericTypes expectedType)
     {
-        var ast = parser.Parse(source);
-        var number = Assert.IsType<Number>(ast.Root);
+        var statement = parser.Parse(source);
+        var number = Assert.IsType<Number>(statement.Expression);
         Assert.Equal(expectedType, number.Type);
         switch (number.Type)
         {
@@ -55,8 +55,8 @@ public sealed class MathParseTests(Parser parser)
     [InlineData("3 - 2 + 1 - 1", 1)]
     public void Add_Subtract_Evaluate_Returns_Expected_Value(string source, double expectedValue)
     {
-        var ast = parser.Parse(source);
-        var root = Assert.IsType<BinaryOperation>(ast.Root);
+        var statement = parser.Parse(source);
+        var root = Assert.IsType<BinaryOperation>(statement.Expression);
         Assert.Equal(Convert.ToInt32(expectedValue), Convert.ToInt32(root.Evaluate()));
     }
 
@@ -69,8 +69,8 @@ public sealed class MathParseTests(Parser parser)
     [InlineData("4 / 2 * 11", 22)]
     public void Multiply_Divide_Evaluate_Returns_Expected_Value(string source, double expectedValue)
     {
-        var ast = parser.Parse(source);
-        var root = Assert.IsType<BinaryOperation>(ast.Root);
+        var statement = parser.Parse(source);
+        var root = Assert.IsType<BinaryOperation>(statement.Expression);
         Assert.Equal(Convert.ToInt32(expectedValue), Convert.ToInt32(root.Evaluate()));
     }
 }

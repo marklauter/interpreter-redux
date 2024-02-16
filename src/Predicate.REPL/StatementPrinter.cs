@@ -58,19 +58,26 @@ internal static class StatementPrinter
             PrintExpressionType(expression.GetType().Name, indent);
             Console.WriteLine();
 
-            indent += "   ";
-            PrintTree(binaryExpression.Left, indent);
+            indent += "|-- ";
+            PrintTree(binaryExpression.Left, indent + "L: ");
 
             Console.WriteLine();
             PrintExpressionType("Operator", indent);
             PrintExpressionValue(ReadOperator(binaryExpression));
             Console.WriteLine();
 
-            PrintTree(binaryExpression.Right, indent);
+            PrintTree(binaryExpression.Right, indent + "R: ");
+        }
+        else if (expression is ParentheticalExpression parentheticalExpression)
+        {
+            PrintExpressionType(expression.GetType().Name, indent);
+            Console.WriteLine();
+            indent += "|-- ";
+            PrintTree(parentheticalExpression.Expression, indent + "(: ");
         }
         else
         {
-            PrintExpression(expression, indent);
+            PrintLeaf(expression, indent);
         }
     }
 
@@ -103,7 +110,7 @@ internal static class StatementPrinter
         };
     }
 
-    private static void PrintExpression(
+    private static void PrintLeaf(
         Expression expression,
         string indent)
     {

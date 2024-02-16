@@ -100,17 +100,18 @@ public sealed class Parser(Tokenizers tokenizers)
             tokens,
             ref index);
 
+        _ = ParseReservedWord(
+            lexer,
+            tokens,
+            ReservedWords.Where,
+            ref index);
+
         var predicate = ParsePredicate(
             lexer,
             tokens,
             ref index);
 
-        var skip = ParseSkip(
-            lexer,
-            tokens,
-            ref index);
-
-        var take = ParseTake(
+        var (skip, take) = ParseSkipTake(
             lexer,
             tokens,
             ref index);
@@ -123,23 +124,6 @@ public sealed class Parser(Tokenizers tokenizers)
     }
 
     private static Expression ParsePredicate(
-        Lexer lexer,
-        ReadOnlySpan<Token> tokens,
-        ref int index)
-    {
-        _ = ParseReservedWord(
-            lexer,
-            tokens,
-            ReservedWords.Where,
-            ref index);
-
-        return ParseLogicalOr(
-            lexer,
-            tokens,
-            ref index);
-    }
-
-    private static Expression ParseLogicalOr(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
         ref int index)
@@ -224,12 +208,6 @@ public sealed class Parser(Tokenizers tokenizers)
         var token = tokens[index];
         switch (token.Type)
         {
-            case TokenType.OpenCircumfixDelimiter:
-                return ParseParentheticalGroup(
-                    lexer,
-                    tokens,
-                    ref index);
-
             case TokenType.Identifier:
                 var left = ParseIdentifier(
                     lexer,
@@ -248,17 +226,36 @@ public sealed class Parser(Tokenizers tokenizers)
 
                 return new ComparisonExpression(left, op, right);
 
+            case TokenType.OpenCircumfixDelimiter:
+                return ParseParentheticalGroup(
+                    lexer,
+                    tokens,
+                    ref index);
+
             default:
                 throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected identifier or open parenthesis.");
         }
     }
 
-    private static Expression ParseParentheticalGroup(
+    private static ParentheticalExpression ParseParentheticalGroup(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
         ref int index)
     {
-        throw new NotImplementedException(nameof(ParseParentheticalGroup));
+        ++index;
+        var expression = ParsePredicate(
+            lexer,
+            tokens,
+            ref index);
+
+        var token = tokens[index];
+        if (token.IsCloseCircumfixDelimiter())
+        {
+            ++index;
+            return new ParentheticalExpression(expression);
+        }
+
+        throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {nameof(TokenType.CloseCircumfixDelimiter)}.");
     }
 
     private static ComparisonOperator ParseComparisonOperator(
@@ -391,50 +388,50 @@ public sealed class Parser(Tokenizers tokenizers)
         throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected {TokenType.NumericLiteral}.");
     }
 
-    private static NumericLiteral? ParseSkip(
+    private static (NumericLiteral? skip, NumericLiteral? take) ParseSkipTake(
         Lexer lexer,
         ReadOnlySpan<Token> tokens,
         ref int index)
     {
-        if (tokens[index].IsEndOfSource())
+        var skip = default(NumericLiteral?);
+        var take = default(NumericLiteral?);
+
+        var token = tokens[index];
+        if (token.IsEndOfSource())
         {
-            return null;
+            return (skip, take);
         }
 
-        _ = ParseReservedWord(
-            lexer,
-            tokens,
-            ReservedWords.Skip,
-            ref index);
-
-        return ParseNumericLiteral(
-            lexer,
-            tokens,
-            ref index);
-    }
-
-    private static NumericLiteral? ParseTake(
-        Lexer lexer,
-        ReadOnlySpan<Token> tokens,
-        ref int index)
-    {
-        if (tokens[index].IsEndOfSource())
+        if (token.IsReservedWord())
         {
-            return null;
+            var reservedWord = (ReservedWord)lexer.ReadSymbol(token);
+
+            if (reservedWord.Value == ReservedWords.Skip)
+            {
+                ++index;
+                skip = ParseNumericLiteral(
+                    lexer,
+                    tokens,
+                    ref index);
+
+                token = tokens[index];
+                reservedWord = (ReservedWord)lexer.ReadSymbol(token);
+            }
+
+            if (reservedWord.Value == ReservedWords.Take)
+            {
+                ++index;
+                take = ParseNumericLiteral(
+                    lexer,
+                    tokens,
+                    ref index);
+            }
+
+            return (skip, take);
         }
 
-        _ = ParseReservedWord(
-            lexer,
-            tokens,
-            ReservedWords.Take,
-            ref index);
-
-        return ParseNumericLiteral(
-            lexer,
-            tokens,
-            ref index);
+        throw new ParseException($"unexpected token {lexer.ReadSymbol(token)}. expected ({ReservedWords.Skip} | {ReservedWords.Take}).");
     }
-
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void CheckEndOfSource(Token token)

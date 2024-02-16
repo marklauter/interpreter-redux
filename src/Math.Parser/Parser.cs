@@ -41,7 +41,7 @@ public sealed class Parser(Tokenizers tokenizers)
         };
     }
 
-    public SyntaxTree Parse(string source)
+    public Statement Parse(string source)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -52,7 +52,7 @@ public sealed class Parser(Tokenizers tokenizers)
 
         if (tokens.Any(t => t.IsError()))
         {
-            return new SyntaxTree(
+            return new Statement(
                 new Number(NumericTypes.NotANumber, 0),
                 tokens
                     .Where(t => t.IsError())
@@ -62,7 +62,7 @@ public sealed class Parser(Tokenizers tokenizers)
 
         if (tokens.First().IsEndOfSource())
         {
-            return new SyntaxTree(new Number(NumericTypes.NotANumber, 0), []);
+            return new Statement(new Number(NumericTypes.NotANumber, 0), []);
         }
 
         var errors = new List<string>();
@@ -73,7 +73,7 @@ public sealed class Parser(Tokenizers tokenizers)
             errors,
             ref index);
 
-        return new SyntaxTree(expression, [.. errors]);
+        return new Statement(expression, [.. errors]);
     }
 
     private static Expression ParseExpression(

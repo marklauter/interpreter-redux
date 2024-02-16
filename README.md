@@ -72,3 +72,28 @@ LogicalExpression:
       StringLiteral: c
 predicate:>
 ```
+- 15 FEB 2024 - added parenthetical grouping query statement parser. The output looks like:
+```console
+predicate:> from t where x==2 || (x< 20 && x>10) skip 4 take 3
+From: t
+Skip: 4
+Take: 3
+LogicalExpression:
+|-- L: ComparisonExpression:
+|-- L: |-- L: Identifier: x
+|-- L: |-- Operator: ==
+|-- L: |-- R: NumericLiteral: 2
+|-- Operator: ||
+|-- R: ParentheticalExpression:
+|-- R: |-- (: LogicalExpression:
+|-- R: |-- (: |-- L: ComparisonExpression:
+|-- R: |-- (: |-- L: |-- L: Identifier: x
+|-- R: |-- (: |-- L: |-- Operator: <
+|-- R: |-- (: |-- L: |-- R: NumericLiteral: 20
+|-- R: |-- (: |-- Operator: &&
+|-- R: |-- (: |-- R: ComparisonExpression:
+|-- R: |-- (: |-- R: |-- L: Identifier: x
+|-- R: |-- (: |-- R: |-- Operator: >
+|-- R: |-- (: |-- R: |-- R: NumericLiteral: 10
+predicate:>
+```
