@@ -9,7 +9,7 @@ namespace Luthor.Tests;
 [ExcludeFromCodeCoverage]
 public sealed class Startup
 {
-    private readonly TerminalSymbolSpec spec = new()
+    private static readonly TerminalSymbolSpec spec = new()
     {
         Options =
             TerminalSymbolOptions.IncludeStringLiterals
@@ -30,9 +30,19 @@ public sealed class Startup
         InfixDelimiters = new string[] { ",", ";", ".", ":", },
     };
 
+    private static readonly TokenDefinition[] tokenDefs =
+    [
+        new(@"\G\-?\d+\.\d+", 1),
+        new(@"\G\-?\d+", 0),
+        new(@"\G[+-]", 2),
+        new(@"\G[*/%]", 3),
+    ];
+
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "xunit requires instance method")]
     public void ConfigureServices(IServiceCollection services)
     {
         services.TryAddSingleton(spec);
+        services.TryAddSingleton(tokenDefs);
         services.TryAddSingleton<Tokenizers>();
     }
 }
