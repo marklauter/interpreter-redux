@@ -26,7 +26,7 @@ public sealed class LexiTests(Lexi lexer)
     [InlineData("<=", 8)]
     public void Test(string source, int expectedId)
     {
-        var result = lexer.NextToken(new Script(source));
+        var result = lexer.NextMatch(new Script(source));
         Assert.Equal(expectedId, result.Symbol.TokenId);
         var symbol = result.Symbol;
         Assert.Equal(source, result.Script.ReadSymbol(in symbol));
@@ -41,7 +41,7 @@ public sealed class LexiTests(Lexi lexer)
         var script = new Script(source);
         for (var i = 0; i < expectedId.Length; ++i)
         {
-            var result = lexer.NextToken(script);
+            var result = lexer.NextMatch(script);
             Assert.Equal(expectedId[i], result.Symbol.TokenId);
             var symbol = result.Symbol;
             Assert.Equal(symbols[i], result.Script.ReadSymbol(in symbol));

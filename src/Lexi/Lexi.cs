@@ -41,7 +41,7 @@ public sealed class Lexi(
                         : 0;
     }
 
-    public NextTokenResult NextToken(Script script)
+    public NextMatchResult NextMatch(Script script)
     {
         var offset = script.Offset;
         var line = script.Line;

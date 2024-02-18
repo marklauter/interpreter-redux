@@ -3,7 +3,7 @@
 namespace Lexi;
 
 [SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "it's a struct")]
-public readonly ref struct NextTokenResult(
+public readonly ref struct NextMatchResult(
     Script script,
     Symbol symbol)
 {

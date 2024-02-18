@@ -1,16 +1,22 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Lexi;
 
-public sealed record Script(
-    string Source,
-    int Offset,
-    int Line)
+[SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "it's a struct")]
+public readonly ref struct Script(
+    string source,
+    int offset,
+    int line)
 {
     public Script(string source)
         : this(source, 0, 0)
     {
     }
+
+    public readonly string Source = source;
+    public readonly int Offset = offset;
+    public readonly int Line = line;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsEndOfSource()
