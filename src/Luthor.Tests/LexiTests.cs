@@ -33,6 +33,7 @@ public sealed class LexiTests(TokenPattern[] tokenDefs)
         Assert.Equal(source, result.Script.ReadSymbol(in symbol));
     }
 
+    [SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "unit test")]
     [Theory]
     [InlineData("1 -1 10 1.0 0.1 + -", new int[] { 0, 0, 0, 1, 1, 2, 3 })]
     public void ReadToEndOfSource(string source, int[] expectedId)

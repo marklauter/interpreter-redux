@@ -97,3 +97,6 @@ LogicalExpression:
 |-- R: |-- (: |-- R: |-- R: NumericLiteral: 10
 predicate:>
 ```
+- 18 FEB 2024 - refactoring lexer to improve pattern definition and to make lexer stateless
+- 18 FEB 2024 - found this great C# parser combinator library called SuperPower https://github.com/datalust/superpower
+- 18 FEB 2024 - intro to the SuperPower library from Nicholas Blumhardt https://www.youtube.com/watch?v=klHyc9HQnNQ
