@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LexicalAnalysis", "LexicalAnalysis", "{E1377C0B-80A2-4FAE-8591-DE4968AB0F82}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Luthor", "Luthor", "{E1377C0B-80A2-4FAE-8591-DE4968AB0F82}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luthor", "Luthor\Luthor.csproj", "{56ABBFF1-449B-4926-9439-A3CAD77AB0EF}"
 EndProject
@@ -27,11 +27,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Math.REPL", "Math\Math.REPL
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Predicate", "Predicate", "{0D96B9E0-4F48-4FEE-A4C6-262D72E16FB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Predicate.Parser", "Predicate.Parser\Predicate.Parser.csproj", "{FB648139-8B30-4EAD-8B24-6C426F6384C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Predicate.Parser", "Predicate.Parser\Predicate.Parser.csproj", "{FB648139-8B30-4EAD-8B24-6C426F6384C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Predicate.Parser.Tests", "Predicate.Parser.Tests\Predicate.Parser.Tests.csproj", "{69A33B78-5FBC-4143-A2CE-AB01550B03CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Predicate.Parser.Tests", "Predicate.Parser.Tests\Predicate.Parser.Tests.csproj", "{69A33B78-5FBC-4143-A2CE-AB01550B03CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Predicate.REPL", "Predicate.REPL\Predicate.REPL.csproj", "{93394F3E-613F-4EEA-8EAF-1FED180B7D56}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Predicate.REPL", "Predicate.REPL\Predicate.REPL.csproj", "{93394F3E-613F-4EEA-8EAF-1FED180B7D56}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lexi", "Lexi", "{553E366E-E6A0-4ECC-A8FF-7E8565FE115D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lexi.Tests", "Lexi.Tests\Lexi.Tests.csproj", "{C2183C27-A9AF-4B14-8047-54622FF21806}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lexi", "Lexi\Lexi.csproj", "{0A2BFA7D-8927-45DA-B2C6-02EFDA1E10F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +77,14 @@ Global
 		{93394F3E-613F-4EEA-8EAF-1FED180B7D56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93394F3E-613F-4EEA-8EAF-1FED180B7D56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93394F3E-613F-4EEA-8EAF-1FED180B7D56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2183C27-A9AF-4B14-8047-54622FF21806}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2183C27-A9AF-4B14-8047-54622FF21806}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2183C27-A9AF-4B14-8047-54622FF21806}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2183C27-A9AF-4B14-8047-54622FF21806}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A2BFA7D-8927-45DA-B2C6-02EFDA1E10F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A2BFA7D-8927-45DA-B2C6-02EFDA1E10F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A2BFA7D-8927-45DA-B2C6-02EFDA1E10F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A2BFA7D-8927-45DA-B2C6-02EFDA1E10F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -84,6 +98,8 @@ Global
 		{FB648139-8B30-4EAD-8B24-6C426F6384C5} = {0D96B9E0-4F48-4FEE-A4C6-262D72E16FB1}
 		{69A33B78-5FBC-4143-A2CE-AB01550B03CE} = {0D96B9E0-4F48-4FEE-A4C6-262D72E16FB1}
 		{93394F3E-613F-4EEA-8EAF-1FED180B7D56} = {0D96B9E0-4F48-4FEE-A4C6-262D72E16FB1}
+		{C2183C27-A9AF-4B14-8047-54622FF21806} = {553E366E-E6A0-4ECC-A8FF-7E8565FE115D}
+		{0A2BFA7D-8927-45DA-B2C6-02EFDA1E10F1} = {553E366E-E6A0-4ECC-A8FF-7E8565FE115D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {196327E5-303B-4718-898F-D01B2AEFEBDC}
