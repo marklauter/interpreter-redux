@@ -30,19 +30,22 @@ public sealed class Startup
         InfixDelimiters = new string[] { ",", ";", ".", ":", },
     };
 
-    private static readonly TokenDefinition[] tokenDefs =
+    private static readonly TokenPattern[] patterns =
     [
         new(@"\G\-?\d+\.\d+", 1),
         new(@"\G\-?\d+", 0),
-        new(@"\G[+-]", 2),
-        new(@"\G[*/%]", 3),
+        new(@"\G\+", 2),
+        new(@"\G\-", 3),
+        new(@"\G\*", 4),
+        new(@"\G/", 5),
+        new(@"\G%", 6),
     ];
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "xunit requires instance method")]
     public void ConfigureServices(IServiceCollection services)
     {
         services.TryAddSingleton(spec);
-        services.TryAddSingleton(tokenDefs);
+        services.TryAddSingleton(patterns);
         services.TryAddSingleton<Tokenizers>();
     }
 }
