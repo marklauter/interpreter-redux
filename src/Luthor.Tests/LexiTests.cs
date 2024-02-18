@@ -22,6 +22,8 @@ public sealed class LexiTests(TokenPattern[] tokenDefs)
     [InlineData("*", 4)]
     [InlineData("/", 5)]
     [InlineData("%", 6)]
+    [InlineData("<", 7)]
+    [InlineData("<=", 8)]
     public void Test(string source, int expectedId)
     {
         var lexi = new Lexi(tokenDefs);

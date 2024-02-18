@@ -39,6 +39,8 @@ public sealed class Startup
         new(@"\G\*", 4),
         new(@"\G/", 5),
         new(@"\G%", 6),
+        new(@"\G<", 7),
+        new(@"\G<=", 8),
     ];
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "xunit requires instance method")]

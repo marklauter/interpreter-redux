@@ -85,11 +85,41 @@ public sealed record Script(
     }
 }
 
+
 public sealed partial class Lexi(
     TokenPattern[] patterns)
 {
     private readonly TokenPattern[] patterns = patterns
         ?? throw new ArgumentNullException(nameof(patterns));
+
+    private readonly struct SymbolMatch(Symbol symbol, int index)
+        : IComparable<SymbolMatch>
+    {
+        public readonly Symbol Symbol = symbol;
+        public readonly int Index = index;
+
+        /// <summary>
+        /// sorts descending by length, then index
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int CompareTo(SymbolMatch other)
+        {
+            var lenth = Symbol.Length;
+            var otherLength = other.Symbol.Length;
+            var index = Index;
+            var otherIndex = other.Index;
+
+            return lenth > otherLength
+                ? -1
+                : lenth < otherLength
+                    ? 1
+                    : index > otherIndex
+                        ? -1
+                        : index < otherIndex
+                            ? 1
+                            : 0;
+        }
+    }
 
     public NextTokenResult NextToken(Script script)
     {
@@ -109,8 +139,8 @@ public sealed partial class Lexi(
             .Match(source, offset);
         if (match.Success)
         {
-            ++line;
             offset += match.Length;
+            ++line;
         }
 
         match = WhitespaceExpression()
@@ -120,21 +150,26 @@ public sealed partial class Lexi(
             offset += match.Length;
         }
 
+        // dragon book says perform all match tests, then sort matched items by length and index, and return first item if it is match
         var length = patterns.Length;
+        var symbols = new SymbolMatch[length];
         for (var i = 0; i < length; ++i)
         {
-            var symbol = patterns[i].Match(source, offset, line);
-            if (symbol.TokenId > TokenPattern.NoMatch)
-            {
-                return new(
-                    new(source, offset + symbol.Length, line),
-                    symbol);
-            }
+            symbols[i] = new(
+                patterns[i].Match(source, offset, line),
+                i);
         }
 
-        return new(
-            new(source, offset, line),
-            new(offset, 0, TokenPattern.Error, line));
+        Array.Sort(symbols);
+        var symbol = symbols[0].Symbol;
+
+        return symbol.TokenId > TokenPattern.NoMatch
+            ? new(
+                    new(source, offset + symbol.Length, line),
+                    symbol)
+            : new(
+                new(source, offset, line),
+                new(offset, 0, TokenPattern.Error, line));
     }
 
     [GeneratedRegex(@"\G\r\n|[\r\n]", RegexConstants.Options)]
