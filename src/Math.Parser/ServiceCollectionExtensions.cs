@@ -1,6 +1,7 @@
 ﻿using Lexi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Text.RegularExpressions;
 
 namespace Math.Parser;
 
@@ -8,10 +9,10 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddParser(this IServiceCollection services)
     {
-        var builder = LexiPatternBuilder
-            .Create()
+        var builder = LexerBuilder
+            .CreateWithRegexOptions(RegexOptions.CultureInvariant)
             .AddBooleanFalseLiteral("false", TokenIds.FALSE)
-            .AddBooleanFalseLiteral("true", TokenIds.TRUE)
+            .AddBooleanTrueLiteral("true", TokenIds.TRUE)
             .AddIntegerLiteral(TokenIds.INTEGER_LITERAL)
             .AddFloatingPointLiteral(TokenIds.FLOATING_POINT_LITERAL)
             .AddScientificNotationLiteral(TokenIds.SCIENTIFIC_NOTATION_LITERAL)

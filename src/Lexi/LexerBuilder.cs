@@ -3,28 +3,37 @@ using System.Text.RegularExpressions;
 
 namespace Lexi;
 
-public class LexiPatternBuilder
+public class LexerBuilder
 {
     private readonly List<TokenPattern> patterns = [];
 
-    private LexiPatternBuilder() { }
+    private RegexOptions regexOptions =
+        RegexOptions.ExplicitCapture |
+        RegexOptions.Compiled |
+        RegexOptions.Singleline;
+    public RegexOptions RegexOptions { get; }
 
-    private LexiPatternBuilder(TokenPattern[] patterns)
+    private LexerBuilder() { }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static LexerBuilder Create()
     {
-        ArgumentNullException.ThrowIfNull(patterns);
+        return new LexerBuilder();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static LexerBuilder CreateWithRegexOptions(RegexOptions regexOptions)
+    {
+        var builder = new LexerBuilder();
+        builder.regexOptions |= regexOptions;
+        return builder;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public LexerBuilder WithPatterns(TokenPattern[] patterns)
+    {
         this.patterns.AddRange(patterns);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LexiPatternBuilder Create()
-    {
-        return new LexiPatternBuilder();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LexiPatternBuilder Create(TokenPattern[] patterns)
-    {
-        return new LexiPatternBuilder(patterns);
+        return this;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,7 +43,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddCommentPrefix(
+    public LexerBuilder AddCommentPrefix(
         string pattern,
         int id)
     {
@@ -45,7 +54,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddClosingCircumfixDelimiter(
+    public LexerBuilder AddClosingCircumfixDelimiter(
         string pattern,
         int id)
     {
@@ -56,7 +65,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddOpeningCircumfixDelimiter(
+    public LexerBuilder AddOpeningCircumfixDelimiter(
         string pattern,
         int id)
     {
@@ -67,7 +76,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddInfixDelimiter(
+    public LexerBuilder AddInfixDelimiter(
         string pattern,
         int id)
     {
@@ -78,7 +87,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddDelimiter(
+    public LexerBuilder AddDelimiter(
         string pattern,
         int id)
     {
@@ -89,7 +98,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddOperator(
+    public LexerBuilder AddOperator(
         string pattern,
         int id)
     {
@@ -100,7 +109,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddBooleanFalseLiteral(
+    public LexerBuilder AddBooleanFalseLiteral(
         string pattern,
         int id)
     {
@@ -111,7 +120,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddBooleanTrueLiteral(
+    public LexerBuilder AddBooleanTrueLiteral(
         string pattern,
         int id)
     {
@@ -122,7 +131,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddBooleanLiteral(
+    public LexerBuilder AddBooleanLiteral(
         string pattern,
         int id)
     {
@@ -133,7 +142,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddScientificNotationLiteral(
+    public LexerBuilder AddScientificNotationLiteral(
         int id)
     {
         return AddPattern(
@@ -143,7 +152,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddFloatingPointLiteral(
+    public LexerBuilder AddFloatingPointLiteral(
         int id)
     {
         return AddPattern(
@@ -153,7 +162,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddIntegerLiteral(
+    public LexerBuilder AddIntegerLiteral(
         int id)
     {
         return AddPattern(
@@ -163,7 +172,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddStringLiteral(
+    public LexerBuilder AddStringLiteral(
         int id)
     {
         return AddPattern(
@@ -173,7 +182,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddCharacterLiteral(
+    public LexerBuilder AddCharacterLiteral(
         int id)
     {
         return AddPattern(
@@ -183,7 +192,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddNulliteral(
+    public LexerBuilder AddNulliteral(
         string pattern,
         int id)
     {
@@ -194,7 +203,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddLiteral(
+    public LexerBuilder AddLiteral(
         string pattern,
         int id)
     {
@@ -202,7 +211,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddKeyword(
+    public LexerBuilder AddKeyword(
         string pattern,
         int id)
     {
@@ -210,7 +219,7 @@ public class LexiPatternBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddIdentifier(
+    public LexerBuilder AddIdentifier(
         int id)
     {
         return AddPattern(
@@ -219,22 +228,22 @@ public class LexiPatternBuilder
             id);
     }
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddPattern(
+    public LexerBuilder AddPattern(
         string pattern,
         Tokens tokenClass,
         int id)
     {
         patterns.Add(new(
             @$"\G{pattern}",
+            regexOptions,
             tokenClass,
             id));
         return this;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexiPatternBuilder AddPattern(
+    public LexerBuilder AddPattern(
         Regex regex,
         Tokens tokenClass,
         int id)

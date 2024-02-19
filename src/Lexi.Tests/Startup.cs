@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace Lexi.Tests;
 
@@ -24,6 +25,9 @@ public sealed class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.TryAddTransient(serviceProvider =>
-            LexiPatternBuilder.Create(Patterns).Build());
+            LexerBuilder
+            .CreateWithRegexOptions(RegexOptions.CultureInvariant)
+            .WithPatterns(Patterns)
+            .Build());
     }
 }

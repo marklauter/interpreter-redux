@@ -1,4 +1,4 @@
-﻿namespace Math.Parser;
+﻿namespace Math.Parser.Exceptions;
 
 public sealed class UnexpectedTokenException
     : Exception

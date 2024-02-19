@@ -1,3 +1,4 @@
+using Math.Parser.Exceptions;
 using Math.Parser.Expressions;
 
 namespace Math.Parser.Tests;

@@ -1,4 +1,5 @@
 ﻿using Lexi;
+using Math.Parser.Exceptions;
 using Math.Parser.Expressions;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;

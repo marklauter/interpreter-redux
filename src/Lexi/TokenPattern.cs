@@ -11,22 +11,30 @@ public sealed class TokenPattern(
 {
     public TokenPattern(
         string pattern,
+        RegexOptions regexOptions,
         Tokens tokenClass,
         int id)
         : this(
-              new Regex(pattern ?? throw new ArgumentNullException(nameof(pattern)), PatternOptions),
+              new Regex(
+                  pattern ?? throw new ArgumentNullException(nameof(pattern)),
+                  regexOptions | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.Singleline),
               tokenClass,
               id)
     { }
 
+    public TokenPattern(
+        string pattern,
+        Tokens tokenClass,
+        int id)
+    : this(
+          pattern,
+          RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.Singleline,
+          tokenClass,
+          id)
+    { }
+
     public const int EndOfSource = -1;
     public const int LexError = -2;
-
-    public const RegexOptions PatternOptions =
-        RegexOptions.CultureInvariant |
-        RegexOptions.ExplicitCapture |
-        RegexOptions.Compiled |
-        RegexOptions.Singleline;
 
     private readonly int id = id;
     private readonly Tokens tokenClass = tokenClass;
