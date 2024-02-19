@@ -6,4 +6,5 @@ public enum NumericTypes
     NotANumber = 0, // NaN
     Integer = 1,
     FloatingPoint = 2,
+    ScientificNotation = 3,
 }
