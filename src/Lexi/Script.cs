@@ -6,17 +6,15 @@ namespace Lexi;
 [SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "it's a struct")]
 public readonly ref struct Script(
     string source,
-    int offset,
-    int line)
+    int offset)
 {
     public Script(string source)
-        : this(source, 0, 0)
+        : this(source, 0)
     {
     }
 
     public readonly string Source = source;
     public readonly int Offset = offset;
-    public readonly int Line = line;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsEndOfSource()
@@ -30,7 +28,7 @@ public readonly ref struct Script(
         return symbol.IsEndOfSource()
             ? "EOF"
             : symbol.IsError()
-                ? $"error at line: {symbol.Line}, column: {symbol.Offset}"
+                ? $"error at offset: {symbol.Offset}"
                 : Source[symbol.Offset..(symbol.Offset + symbol.Length)];
     }
 }

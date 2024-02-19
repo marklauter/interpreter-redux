@@ -2,7 +2,7 @@
 
 namespace Lexi;
 
-public sealed class Lexi(
+public sealed class Lexer(
     TokenPattern[] patterns)
 {
     private readonly TokenPattern[] patterns = patterns
@@ -41,16 +41,15 @@ public sealed class Lexi(
                         : 0;
     }
 
-    public NextMatchResult NextMatch(Script script)
+    public MatchResult NextMatch(Script script)
     {
         var offset = script.Offset;
-        var line = script.Line;
 
         if (script.IsEndOfSource())
         {
             return new(
                 script,
-                new(offset, 0, Tokens.EndOfSource, TokenPattern.EndOfSource, line));
+                new(offset, 0, Tokens.EndOfSource, TokenPattern.EndOfSource));
         }
 
         var source = script.Source;
@@ -60,7 +59,6 @@ public sealed class Lexi(
         if (match.Success)
         {
             offset += match.Length;
-            ++line;
         }
 
         match = AuxillaryPatterns.Whitespace()
@@ -79,7 +77,7 @@ public sealed class Lexi(
         for (var i = 0; i < length; ++i)
         {
             var latestMatch = new SymbolMatch(
-                patterns[i].Match(source, offset, line),
+                patterns[i].Match(source, offset),
                 i);
 
             if (CompareSymbolMatch(latestMatch, bestMatch) > 0)
@@ -92,10 +90,10 @@ public sealed class Lexi(
 
         return symbol.IsMatch()
             ? new(
-                new(source, offset + symbol.Length, line),
+                new(source, offset + symbol.Length),
                 symbol)
             : new(
-                new(source, offset, line),
-                new(offset, 0, Tokens.LexError, TokenPattern.LexError, line));
+                new(source, offset),
+                new(offset, 0, Tokens.LexError, TokenPattern.LexError));
     }
 }

@@ -1,5 +1,4 @@
-﻿using Luthor.Symbols;
-using Luthor.Tokens;
+﻿using Lexi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -7,22 +6,24 @@ namespace Math.Parser;
 
 public static class ServiceCollectionExtensions
 {
-    private static readonly string[] Operators = ["+", "-", "*", "/", "%", "==", "!=", ">", ">=", "<", "<=", "&&", "||"];
-    private static readonly string[] BooleanLiterals = ["true", "false"];
-    private static readonly CircumfixPair[] CircumfixDelimiterPairs = [new("(", ")")];
-
     public static IServiceCollection AddParser(this IServiceCollection services)
     {
-        services.TryAddSingleton(
-            new TerminalSymbolSpec()
-            {
-                Options = TerminalSymbolOptions.IncludeNumericLiterals,
-                Operators = Operators,
-                BooleanLiterals = BooleanLiterals,
-                CircumfixDelimiterPairs = CircumfixDelimiterPairs,
-            });
+        var builder = LexiPatternBuilder
+            .Create()
+            .AddBooleanFalseLiteral("false", TokenIds.FALSE)
+            .AddBooleanFalseLiteral("true", TokenIds.TRUE)
+            .AddIntegerLiteral(TokenIds.INTEGER_LITERAL)
+            .AddFloatingPointLiteral(TokenIds.FLOATING_POINT_LITERAL)
+            .AddScientificNotationLiteral(TokenIds.SCIENTIFIC_NOTATION_LITERAL)
+            .AddOperator(@"\+", TokenIds.ADD)
+            .AddOperator("-", TokenIds.SUBTRACT)
+            .AddOperator(@"\*", TokenIds.MULTIPLY)
+            .AddOperator("/", TokenIds.DIVIDE)
+            .AddOperator("%", TokenIds.MODULUS)
+            .AddOpeningCircumfixDelimiter(@"\(", TokenIds.OPEN_PARENTHESIS)
+            .AddClosingCircumfixDelimiter(@"\)", TokenIds.CLOSE_PARENTHESIS);
 
-        services.TryAddSingleton<Tokenizers>();
+        services.TryAddTransient(serviceProvider => builder.Build());
         services.TryAddTransient<Parser>();
 
         return services;
