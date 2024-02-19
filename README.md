@@ -101,3 +101,4 @@ predicate:>
 - 18 FEB 2024 - Found this great C# parser combinator library called SuperPower https://github.com/datalust/superpower
 - 18 FEB 2024 - Intro to the SuperPower library from Nicholas Blumhardt https://www.youtube.com/watch?v=klHyc9HQnNQ
 - 19 FEB 2024 - Completed second draft of the lexer in the Lexi project. The lexer is now much simpler due to pattern definitions buidler and statelessness. State is now maintained within the Script struct returned as part of the NextMatchResult.
+- 19 FEB 2024 - Refactored math parser to use Lexi.
