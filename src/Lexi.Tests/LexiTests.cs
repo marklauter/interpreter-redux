@@ -3,9 +3,9 @@
 namespace Lexi.Tests;
 
 [ExcludeFromCodeCoverage]
-public sealed class LexiTests(Lexi lexer)
+public sealed class LexiTests(Lexer lexer)
 {
-    public Lexi Lexer { get; } = lexer
+    public Lexer Lexer { get; } = lexer
         ?? throw new ArgumentNullException(nameof(lexer));
 
     [Theory]

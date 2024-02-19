@@ -43,6 +43,30 @@ public static class SymbolExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNumericLiteral(this Symbol symbol)
+    {
+        return symbol.Token.HasFlag(Tokens.NumericLiteral);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsIntegerLiteral(this Symbol symbol)
+    {
+        return symbol.Token.HasFlag(Tokens.IntegerLiteral);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsFloatingPointLiteral(this Symbol symbol)
+    {
+        return symbol.Token.HasFlag(Tokens.FloatingPointLiteral);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsScientificNotationLiteral(this Symbol symbol)
+    {
+        return symbol.Token.HasFlag(Tokens.ScientificNotationLiteral);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsOperator(this Symbol symbol)
     {
         return symbol.Token.HasFlag(Tokens.Operator);

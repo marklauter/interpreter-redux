@@ -27,9 +27,10 @@ public class LexiPatternBuilder
         return new LexiPatternBuilder(patterns);
     }
 
-    public Lexi Build()
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Lexer Build()
     {
-        return new Lexi([.. patterns]);
+        return new Lexer([.. patterns]);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -7,12 +7,10 @@ public readonly ref struct Symbol(
     int offset,
     int length,
     Tokens token,
-    int tokenId,
-    int line)
+    int tokenId)
 {
     public readonly int Offset = offset;
     public readonly int Length = length;
     public readonly Tokens Token = token;
     public readonly int TokenId = tokenId;
-    public readonly int Line = line;
 }

@@ -32,14 +32,19 @@ public enum Tokens
 
     Literal = 1u << 19,
     NullLiteral = Literal | 1u << 20,
-    IntegerLiteral = Literal | 1u << 21,
-    FloatingPointLiteral = Literal | 1u << 22,
-    ScientificNotationLiteral = Literal | 1u << 23,
-    BooleanLiteral = Literal | 1u << 24,
-    BooleanTrueLiteral = BooleanLiteral | 1u << 25,
-    BooleanFalseLiteral = BooleanLiteral | 1u << 26,
-    StringLiteral = Literal | 1u << 27,
-    CharacterLiteral = Literal | 1u << 28,
-    ArrayLiteral = Literal | 1u << 29,
-    ObjectLiteral = Literal | 1u << 30,
+
+    NumericLiteral = Literal | 1u << 21,
+    IntegerLiteral = NumericLiteral | 1u << 22,
+    FloatingPointLiteral = NumericLiteral | 1u << 23,
+    ScientificNotationLiteral = NumericLiteral | 1u << 24,
+
+    BooleanLiteral = Literal | 1u << 25,
+    BooleanTrueLiteral = BooleanLiteral | 1u << 26,
+    BooleanFalseLiteral = BooleanLiteral | 1u << 27,
+
+    StringLiteral = Literal | 1u << 28,
+    CharacterLiteral = Literal | 1u << 29,
+
+    ArrayLiteral = Literal | 1u << 30,
+    ObjectLiteral = Literal | 1u << 31,
 }

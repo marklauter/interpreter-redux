@@ -35,12 +35,11 @@ public sealed class TokenPattern(
 
     internal Symbol Match(
         string source,
-        int offset,
-        int line)
+        int offset)
     {
         var match = regex.Match(source, offset);
         return match.Success
-           ? new(match.Index, match.Length, tokenClass, id, line)
-           : new(offset, 0, tokenClass | Tokens.NoMatch, id, line);
+           ? new(match.Index, match.Length, tokenClass, id)
+           : new(offset, 0, tokenClass | Tokens.NoMatch, id);
     }
 }
