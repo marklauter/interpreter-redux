@@ -25,6 +25,15 @@ public sealed record Number(
         return Enumerable.Empty<Expression>();
     }
 
+    private string TypeName => Type switch
+    {
+        NumericTypes.NotANumber => "NaN",
+        NumericTypes.Integer => "Integer",
+        NumericTypes.FloatingPoint => "FloatingPoint",
+        NumericTypes.ScientificNotation => "ScientificNotation",
+        _ => throw new NotSupportedException($"unexpected type {Type}"),
+    };
+
     public override void Print(string indent = "")
     {
         var color = Console.ForegroundColor;
@@ -33,7 +42,7 @@ public sealed record Number(
             ? "NaN"
             : $"{Value}";
 
-        Console.WriteLine($"{indent}{nameof(Number)}: {value}");
+        Console.WriteLine($"{indent}{TypeName}: {value}");
         Console.ForegroundColor = color;
     }
 }

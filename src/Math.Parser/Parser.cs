@@ -99,7 +99,7 @@ public sealed class Parser(Lexer lexer)
             matchResult = lexer.NextMatch(term.MatchResult.Script);
             if (matchResult.Symbol.IsCloseCircumfixDelimiter())
             {
-                return new(term.Expression, matchResult);
+                return new(new Group(term.Expression), matchResult);
             }
 
             value = matchResult.Symbol.Token == Tokens.Undefined

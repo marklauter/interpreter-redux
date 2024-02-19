@@ -37,10 +37,10 @@ public sealed record BinaryOperation(
         Console.ForegroundColor = ConsoleColor.Magenta;
 
         Console.WriteLine($"{indent}{nameof(BinaryOperation)}");
-        Console.WriteLine($"{indent}Left Expression");
+        Console.WriteLine($"{indent}Left");
         Left.Print($"{indent}   ");
         Console.WriteLine($"{indent}Op {Operator}");
-        Console.WriteLine($"{indent}Right Expression");
+        Console.WriteLine($"{indent}Right");
         Right.Print($"{indent}   ");
 
         Console.ForegroundColor = color;
