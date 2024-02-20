@@ -41,6 +41,12 @@ public sealed class Lexer(
                         : 0;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public MatchResult NextMatch(MatchResult matchResult)
+    {
+        return NextMatch(matchResult.Script);
+    }
+
     public MatchResult NextMatch(Script script)
     {
         var offset = script.Offset;
@@ -73,7 +79,7 @@ public sealed class Lexer(
         // first match is faster, but less tolerent pattern definition ordering. everything is tradeoffs.
         var patterns = this.patterns.AsSpan();
         var length = patterns.Length;
-        var bestMatch = default(SymbolMatch);
+        var bestMatch = new SymbolMatch(new Symbol(0, 0, Tokens.NoMatch, TokenPattern.NoMatch), 0);
         for (var i = 0; i < length; ++i)
         {
             var latestMatch = new SymbolMatch(

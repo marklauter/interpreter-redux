@@ -11,18 +11,20 @@ public sealed class PredicateParseTests(Parser parser)
     [Fact]
     public void Throws_ParseException_When_Source_Is_Empty()
     {
-        var ex = Assert.Throws<UnexpectedEndOfSourceException>(() => parser.Parse(String.Empty));
-        Assert.Contains(Parser.EndOfSourceError, ex.Message);
+        _ = Assert.Throws<UnexpectedEndOfSourceException>(() => parser.Parse(String.Empty));
     }
 
     [Fact]
     public void Returns_Statement()
     {
         var expectedIdentifier = "identifier";
-        var propertyName = "property";
-        var propertyValue = 2;
+        var property1Name = "property1";
+        var property1Value = 1;
+        var property2Name = "property2";
+        var property2Value = 2;
+
         var from = $"from {expectedIdentifier}";
-        var predicate = $"where {propertyName} == {propertyValue}";
+        var predicate = $"where {property1Name} = {property1Value} and {property2Name} > {property2Value}";
         var skipValue = 11;
         var takeValue = 22;
         var skip = $"skip {skipValue}";

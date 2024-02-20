@@ -28,7 +28,7 @@ public readonly ref struct Script(
         return symbol.IsEndOfSource()
             ? "EOF"
             : symbol.IsError()
-                ? $"error at offset: {symbol.Offset}"
+                ? $"lexer error at offset: {symbol.Offset}"
                 : Source[symbol.Offset..(symbol.Offset + symbol.Length)];
     }
 }

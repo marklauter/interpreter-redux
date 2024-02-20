@@ -23,9 +23,8 @@ public sealed class Parser(Lexer lexer)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        var script = new Script(source);
-        var parseResult = ParseTerm(script);
-        return parseResult.Expression;
+        return ParseTerm(new Script(source))
+            .Expression;
     }
 
     private ParseResult ParseTerm(Script script)
@@ -41,7 +40,7 @@ public sealed class Parser(Lexer lexer)
         {
             var right = ParseFactor(matchResult.Script);
 
-            left = new ParseResult(
+            left = new(
                 new BinaryOperation(
                 left.Expression,
                 right.Expression,
@@ -67,7 +66,7 @@ public sealed class Parser(Lexer lexer)
         {
             var right = ParseValue(matchResult.Script);
 
-            left = new ParseResult(
+            left = new(
                 new BinaryOperation(
                 left.Expression,
                 right.Expression,

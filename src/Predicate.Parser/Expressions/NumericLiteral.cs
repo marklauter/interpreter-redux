@@ -70,7 +70,7 @@ public sealed record NumericLiteral(
     {
         return literal.Type switch
         {
-            NumericTypes.FloatingPoint => literal.Value
+            NumericTypes.ScientificNotation or NumericTypes.FloatingPoint => literal.Value
                 .ToString(CultureInfo.InvariantCulture),
             NumericTypes.Integer => Convert.ToInt32(Double.Round(literal.Value, 0))
                 .ToString(CultureInfo.InvariantCulture),

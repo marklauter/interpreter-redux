@@ -35,6 +35,7 @@ public sealed class TokenPattern(
 
     public const int EndOfSource = -1;
     public const int LexError = -2;
+    public const int NoMatch = -3;
 
     private readonly int id = id;
     private readonly Tokens tokenClass = tokenClass;

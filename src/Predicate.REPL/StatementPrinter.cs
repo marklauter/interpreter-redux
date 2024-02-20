@@ -104,8 +104,8 @@ internal static class StatementPrinter
     {
         return binaryExpression switch
         {
-            ComparisonExpression comparisonExpression => (ComparisonOperator)comparisonExpression.Operator,
-            LogicalExpression logicalExpression => (LogicalOperator)logicalExpression.Operator,
+            ComparisonExpression comparisonExpression => comparisonExpression.ToString(),
+            LogicalExpression logicalExpression => logicalExpression.ToString(),
             _ => "unexpected expression",
         };
     }
@@ -117,10 +117,10 @@ internal static class StatementPrinter
         var value = expression switch
         {
             Identifier identifier => (string)identifier,
-            ReservedWord reservedWord => (string)reservedWord,
+            Keyword keyword => keyword.ToString(),
             BooleanLiteral booleanLiteral => (string)booleanLiteral,
             StringLiteral stringLiteral => (string)stringLiteral,
-            NumericLiteral numberLiteral => (string)numberLiteral,
+            NumericLiteral numericLiteral => (string)numericLiteral,
             _ => "unexpected expression",
         };
 

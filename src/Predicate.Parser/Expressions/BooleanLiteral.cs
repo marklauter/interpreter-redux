@@ -21,7 +21,11 @@ public sealed record BooleanLiteral(
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator string(BooleanLiteral literal)
     {
-        return literal.Value.ToString();
+        return literal.Value switch
+        {
+            true => "true",
+            false => "false",
+        };
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
