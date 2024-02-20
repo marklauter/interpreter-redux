@@ -28,9 +28,9 @@ The intent is for the lexer to support simple L1 parsers. The lexer accepts a te
 I'm using the recursive descent pattern to implement some simple L1 parsers, including a predicate expression parser. To refamiliarize myself with recursive descent, I built a math repl that accepts simple math expressions.
 
 ## Dev Log
- - 29 JAN 2024 - built a functional, immutable lexer. state passed on stack. expected to be faster in real-world use cases.
- - 05 FEB 2024 - abandoned the functional due to complexity, though it worked well and was fast. went back to OOP design for simplicity of object managed state
- - 07 FEB 2024 - completed simple math expression parser and evaluator with CLI based REPL. The output looks like:
+ - 29 JAN 2024 - Built a functional, immutable lexer. state passed on stack. expected to be faster in real-world use cases.
+ - 05 FEB 2024 - Abandoned the functional due to complexity, though it worked well and was fast. went back to OOP design for simplicity of object managed state
+ - 07 FEB 2024 - Completed simple math expression parser and evaluator with CLI based REPL. The output looks like:
 ```console
 math:> (1 + 1) / 2 * 3
 BinaryOperation
@@ -55,8 +55,8 @@ result:> 3
 
 math:>
 ```
-- 11 FEB 2024 - started predicate expression parser. worked out a draft BNF to describe the behavior of the parser. 
-- 14 FEB 2024 - nearly completed a simple query statement parser with CLI based REPL. The output looks like:
+- 11 FEB 2024 - Started predicate expression parser. worked out a draft BNF to describe the behavior of the parser. 
+- 14 FEB 2024 - Nearly completed a simple query statement parser with CLI based REPL. The output looks like:
 ```console
 predicate:> from t where x == "y" || b == "c"
 From: t
@@ -72,7 +72,7 @@ LogicalExpression:
       StringLiteral: c
 predicate:>
 ```
-- 15 FEB 2024 - added parenthetical grouping query statement parser. The output looks like:
+- 15 FEB 2024 - Added parenthetical grouping query statement parser. The output looks like:
 ```console
 predicate:> from t where x==2 || (x< 20 && x>10) skip 4 take 3
 From: t
@@ -102,3 +102,42 @@ predicate:>
 - 18 FEB 2024 - Intro to the SuperPower library from Nicholas Blumhardt https://www.youtube.com/watch?v=klHyc9HQnNQ
 - 19 FEB 2024 - Completed second draft of the lexer in the Lexi project. The lexer is now much simpler due to pattern definitions buidler and statelessness. State is now maintained within the Script struct returned as part of the NextMatchResult.
 - 19 FEB 2024 - Refactored math parser to use Lexi.
+- 20 FEB 2024 - Refactored predicate parser to use Lexi. Lexer pattern builder looks like this:
+```csharp
+    public static IServiceCollection AddParser(this IServiceCollection services)
+    {
+        var builder = LexerBuilder
+            .CreateWithRegexOptions(RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)
+            .AddKeyword($"{nameof(TokenIds.FROM)}", TokenIds.FROM)
+            .AddKeyword($"{nameof(TokenIds.WHERE)}", TokenIds.WHERE)
+            .AddKeyword($"{nameof(TokenIds.SKIP)}", TokenIds.SKIP)
+            .AddKeyword($"{nameof(TokenIds.TAKE)}", TokenIds.TAKE)
+            .AddOperator("contains|c", TokenIds.CONTAINS)
+            .AddOperator("startswith|sw", TokenIds.STARTS_WITH)
+            .AddOperator("endswith|ew", TokenIds.ENDS_WITH)
+            .AddOperator(@"and|&&", TokenIds.LOGICAL_AND)
+            .AddOperator(@"or|\|\|", TokenIds.LOGICAL_OR)
+            .AddIdentifier(TokenIds.IDENTIFIER)
+            .AddBooleanTrueLiteral("true", TokenIds.TRUE)
+            .AddBooleanFalseLiteral("false", TokenIds.FALSE)
+            .AddIntegerLiteral(TokenIds.INTEGER_LITERAL)
+            .AddFloatingPointLiteral(TokenIds.FLOATING_POINT_LITERAL)
+            .AddScientificNotationLiteral(TokenIds.SCIENTIFIC_NOTATION_LITERAL)
+            .AddStringLiteral(TokenIds.STRING_LITERAL)
+            .AddCharacterLiteral(TokenIds.CHAR_LITERAL)
+            .AddOpeningCircumfixDelimiter(@"\(", TokenIds.OPEN_PARENTHESIS)
+            .AddClosingCircumfixDelimiter(@"\)", TokenIds.CLOSE_PARENTHESIS)
+            .AddOperator("=|==", TokenIds.EQUAL)
+            .AddOperator(">", TokenIds.GREATER_THAN)
+            .AddOperator(">=", TokenIds.GREATER_THAN_OR_EQUAL)
+            .AddOperator("<", TokenIds.LESS_THAN)
+            .AddOperator("<=", TokenIds.LESS_THAN_OR_EQUAL)
+            .AddOperator("!=", TokenIds.NOT_EQUAL);
+
+        services.TryAddTransient(serviceProvider => builder.Build());
+        services.TryAddTransient<Parser>();
+
+        return services;
+    }
+```
+
