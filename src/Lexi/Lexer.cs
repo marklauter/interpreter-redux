@@ -82,13 +82,13 @@ public sealed class Lexer(
         var bestMatch = new SymbolMatch(new Symbol(0, 0, Tokens.NoMatch, TokenPattern.NoMatch), 0);
         for (var i = 0; i < length; ++i)
         {
-            var latestMatch = new SymbolMatch(
+            var symbolMatch = new SymbolMatch(
                 patterns[i].Match(source, offset),
                 i);
 
-            if (CompareSymbolMatch(latestMatch, bestMatch) > 0)
+            if (CompareSymbolMatch(symbolMatch, bestMatch) > 0)
             {
-                bestMatch = latestMatch;
+                bestMatch = symbolMatch;
             }
         }
 
