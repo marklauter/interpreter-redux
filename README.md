@@ -25,7 +25,7 @@ Update: As of 7 FEB 2024, the first goal, a simple math expression parser and re
 The intent is for the lexer to support simple L1 parsers. The lexer accepts a terminal symbol specification used to map token types to regex or specialized parse methods. The spec defines basic tokens like general operators, infix and circumfix delimiters, reserved works, boolean literals, comment prefixes and options to enable/disable parsing of identifiers, string literals, numeric literals, etc.
 
 ## The Parser
-I'm using the recursive descent pattern to implement some simple L1 parsers, including a predicate expression parser. To refamiliarize myself with recursive descent, I built a math repl that accepts simple math expressions.
+I'm using the recursive descent pattern to implement some simple L1 parsers, including a predicate expression parser. To refamiliarize myself with recursive descent, I built a math repl that accepts simple math expressions. While conducting research for this project I discovered parser combinators and Nicholas Blumhardt's SuperPower library. Next step for this project is building something similar to SuperPower.
 
 ## Dev Log
  - 29 JAN 2024 - Built a functional, immutable lexer. state passed on stack. expected to be faster in real-world use cases.
