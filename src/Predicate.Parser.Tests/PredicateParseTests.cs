@@ -36,4 +36,12 @@ public sealed class PredicateParseTests(Parser parser)
         Assert.Equal(skipValue, statement.Skip?.Value);
         Assert.Equal(takeValue, statement.Take?.Value);
     }
+
+    [Theory]
+    [InlineData("from Address where Street startswith \"Cypress\" and (City = \"Tampa\" or City = \"Miami\")")]
+    public void Returns_Statement_With_Parentheses(string source)
+    {
+        var statement = parser.Parse(source);
+        Assert.NotNull(statement);
+    }
 }

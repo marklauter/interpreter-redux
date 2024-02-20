@@ -26,7 +26,7 @@ public sealed class Startup
     {
         services.TryAddTransient(serviceProvider =>
             LexerBuilder
-            .CreateWithRegexOptions(RegexOptions.CultureInvariant)
+            .Create(RegexOptions.CultureInvariant)
             .WithPatterns(Patterns)
             .Build());
     }

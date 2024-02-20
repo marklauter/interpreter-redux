@@ -11,7 +11,6 @@ public class LexerBuilder
         RegexOptions.ExplicitCapture |
         RegexOptions.Compiled |
         RegexOptions.Singleline;
-    public RegexOptions RegexOptions { get; }
 
     private LexerBuilder() { }
 
@@ -22,7 +21,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LexerBuilder CreateWithRegexOptions(RegexOptions regexOptions)
+    public static LexerBuilder Create(RegexOptions regexOptions)
     {
         var builder = new LexerBuilder();
         builder.regexOptions |= regexOptions;
@@ -43,193 +42,193 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddCommentPrefix(
+    public LexerBuilder MatchComment(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.Comment,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddClosingCircumfixDelimiter(
+    public LexerBuilder MatchClosingCircumfixDelimiter(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.CloseCircumfixDelimiter,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddOpeningCircumfixDelimiter(
+    public LexerBuilder MatchOpeningCircumfixDelimiter(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.OpenCircumfixDelimiter,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddInfixDelimiter(
+    public LexerBuilder MatchInfixDelimiter(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.InfixDelimiter,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddDelimiter(
+    public LexerBuilder MatchDelimiter(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.Delimiter,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddOperator(
+    public LexerBuilder MatchOperator(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.Operator,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddBooleanFalseLiteral(
+    public LexerBuilder MatchBooleanFalseLiteral(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.BooleanFalseLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddBooleanTrueLiteral(
+    public LexerBuilder MatchBooleanTrueLiteral(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.BooleanTrueLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddBooleanLiteral(
+    public LexerBuilder MatchBooleanLiteral(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.BooleanLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddScientificNotationLiteral(
+    public LexerBuilder MatchScientificNotationLiteral(
         int id)
     {
-        return AddPattern(
+        return Match(
             AuxillaryPatterns.ScientificNotationLiteral(),
             Tokens.ScientificNotationLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddFloatingPointLiteral(
+    public LexerBuilder MatchFloatingPointLiteral(
         int id)
     {
-        return AddPattern(
+        return Match(
             AuxillaryPatterns.FloatingPointLiteral(),
             Tokens.FloatingPointLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddIntegerLiteral(
+    public LexerBuilder MatchIntegerLiteral(
         int id)
     {
-        return AddPattern(
+        return Match(
             AuxillaryPatterns.IntegerLiteral(),
             Tokens.IntegerLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddStringLiteral(
+    public LexerBuilder MatchStringLiteral(
         int id)
     {
-        return AddPattern(
+        return Match(
             AuxillaryPatterns.QuotedStringLiteral(),
             Tokens.StringLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddCharacterLiteral(
+    public LexerBuilder MatchCharacterLiteral(
         int id)
     {
-        return AddPattern(
+        return Match(
             AuxillaryPatterns.CharacterLiteral(),
             Tokens.CharacterLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddNulliteral(
+    public LexerBuilder MatchNulliteral(
         string pattern,
         int id)
     {
-        return AddPattern(
+        return Match(
             pattern,
             Tokens.NullLiteral,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddLiteral(
+    public LexerBuilder MatchLiteral(
         string pattern,
         int id)
     {
-        return AddPattern(pattern, Tokens.Literal, id);
+        return Match(pattern, Tokens.Literal, id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddKeyword(
+    public LexerBuilder MatchKeyword(
         string pattern,
         int id)
     {
-        return AddPattern(pattern, Tokens.Keyword, id);
+        return Match(pattern, Tokens.Keyword, id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddIdentifier(
+    public LexerBuilder MatchIdentifier(
         int id)
     {
-        return AddPattern(
+        return Match(
             AuxillaryPatterns.Identifier(),
             Tokens.Identifier,
             id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddPattern(
+    public LexerBuilder Match(
         string pattern,
         Tokens tokenClass,
         int id)
@@ -243,7 +242,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder AddPattern(
+    public LexerBuilder Match(
         Regex regex,
         Tokens tokenClass,
         int id)

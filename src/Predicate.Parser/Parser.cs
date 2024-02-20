@@ -66,36 +66,46 @@ public sealed class Parser(Lexer lexer)
 
     private Statement ParseStatement(Script script)
     {
+        var identifier = ParseFrom(script);
+        var where = ParseWhere(identifier.MatchResult);
+        var predicate = ParseLogicalOr(where.MatchResult);
+        var (skip, take) = ParseSkipTake(predicate.MatchResult);
+
+        return new Statement(
+            identifier.Expression,
+            predicate.Expression,
+            skip,
+            take);
+    }
+
+    private ParseResult<Identifier> ParseFrom(Script script)
+    {
         var matchResult = lexer.NextMatch(script);
         _ = ParseKeyword(in matchResult, Keywords.From);
 
         matchResult = lexer.NextMatch(matchResult);
         var identifier = ParseIdentifier(in matchResult);
 
-        matchResult = lexer.NextMatch(matchResult);
-        _ = ParseKeyword(in matchResult, Keywords.Where);
-
-        var predicate = ParsePredicate(matchResult);
-
-        var (skip, take) = ParseSkipTake(predicate.MatchResult);
-
-        return new Statement(
-            identifier,
-            predicate.Expression,
-            skip,
-            take);
+        return new(identifier, matchResult);
     }
 
-    private ParseResult<Expression> ParsePredicate(MatchResult matchResult)
+    private ParseResult<Keyword> ParseWhere(MatchResult matchResult)
+    {
+        matchResult = lexer.NextMatch(matchResult);
+        var keyword = ParseKeyword(in matchResult, Keywords.Where);
+
+        return new(keyword, lexer.NextMatch(matchResult));
+    }
+
+    private ParseResult<Expression> ParseLogicalOr(MatchResult matchResult)
     {
         var left = ParseLogicalAnd(matchResult);
 
-        matchResult = lexer.NextMatch(matchResult);
-
+        matchResult = lexer.NextMatch(left.MatchResult);
         while (!matchResult.Script.IsEndOfSource()
-            && matchResult.Symbol.IsOperator()
             && matchResult.Symbol.TokenId == TokenIds.LOGICAL_OR)
         {
+            matchResult = lexer.NextMatch(matchResult);
             var right = ParseLogicalAnd(matchResult);
 
             left = new(new LogicalExpression(
@@ -116,9 +126,9 @@ public sealed class Parser(Lexer lexer)
 
         matchResult = lexer.NextMatch(left.MatchResult);
         while (!matchResult.Script.IsEndOfSource()
-            && matchResult.Symbol.IsOperator()
             && matchResult.Symbol.TokenId == TokenIds.LOGICAL_AND)
         {
+            matchResult = lexer.NextMatch(matchResult);
             var right = ParseComparison(matchResult);
 
             left = new(new LogicalExpression(
@@ -136,9 +146,6 @@ public sealed class Parser(Lexer lexer)
     [SuppressMessage("Style", "IDE0010:Add missing cases", Justification = "switch is complete")]
     private ParseResult<Expression> ParseComparison(MatchResult matchResult)
     {
-        CheckEndOfSource(in matchResult);
-
-        matchResult = lexer.NextMatch(matchResult);
         switch (matchResult.Symbol.Token)
         {
             case Tokens.Identifier:
@@ -167,7 +174,8 @@ public sealed class Parser(Lexer lexer)
     private ParseResult<Expression> ParseParentheticalGroup(
         MatchResult matchResult)
     {
-        var predicate = ParsePredicate(matchResult);
+        matchResult = lexer.NextMatch(matchResult);
+        var predicate = ParseLogicalOr(matchResult);
 
         matchResult = lexer.NextMatch(predicate.MatchResult);
         CheckEndOfSource(in matchResult);
@@ -206,41 +214,43 @@ public sealed class Parser(Lexer lexer)
     {
         CheckEndOfSource(in matchResult);
 
+        var value = matchResult.Script.ReadSymbol(in matchResult.Symbol);
         return matchResult.Symbol.IsIdentifier()
-            ? (Identifier)matchResult.Script.ReadSymbol(in matchResult.Symbol)
-            : throw new UnexpectedTokenException($"unexpected token '{matchResult.Script.ReadSymbol(in matchResult.Symbol)}' at offset {matchResult.Script.Offset}. expected {nameof(Tokens.Identifier)}.");
+            ? (Identifier)value
+            : throw new UnexpectedTokenException($"unexpected token '{value}' at offset {matchResult.Script.Offset}. expected {nameof(Tokens.Identifier)}.");
     }
 
-    [SuppressMessage("Style", "IDE0010:Add missing cases", Justification = "switch is complete")]
+    [SuppressMessage("Style", "IDE0072:Add missing cases", Justification = "switch is complete")]
     private static Expression ParseLiteral(
         ref readonly MatchResult matchResult)
     {
         CheckEndOfSource(in matchResult);
 
-        if (matchResult.Symbol.IsLiteral())
+        return matchResult.Symbol.Token switch
         {
-            if (matchResult.Symbol.IsNumericLiteral())
-            {
-                return ParseNumericLiteral(in matchResult);
-            }
-
-            switch (matchResult.Symbol.Token)
-            {
-                case Tokens.StringLiteral:
-                    return (StringLiteral)matchResult.Script.ReadSymbol(in matchResult.Symbol);
-
-                case Tokens.CharacterLiteral:
-                    return (CharacterLiteral)matchResult.Script.ReadSymbol(in matchResult.Symbol);
-
-                case Tokens.BooleanFalseLiteral:
-                    return (BooleanLiteral)false;
-
-                case Tokens.BooleanTrueLiteral:
-                    return (BooleanLiteral)true;
-            }
-        }
-
-        throw new UnexpectedTokenException($"unexpected token '{matchResult.Script.ReadSymbol(in matchResult.Symbol)}' at offset {matchResult.Script.Offset}. expected {nameof(Tokens.Literal)}.");
+            Tokens.IntegerLiteral => (NumericLiteral)Int32.Parse(
+                matchResult.Script.ReadSymbol(in matchResult.Symbol),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture),
+            Tokens.FloatingPointLiteral => (NumericLiteral)Double.Parse(
+                matchResult.Script.ReadSymbol(in matchResult.Symbol),
+                NumberStyles.Float | NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture),
+            Tokens.ScientificNotationLiteral => new NumericLiteral(
+                NumericTypes.ScientificNotation,
+                Double.Parse(
+                    matchResult.Script.ReadSymbol(in matchResult.Symbol),
+                    NumberStyles.Number | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint,
+                    CultureInfo.InvariantCulture)),
+            Tokens.StringLiteral => (StringLiteral)matchResult.Script.ReadSymbol(in matchResult.Symbol),
+            Tokens.CharacterLiteral => (CharacterLiteral)matchResult.Script.ReadSymbol(in matchResult.Symbol),
+            Tokens.BooleanFalseLiteral => (BooleanLiteral)false,
+            Tokens.BooleanTrueLiteral => (BooleanLiteral)true,
+            Tokens.NullLiteral => new NullLiteral(),
+            Tokens.ArrayLiteral => throw new NotImplementedException(),
+            Tokens.ObjectLiteral => throw new NotImplementedException(),
+            _ => throw new UnexpectedTokenException($"unexpected token '{matchResult.Script.ReadSymbol(in matchResult.Symbol)}' at offset {matchResult.Script.Offset}. expected {nameof(Tokens.Literal)}."),
+        };
     }
 
     [SuppressMessage("Style", "IDE0072:Add missing cases", Justification = "switch is complete")]
@@ -249,23 +259,23 @@ public sealed class Parser(Lexer lexer)
     {
         CheckEndOfSource(in matchResult);
 
-        var value = matchResult
-            .Script
-            .ReadSymbol(in matchResult.Symbol);
-
-        // todo: use TryParse and add error msg on false
         return matchResult.Symbol.Token switch
         {
-            Tokens.IntegerLiteral => new NumericLiteral(
-                NumericTypes.Integer,
-                Int32.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture)),
-            Tokens.FloatingPointLiteral => new NumericLiteral(
-                NumericTypes.FloatingPoint,
-                Double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture)),
+            Tokens.IntegerLiteral => (NumericLiteral)Int32.Parse(
+                matchResult.Script.ReadSymbol(in matchResult.Symbol),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture),
+            Tokens.FloatingPointLiteral => (NumericLiteral)Double.Parse(
+                matchResult.Script.ReadSymbol(in matchResult.Symbol),
+                NumberStyles.Float | NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture),
             Tokens.ScientificNotationLiteral => new NumericLiteral(
                 NumericTypes.ScientificNotation,
-                Double.Parse(value, NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture)),
-            _ => new NumericLiteral(NumericTypes.NotANumber, 0)
+                Double.Parse(
+                    matchResult.Script.ReadSymbol(in matchResult.Symbol),
+                    NumberStyles.Number | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint,
+                    CultureInfo.InvariantCulture)),
+            _ => throw new UnexpectedTokenException($"unexpected token '{matchResult.Script.ReadSymbol(in matchResult.Symbol)}' at offset {matchResult.Script.Offset}. expected {nameof(Tokens.Literal)}."),
         };
     }
 

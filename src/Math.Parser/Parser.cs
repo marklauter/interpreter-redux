@@ -96,6 +96,7 @@ public sealed class Parser(Lexer lexer)
         else if (matchResult.Symbol.IsOpenCircumfixDelimiter())
         {
             var term = ParseTerm(matchResult.Script);
+
             matchResult = lexer.NextMatch(term.MatchResult.Script);
             if (matchResult.Symbol.IsCloseCircumfixDelimiter())
             {

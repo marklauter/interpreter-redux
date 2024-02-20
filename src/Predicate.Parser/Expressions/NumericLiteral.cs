@@ -15,29 +15,6 @@ public sealed record NumericLiteral(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static NumericLiteral ParseNumericLiteral(string symbol)
-    {
-        if (!Double.TryParse(
-            symbol,
-            NumberStyles.Any,
-            CultureInfo.InvariantCulture,
-            out var value))
-        {
-            return new NumericLiteral(
-                NumericTypes.NotANumber,
-                Double.NaN);
-        }
-
-        var type = symbol.Contains('.')
-            ? NumericTypes.FloatingPoint
-            : NumericTypes.Integer;
-
-        return new NumericLiteral(
-            type,
-            value);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator int(NumericLiteral literal)
     {
         return Convert.ToInt32(Math.Round(literal.Value, 0));
@@ -76,11 +53,5 @@ public sealed record NumericLiteral(
                 .ToString(CultureInfo.InvariantCulture),
             NumericTypes.NotANumber or _ => "NaN",
         };
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator NumericLiteral(string value)
-    {
-        return ParseNumericLiteral(value);
     }
 }

@@ -10,19 +10,19 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddParser(this IServiceCollection services)
     {
         var builder = LexerBuilder
-            .CreateWithRegexOptions(RegexOptions.CultureInvariant)
-            .AddBooleanFalseLiteral("false", TokenIds.FALSE)
-            .AddBooleanTrueLiteral("true", TokenIds.TRUE)
-            .AddIntegerLiteral(TokenIds.INTEGER_LITERAL)
-            .AddFloatingPointLiteral(TokenIds.FLOATING_POINT_LITERAL)
-            .AddScientificNotationLiteral(TokenIds.SCIENTIFIC_NOTATION_LITERAL)
-            .AddOperator(@"\+", TokenIds.ADD)
-            .AddOperator("-", TokenIds.SUBTRACT)
-            .AddOperator(@"\*", TokenIds.MULTIPLY)
-            .AddOperator("/", TokenIds.DIVIDE)
-            .AddOperator("%", TokenIds.MODULUS)
-            .AddOpeningCircumfixDelimiter(@"\(", TokenIds.OPEN_PARENTHESIS)
-            .AddClosingCircumfixDelimiter(@"\)", TokenIds.CLOSE_PARENTHESIS);
+            .Create(RegexOptions.CultureInvariant)
+            .MatchBooleanFalseLiteral("false", TokenIds.FALSE)
+            .MatchBooleanTrueLiteral("true", TokenIds.TRUE)
+            .MatchIntegerLiteral(TokenIds.INTEGER_LITERAL)
+            .MatchFloatingPointLiteral(TokenIds.FLOATING_POINT_LITERAL)
+            .MatchScientificNotationLiteral(TokenIds.SCIENTIFIC_NOTATION_LITERAL)
+            .MatchOperator(@"\+", TokenIds.ADD)
+            .MatchOperator("-", TokenIds.SUBTRACT)
+            .MatchOperator(@"\*", TokenIds.MULTIPLY)
+            .MatchOperator("/", TokenIds.DIVIDE)
+            .MatchOperator("%", TokenIds.MODULUS)
+            .MatchOpeningCircumfixDelimiter(@"\(", TokenIds.OPEN_PARENTHESIS)
+            .MatchClosingCircumfixDelimiter(@"\)", TokenIds.CLOSE_PARENTHESIS);
 
         services.TryAddTransient(serviceProvider => builder.Build());
         services.TryAddTransient<Parser>();
