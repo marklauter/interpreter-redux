@@ -1,8 +1,10 @@
 using Math.Parser.Exceptions;
 using Math.Parser.Expressions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Math.Parser.Tests;
 
+[ExcludeFromCodeCoverage]
 public sealed class MathParseTests(Parser parser)
 {
     private readonly Parser parser = parser ?? throw new ArgumentNullException(nameof(parser));
