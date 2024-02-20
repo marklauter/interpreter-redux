@@ -28,7 +28,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Luthor\Luthor.csproj" />
 		<ProjectReference Include="..\Predicate.Parser\Predicate.Parser.csproj" />
 	</ItemGroup>
 
