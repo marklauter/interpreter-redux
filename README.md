@@ -105,12 +105,12 @@ predicate:>
     public static IServiceCollection AddParser(this IServiceCollection services)
     {
         var builder = LexerBuilder
-            .CreateWithRegexOptions(RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)
+            .Create(RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)
             .MatchKeyword($"{nameof(TokenIds.FROM)}", TokenIds.FROM)
             .MatchKeyword($"{nameof(TokenIds.WHERE)}", TokenIds.WHERE)
             .MatchKeyword($"{nameof(TokenIds.SKIP)}", TokenIds.SKIP)
             .MatchKeyword($"{nameof(TokenIds.TAKE)}", TokenIds.TAKE)
-            .MatchOperator("contains|c", TokenIds.CONTAINS)
+            .MatchOperator($"{nameof(TokenIds.CONTAINS)}", TokenIds.CONTAINS)
             .MatchOperator("startswith|sw", TokenIds.STARTS_WITH)
             .MatchOperator("endswith|ew", TokenIds.ENDS_WITH)
             .MatchOperator(@"and|&&", TokenIds.LOGICAL_AND)
