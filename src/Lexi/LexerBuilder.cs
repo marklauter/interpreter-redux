@@ -130,17 +130,6 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchBooleanLiteral(
-        string pattern,
-        int id)
-    {
-        return Match(
-            pattern,
-            Tokens.BooleanLiteral,
-            id);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public LexerBuilder MatchScientificNotationLiteral(
         int id)
     {
@@ -191,7 +180,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchNulliteral(
+    public LexerBuilder MatchNullLiteral(
         string pattern,
         int id)
     {
@@ -234,7 +223,7 @@ public class LexerBuilder
         int id)
     {
         patterns.Add(new(
-            @$"\G{pattern}",
+            pattern,
             regexOptions,
             tokenClass,
             id));

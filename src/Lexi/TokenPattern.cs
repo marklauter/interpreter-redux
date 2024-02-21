@@ -16,7 +16,7 @@ public sealed class TokenPattern(
         int id)
         : this(
               new Regex(
-                  pattern ?? throw new ArgumentNullException(nameof(pattern)),
+                  @$"\G(?:{pattern})" ?? throw new ArgumentNullException(nameof(pattern)),
                   regexOptions | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.Singleline),
               tokenClass,
               id)

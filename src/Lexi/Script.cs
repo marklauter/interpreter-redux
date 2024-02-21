@@ -31,4 +31,16 @@ public readonly ref struct Script(
                 ? $"lexer error at offset: {symbol.Offset}"
                 : Source[symbol.Offset..(symbol.Offset + symbol.Length)];
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator string(Script script)
+    {
+        return script.Source;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Script(string source)
+    {
+        return new(source);
+    }
 }
