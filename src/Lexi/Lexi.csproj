@@ -6,6 +6,9 @@
 		<Nullable>enable</Nullable>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<IsAotCompatible>true</IsAotCompatible>
+		<OptimizationPreference>Speed</OptimizationPreference>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>full</TrimMode>
 	</PropertyGroup>
 
 	<ItemGroup>
