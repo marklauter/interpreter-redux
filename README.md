@@ -57,7 +57,7 @@ math:>
 ```
 - 11 FEB 2024 - Started predicate expression parser. worked out a draft BNF to describe the behavior of the parser. 
 - 14 FEB 2024 - Nearly completed a simple query statement parser with CLI based REPL. The output looks like:
-```console
+```yaml
 predicate:> from t where x == "y" || b == "c"
 From: t
 LogicalExpression:
@@ -73,28 +73,26 @@ LogicalExpression:
 predicate:>
 ```
 - 15 FEB 2024 - Added parenthetical grouping query statement parser. The output looks like:
-```console
-predicate:> from t where x==2 || (x< 20 && x>10) skip 4 take 3
-From: t
-Skip: 4
-Take: 3
+```yaml
+predicate:> from Address where Street startswith "Cypress" and (City = "Tampa" or City = "Miami")
+From: Address
 LogicalExpression:
 |-- L: ComparisonExpression:
-|-- L: |-- L: Identifier: x
-|-- L: |-- Operator: ==
-|-- L: |-- R: NumericLiteral: 2
-|-- Operator: ||
+|-- L: |-- L: Identifier: Street
+|-- L: |-- Operator: StartsWith
+|-- L: |-- R: StringLiteral: Cypress
+|-- Operator: And
 |-- R: ParentheticalExpression:
 |-- R: |-- (: LogicalExpression:
 |-- R: |-- (: |-- L: ComparisonExpression:
-|-- R: |-- (: |-- L: |-- L: Identifier: x
-|-- R: |-- (: |-- L: |-- Operator: <
-|-- R: |-- (: |-- L: |-- R: NumericLiteral: 20
-|-- R: |-- (: |-- Operator: &&
+|-- R: |-- (: |-- L: |-- L: Identifier: City
+|-- R: |-- (: |-- L: |-- Operator: Equal
+|-- R: |-- (: |-- L: |-- R: StringLiteral: Tampa
+|-- R: |-- (: |-- Operator: Or
 |-- R: |-- (: |-- R: ComparisonExpression:
-|-- R: |-- (: |-- R: |-- L: Identifier: x
-|-- R: |-- (: |-- R: |-- Operator: >
-|-- R: |-- (: |-- R: |-- R: NumericLiteral: 10
+|-- R: |-- (: |-- R: |-- L: Identifier: City
+|-- R: |-- (: |-- R: |-- Operator: Equal
+|-- R: |-- (: |-- R: |-- R: StringLiteral: Miami
 predicate:>
 ```
 - 18 FEB 2024 - Refactoring lexer to improve pattern definition and to make lexer stateless
@@ -140,4 +138,4 @@ predicate:>
         return services;
     }
 ```
-
+- 20 FEB 2024 - Fixed issue with regex patterns that caused false matches by adding noncapturing groups. This obviously impacts performance, but working code is better than fast broken code I guess.
