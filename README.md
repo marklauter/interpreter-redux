@@ -20,6 +20,7 @@ Here are the core goals of the project, both general and specific
 - write a prototype predicate expresion parser that can be used as reference for a project at work and for a graph QL like SPARQL or Cypher.
 
 Update: As of 7 FEB 2024, the first goal, a simple math expression parser and repl, is complete.
+Update: AS of 22 FEB 2024, all the core goals are complete, so I'm moving on to work on parser combinators in my new Kryptonite repository.
 
 ## The Lexer
 The intent is for the lexer to support simple L1 parsers. The lexer accepts a terminal symbol specification used to map token types to regex or specialized parse methods. The spec defines basic tokens like general operators, infix and circumfix delimiters, reserved works, boolean literals, comment prefixes and options to enable/disable parsing of identifiers, string literals, numeric literals, etc.
