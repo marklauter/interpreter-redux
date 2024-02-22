@@ -9,7 +9,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddParser(this IServiceCollection services)
     {
-        var builder = LexerBuilder
+        var builder = Vocabulary
             .Create(RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)
             .MatchKeyword($"{nameof(TokenIds.FROM)}", TokenIds.FROM)
             .MatchKeyword($"{nameof(TokenIds.WHERE)}", TokenIds.WHERE)

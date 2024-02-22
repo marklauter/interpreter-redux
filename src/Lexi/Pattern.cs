@@ -4,12 +4,12 @@ using System.Text.RegularExpressions;
 namespace Lexi;
 
 [DebuggerDisplay("{id}, {regex}")]
-public sealed class TokenPattern(
+public sealed class Pattern(
     Regex regex,
     Tokens tokenClass,
     int id)
 {
-    public TokenPattern(
+    public Pattern(
         string pattern,
         RegexOptions regexOptions,
         Tokens tokenClass,
@@ -22,7 +22,7 @@ public sealed class TokenPattern(
               id)
     { }
 
-    public TokenPattern(
+    public Pattern(
         string pattern,
         Tokens tokenClass,
         int id)

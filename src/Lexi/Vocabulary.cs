@@ -3,33 +3,33 @@ using System.Text.RegularExpressions;
 
 namespace Lexi;
 
-public class LexerBuilder
+public class Vocabulary
 {
-    private readonly List<TokenPattern> patterns = [];
+    private readonly List<Pattern> patterns = [];
 
     private RegexOptions regexOptions =
         RegexOptions.ExplicitCapture |
         RegexOptions.Compiled |
         RegexOptions.Singleline;
 
-    private LexerBuilder() { }
+    private Vocabulary() { }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LexerBuilder Create()
+    public static Vocabulary Create()
     {
-        return new LexerBuilder();
+        return new Vocabulary();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LexerBuilder Create(RegexOptions regexOptions)
+    public static Vocabulary Create(RegexOptions regexOptions)
     {
-        var builder = new LexerBuilder();
+        var builder = new Vocabulary();
         builder.regexOptions |= regexOptions;
         return builder;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder WithPatterns(TokenPattern[] patterns)
+    public Vocabulary WithPatterns(Pattern[] patterns)
     {
         this.patterns.AddRange(patterns);
         return this;
@@ -42,7 +42,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchComment(
+    public Vocabulary MatchComment(
         string pattern,
         int id)
     {
@@ -53,7 +53,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchClosingCircumfixDelimiter(
+    public Vocabulary MatchClosingCircumfixDelimiter(
         string pattern,
         int id)
     {
@@ -64,7 +64,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchOpeningCircumfixDelimiter(
+    public Vocabulary MatchOpeningCircumfixDelimiter(
         string pattern,
         int id)
     {
@@ -75,7 +75,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchInfixDelimiter(
+    public Vocabulary MatchInfixDelimiter(
         string pattern,
         int id)
     {
@@ -86,7 +86,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchDelimiter(
+    public Vocabulary MatchDelimiter(
         string pattern,
         int id)
     {
@@ -97,7 +97,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchOperator(
+    public Vocabulary MatchOperator(
         string pattern,
         int id)
     {
@@ -108,7 +108,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchBooleanFalseLiteral(
+    public Vocabulary MatchBooleanFalseLiteral(
         string pattern,
         int id)
     {
@@ -119,7 +119,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchBooleanTrueLiteral(
+    public Vocabulary MatchBooleanTrueLiteral(
         string pattern,
         int id)
     {
@@ -130,7 +130,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchScientificNotationLiteral(
+    public Vocabulary MatchScientificNotationLiteral(
         int id)
     {
         return Match(
@@ -140,7 +140,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchFloatingPointLiteral(
+    public Vocabulary MatchFloatingPointLiteral(
         int id)
     {
         return Match(
@@ -150,7 +150,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchIntegerLiteral(
+    public Vocabulary MatchIntegerLiteral(
         int id)
     {
         return Match(
@@ -160,7 +160,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchStringLiteral(
+    public Vocabulary MatchStringLiteral(
         int id)
     {
         return Match(
@@ -170,7 +170,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchCharacterLiteral(
+    public Vocabulary MatchCharacterLiteral(
         int id)
     {
         return Match(
@@ -180,7 +180,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchNullLiteral(
+    public Vocabulary MatchNullLiteral(
         string pattern,
         int id)
     {
@@ -191,7 +191,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchLiteral(
+    public Vocabulary MatchLiteral(
         string pattern,
         int id)
     {
@@ -199,7 +199,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchKeyword(
+    public Vocabulary MatchKeyword(
         string pattern,
         int id)
     {
@@ -207,7 +207,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder MatchIdentifier(
+    public Vocabulary MatchIdentifier(
         int id)
     {
         return Match(
@@ -217,7 +217,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder Match(
+    public Vocabulary Match(
         string pattern,
         Tokens tokenClass,
         int id)
@@ -231,7 +231,7 @@ public class LexerBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public LexerBuilder Match(
+    public Vocabulary Match(
         Regex regex,
         Tokens tokenClass,
         int id)

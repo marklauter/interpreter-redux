@@ -23,11 +23,11 @@ public sealed class Parser(Lexer lexer)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        return ParseTerm(new Script(source))
+        return ParseTerm(new Source(source))
             .Expression;
     }
 
-    private ParseResult ParseTerm(Script script)
+    private ParseResult ParseTerm(Source script)
     {
         var left = ParseFactor(script);
 
@@ -53,7 +53,7 @@ public sealed class Parser(Lexer lexer)
         return left;
     }
 
-    private ParseResult ParseFactor(Script script)
+    private ParseResult ParseFactor(Source script)
     {
         var left = ParseValue(script);
 
@@ -79,7 +79,7 @@ public sealed class Parser(Lexer lexer)
         return left;
     }
 
-    private ParseResult ParseValue(Script script)
+    private ParseResult ParseValue(Source script)
     {
         if (script.IsEndOfSource())
         {
@@ -104,7 +104,7 @@ public sealed class Parser(Lexer lexer)
             }
 
             value = matchResult.Symbol.Token == Tokens.Undefined
-                ? script.Source[script.Offset..]
+                ? script.Text[script.Offset..]
                 : matchResult
                     .Script
                     .ReadSymbol(in matchResult.Symbol);
@@ -112,7 +112,7 @@ public sealed class Parser(Lexer lexer)
         }
 
         value = matchResult.Symbol.Token == Tokens.Undefined
-            ? script.Source[script.Offset..]
+            ? script.Text[script.Offset..]
             : matchResult
                 .Script
                 .ReadSymbol(in matchResult.Symbol);

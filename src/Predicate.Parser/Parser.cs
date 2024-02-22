@@ -61,10 +61,10 @@ public sealed class Parser(Lexer lexer)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        return ParseStatement(new Script(source));
+        return ParseStatement(new Source(source));
     }
 
-    private Statement ParseStatement(Script script)
+    private Statement ParseStatement(Source script)
     {
         var identifier = ParseFrom(script);
         var where = ParseWhere(identifier.MatchResult);
@@ -78,7 +78,7 @@ public sealed class Parser(Lexer lexer)
             take);
     }
 
-    private ParseResult<Identifier> ParseFrom(Script script)
+    private ParseResult<Identifier> ParseFrom(Source script)
     {
         var matchResult = lexer.NextMatch(script);
         _ = ParseKeyword(in matchResult, Keywords.From);

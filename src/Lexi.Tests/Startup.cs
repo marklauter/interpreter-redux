@@ -8,7 +8,7 @@ namespace Lexi.Tests;
 [ExcludeFromCodeCoverage]
 public sealed class Startup
 {
-    private static readonly TokenPattern[] Patterns =
+    private static readonly Pattern[] Patterns =
     [
         new(@"\G\-?\d+\.\d+", Tokens.FloatingPointLiteral, 1),
         new(@"\G\-?\d+", Tokens.IntegerLiteral, 0),
@@ -25,7 +25,7 @@ public sealed class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.TryAddTransient(serviceProvider =>
-            LexerBuilder
+            Vocabulary
             .Create(RegexOptions.CultureInvariant)
             .WithPatterns(Patterns)
             .Build());

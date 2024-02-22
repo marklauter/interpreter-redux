@@ -3,9 +3,9 @@
 namespace Lexi;
 
 public sealed class Lexer(
-    TokenPattern[] patterns)
+    Pattern[] patterns)
 {
-    private readonly TokenPattern[] patterns = patterns
+    private readonly Pattern[] patterns = patterns
         ?? throw new ArgumentNullException(nameof(patterns));
 
     private readonly ref struct SymbolMatch(
@@ -47,7 +47,7 @@ public sealed class Lexer(
         return NextMatch(matchResult.Script);
     }
 
-    public MatchResult NextMatch(Script script)
+    public MatchResult NextMatch(Source script)
     {
         var offset = script.Offset;
 
@@ -55,10 +55,10 @@ public sealed class Lexer(
         {
             return new(
                 script,
-                new(offset, 0, Tokens.EndOfSource, TokenPattern.EndOfSource));
+                new(offset, 0, Tokens.EndOfSource, Pattern.EndOfSource));
         }
 
-        var source = script.Source;
+        var source = script.Text;
 
         var match = AuxillaryPatterns.NewLine()
             .Match(source, offset);
@@ -79,7 +79,7 @@ public sealed class Lexer(
         // first match is faster, but less tolerent pattern definition ordering. everything is tradeoffs.
         var patterns = this.patterns.AsSpan();
         var length = patterns.Length;
-        var bestMatch = new SymbolMatch(new Symbol(0, 0, Tokens.NoMatch, TokenPattern.NoMatch), 0);
+        var bestMatch = new SymbolMatch(new Symbol(0, 0, Tokens.NoMatch, Pattern.NoMatch), 0);
         for (var i = 0; i < length; ++i)
         {
             _ = source[offset..];
@@ -101,6 +101,6 @@ public sealed class Lexer(
                 symbol)
             : new(
                 new(source, offset),
-                new(offset, 0, Tokens.LexError, TokenPattern.LexError));
+                new(offset, 0, Tokens.LexError, Pattern.LexError));
     }
 }

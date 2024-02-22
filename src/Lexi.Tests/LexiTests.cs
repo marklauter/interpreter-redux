@@ -27,7 +27,7 @@ public sealed class LexiTests(Lexer lexer)
     [InlineData("<=", 8)]
     public void Test(string source, int expectedId)
     {
-        var result = lexer.NextMatch(new Script(source));
+        var result = lexer.NextMatch(new Source(source));
         Assert.Equal(expectedId, result.Symbol.TokenId);
         var symbol = result.Symbol;
         Assert.Equal(source, result.Script.ReadSymbol(in symbol));
@@ -39,7 +39,7 @@ public sealed class LexiTests(Lexer lexer)
     public void ReadToEndOfSource(string source, int[] expectedId)
     {
         var symbols = source.Split(' ');
-        var script = new Script(source);
+        var script = new Source(source);
         for (var i = 0; i < expectedId.Length; ++i)
         {
             var result = lexer.NextMatch(script);
@@ -54,7 +54,7 @@ public sealed class LexiTests(Lexer lexer)
     public void LexOrder()
     {
         var source = "from Address where Street startswith \"Cypress\" and (City = \"Tampa\" or City = \"Miami\")";
-        var lexer = LexerBuilder
+        var lexer = Vocabulary
             .Create(RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)
             .MatchKeyword($"{nameof(TokenIds.FROM)}", TokenIds.FROM)
             .MatchKeyword($"{nameof(TokenIds.WHERE)}", TokenIds.WHERE)
@@ -137,7 +137,7 @@ public sealed class LexiTests(Lexer lexer)
     {
         var source = "(City = \"Tampa\" or City = \"Miami\")";
 
-        var lexer = LexerBuilder
+        var lexer = Vocabulary
             .Create(RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)
             .MatchOperator("(?:contains|c)", TokenIds.CONTAINS)
             .MatchOperator("and|&&", TokenIds.LOGICAL_AND)

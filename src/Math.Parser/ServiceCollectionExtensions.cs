@@ -9,7 +9,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddParser(this IServiceCollection services)
     {
-        var builder = LexerBuilder
+        var builder = Vocabulary
             .Create(RegexOptions.CultureInvariant)
             .MatchBooleanFalseLiteral("false", TokenIds.FALSE)
             .MatchBooleanTrueLiteral("true", TokenIds.TRUE)

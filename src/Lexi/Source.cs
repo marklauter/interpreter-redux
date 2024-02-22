@@ -4,22 +4,22 @@ using System.Runtime.CompilerServices;
 namespace Lexi;
 
 [SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "it's a struct")]
-public readonly ref struct Script(
-    string source,
+public readonly ref struct Source(
+    string text,
     int offset)
 {
-    public Script(string source)
+    public Source(string source)
         : this(source, 0)
     {
     }
 
-    public readonly string Source = source;
+    public readonly string Text = text ?? throw new ArgumentNullException(nameof(text));
     public readonly int Offset = offset;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsEndOfSource()
     {
-        return Offset >= Source.Length;
+        return Offset >= Text.Length;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -29,17 +29,17 @@ public readonly ref struct Script(
             ? "EOF"
             : symbol.IsError()
                 ? $"lexer error at offset: {symbol.Offset}"
-                : Source[symbol.Offset..(symbol.Offset + symbol.Length)];
+                : Text[symbol.Offset..(symbol.Offset + symbol.Length)];
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator string(Script script)
+    public static implicit operator string(Source script)
     {
-        return script.Source;
+        return script.Text;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Script(string source)
+    public static implicit operator Source(string source)
     {
         return new(source);
     }
