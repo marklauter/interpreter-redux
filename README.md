@@ -19,10 +19,13 @@ Here are the core goals of the project, both general and specific
 - write a really simple math repl
 - write a prototype predicate expresion parser that can be used as reference for a project at work and for a graph QL like SPARQL or Cypher.
 
-Update: As of 7 FEB 2024, the first goal, a simple math expression parser and repl, is complete.
+- Update: As of 7 FEB 2024, the first goal, a simple math expression parser and repl, is complete.
+- Update: AS of 22 FEB 2024, all the core goals are complete, so I'm moving on to work on parser combinators in my new Kryptonite repository.
 
 ## The Lexer
 The intent is for the lexer to support simple L1 parsers. The lexer accepts a terminal symbol specification used to map token types to regex or specialized parse methods. The spec defines basic tokens like general operators, infix and circumfix delimiters, reserved works, boolean literals, comment prefixes and options to enable/disable parsing of identifiers, string literals, numeric literals, etc.
+
+Update 22 FEB 2022: There are actually two lexers, Luthor and Lexi. Luthor is described above. Lexi, a refactor of Luthor, is discussed briefly in the dev log below.
 
 ## The Parser
 I'm using the recursive descent pattern to implement some simple L1 parsers, including a predicate expression parser. To refamiliarize myself with recursive descent, I built a math repl that accepts simple math expressions. While conducting research for this project I discovered parser combinators and Nicholas Blumhardt's SuperPower library. Next step for this project is building something similar to SuperPower.
@@ -139,3 +142,4 @@ predicate:>
     }
 ```
 - 20 FEB 2024 - Fixed issue with regex patterns that caused false matches by adding noncapturing groups. This obviously impacts performance, but working code is better than fast broken code I guess.
+- 22 FEB 2024 - Created a new repo for a parser combinator probject called Kryptonite. So I think interpreter-redux is complete. The something resembling Lexi the lexer might live on in Kryptonite.  https://github.com/marklauter/kryptonite
