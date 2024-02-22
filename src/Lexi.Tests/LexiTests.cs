@@ -25,7 +25,7 @@ public sealed class LexiTests(Lexer lexer)
     [InlineData("%", 6)]
     [InlineData("<", 7)]
     [InlineData("<=", 8)]
-    public void Test(string source, int expectedId)
+    public void ReadsSymbol(string source, int expectedId)
     {
         var result = lexer.NextMatch(new Source(source));
         Assert.Equal(expectedId, result.Symbol.TokenId);
