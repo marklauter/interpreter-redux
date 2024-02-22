@@ -25,6 +25,8 @@ Here are the core goals of the project, both general and specific
 ## The Lexer
 The intent is for the lexer to support simple L1 parsers. The lexer accepts a terminal symbol specification used to map token types to regex or specialized parse methods. The spec defines basic tokens like general operators, infix and circumfix delimiters, reserved works, boolean literals, comment prefixes and options to enable/disable parsing of identifiers, string literals, numeric literals, etc.
 
+Update 22 FEB 2022: There are actually two lexers, Luthor and Lexi. Luthor is described above. Lexi, a refactor of Luthor, is discussed briefly in the dev log below.
+
 ## The Parser
 I'm using the recursive descent pattern to implement some simple L1 parsers, including a predicate expression parser. To refamiliarize myself with recursive descent, I built a math repl that accepts simple math expressions. While conducting research for this project I discovered parser combinators and Nicholas Blumhardt's SuperPower library. Next step for this project is building something similar to SuperPower.
 
