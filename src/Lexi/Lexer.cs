@@ -87,7 +87,7 @@ public sealed class Lexer(
                 patterns[i].Match(source, offset),
                 i);
 
-            if (CompareSymbolMatch(symbolMatch, bestMatch) > 0)
+            if (symbolMatch.Symbol.IsMatch() && CompareSymbolMatch(symbolMatch, bestMatch) > 0)
             {
                 bestMatch = symbolMatch;
             }
