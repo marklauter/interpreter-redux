@@ -4,9 +4,30 @@ using System.Text.RegularExpressions;
 namespace Lexi.Tests;
 
 [ExcludeFromCodeCoverage]
+public sealed class StringLiteralTests(Lexer lexer)
+{
+    private readonly Lexer lexer = lexer
+        ?? throw new ArgumentNullException(nameof(lexer));
+
+    [Theory]
+    [InlineData(@"""hello, world.""", "hello, world.", true)]
+    [InlineData(@"""hello, \""world.\""""", @"hello, \""world.\""", true)]
+    [InlineData(@"""hello, \""world.\"""" ""this is string two""", @"hello, \""world.\""", true)]
+    public void StringLiterals(string source, string expectedSymbol, bool expectedSuccess)
+    {
+        var result = lexer.NextMatch(source);
+        Assert.Equal(expectedSuccess, result.Symbol.IsMatch());
+        if (expectedSuccess)
+        {
+            Assert.Equal(expectedSymbol, result.Script.ReadSymbol(in result.Symbol)[1..^1]);
+        }
+    }
+}
+
+[ExcludeFromCodeCoverage]
 public sealed class LexiTests(Lexer lexer)
 {
-    public Lexer Lexer { get; } = lexer
+    private readonly Lexer lexer = lexer
         ?? throw new ArgumentNullException(nameof(lexer));
 
     [Theory]
@@ -29,8 +50,7 @@ public sealed class LexiTests(Lexer lexer)
     {
         var result = lexer.NextMatch(new Source(source));
         Assert.Equal(expectedId, result.Symbol.TokenId);
-        var symbol = result.Symbol;
-        Assert.Equal(source, result.Script.ReadSymbol(in symbol));
+        Assert.Equal(source, result.Script.ReadSymbol(in result.Symbol));
     }
 
     [SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "unit test")]

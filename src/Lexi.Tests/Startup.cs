@@ -19,6 +19,7 @@ public sealed class Startup
         new(@"\G%", Tokens.Operator, 6),
         new(@"\G<", Tokens.Operator, 7),
         new(@"\G<=", Tokens.Operator, 8),
+        new(AuxillaryPatterns.QuotedStringLiteral(), Tokens.StringLiteral, 9)
     ];
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "xunit requires instance method")]

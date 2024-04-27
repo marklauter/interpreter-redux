@@ -27,8 +27,6 @@ public sealed class Lexer(
         var rIndex = r.Index;
 
         // longer match wins. tie goes to lowest index.
-        // equal means no swap and probably an error (aka skill issue) in the pattern definitions.
-        // probably should throw in that case, or create an error token
         return
             lLenth > rLength
             ? 1
