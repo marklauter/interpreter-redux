@@ -143,3 +143,4 @@ predicate:>
 ```
 - 20 FEB 2024 - Fixed issue with regex patterns that caused false matches by adding noncapturing groups. This obviously impacts performance, but working code is better than fast broken code I guess.
 - 22 FEB 2024 - Created a new repo for a parser combinator probject called Kryptonite. So I think interpreter-redux is complete. The something resembling Lexi the lexer might live on in Kryptonite.  https://github.com/marklauter/kryptonite
+- 26 MAY 2024 - Lexi is now in it's own [repo](https://github.com/marklauter/lexi) and has been releaed to [Nuget](https://www.nuget.org/packages/MSL.Lexi/). 

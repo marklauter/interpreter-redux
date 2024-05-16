@@ -80,7 +80,6 @@ public sealed class Lexer(
         var bestMatch = new SymbolMatch(new Symbol(0, 0, Tokens.NoMatch, Pattern.NoMatch), 0);
         for (var i = 0; i < length; ++i)
         {
-            _ = source[offset..];
             var symbolMatch = new SymbolMatch(
                 patterns[i].Match(source, offset),
                 i);
