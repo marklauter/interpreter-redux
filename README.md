@@ -1,3 +1,7 @@
+## Lexi Published
+- Lexi has been moved to a new [GitHub repo](https://github.com/marklauter/lexi) to prepare it for release to Nuget.org.
+- Lexi has been deployed to Nuget.org. Find it here: [MSL.Lexi at Nuget.org](https://www.nuget.org/packages/MSL.Lexi/)
+
 # Interpreter Redux
 This started as a just-for-fun port, from C to C#, of the TeCom Interlane residential utility billing language interpreter. The interpreter was originally conceived by Gary Speegle and was written by Speegle and myself sometime between 1996 and 1998 when we worked together at TeCom, A TECO Energy Company. TeCom built energy management systems for commercial and residential markets. The original language was a DSL applied to a set of precalculated utility bill values. The output of a billing program was presented on a Windows-like VGA user interface, something like how a Crystal Report would be presented in a web browser.
 
